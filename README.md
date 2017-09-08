@@ -1,2 +1,2 @@
-# flōt
+# flöt
 FYDP 
