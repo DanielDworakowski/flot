@@ -5,21 +5,21 @@ import time
 import threading
 #
 # Initial class to help determine the control API.
-class AirControl(threading.thread):
+class AirControl():#threading.Thread):
     #
     # Constructor.
     def __init__(self):
         #
         # Member variables.
-        threading.Thread.__init__(self)
+        # threading.Thread.__init__(self)
         self.client = AirSimClient()
         self.home = None
         self.f = 30.
-        self.async = async
-        self.running = True
+        self.running = False
         #
         # Begin construction.
-        self.client.confirmConnection()
+        if not self.client.confirmConnection():
+            print("Connection failed.")
         #
         # Enabling twice might break stuff.
         if not self.client.isApiControlEnabled():
@@ -31,9 +31,17 @@ class AirControl(threading.thread):
         if self.home.z_val > -5:
             self.home.z_val -= 40
             self.client.moveToZ(self.home.z_val, 10)
-    def __del__(self):
-        self.running = False
-        self.join()
+    # #
+    # # Start the thread.
+    # def __enter__(self):
+    #     # self.start()
+    #     pass
+    # #
+    # # Exit the thread.
+    # def __exit__(self ,type, value, traceback):
+    #     self.running = False
+    #     # self.join()
+    #     return True
     #
     # Send a single command for path following.
     def followPathStep(self, v_t, radius):
@@ -45,9 +53,6 @@ class AirControl(threading.thread):
     #
     # Follow a path based on a radius
     def followPathSync(self, t = 1, v_t = 1, radius = m.inf):
-        if self.async:
-            print('Controller is in async mode do not use sync commands.')
-            return
         steps = int(self.f * t)
         for x in range(steps):
             self.followPathStep(v_t, radius)
@@ -57,6 +62,7 @@ class AirControl(threading.thread):
     def run(self):
         #
         # Keep going until obj destruction
+        self.running = True
         while self.running:
             self.followPathStep(1,1)
             time.sleep(1/ self.f)

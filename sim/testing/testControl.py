@@ -3,21 +3,17 @@ import math as m
 import time
 #
 # clTest cases for use of control.
-ct = ctrl.AirControl(False)
-ct.start()
-# ct.client.moveByAngle(0, 0, 10, 1, 10)
-# ct.client.moveByVelocity(5,0,0,5,ctrl.DrivetrainType.ForwardOnly, yaw_mode=ctrl.YawMode(yaw_or_rate=25))
-# time.sleep(5)
-# ct.client.hover()
-
-r = 50.
-v_t = 5.
-ct.client.rotateToYaw(0)
-curYaw = 0
+# with ctrl.AirControl() as ct:
+ct = ctrl.AirControl()
+print("here")
+if not ct.client.rotateToYaw(0):
+    print("Failed")
+print("here")
+ct.followPathSync(10,5,50)
+print("here")
 time.sleep(1)
-
-ct.followPathSync(5,5,50)
 ct.followPathSync(5,5,-50)
+time.sleep(10)
 
 # while 1:
 # # for x in range(30 * 3):
