@@ -56,10 +56,6 @@ class AirSimObservations(observations.Observer):
     def fillObservations(self, obs):
         img = self.imgs[0]
         cameraPos = img.camera_position
-        print(cameraPos)
-        print(img.pixels_as_float)
-        print(img.width)
-        print(img.height)
         cameraOrient = self.fillOrientation(img.camera_orientation)
         obs.valid = True
         obs.timestamp = img.time_stamp
@@ -71,7 +67,6 @@ class AirSimObservations(observations.Observer):
         obs.cameraRotation.roll = cameraOrient[1]
         obs.cameraRotation.yaw = cameraOrient[2]
         obs.hasCollided = self.collInfo.has_collided
-
     #
     # Fills in the observations data structure.
     def observeImpl(self, obs):
@@ -88,9 +83,6 @@ class AirSimObservations(observations.Observer):
         #
         # Ensure that the timestamp difference is reasonable.
         diff = self.collInfo.time_stamp - self.imgs[0].time_stamp
-        print('------------')
-        print('colinfo: %s'%self.collInfo.time_stamp)
-        print('img: %s'%self.imgs[0].time_stamp)
         # if np.abs(diff) > 1e-4:
         #     printError('Timestamp difference between observation is too great : %s [s]'%(diff))
         #     return False
