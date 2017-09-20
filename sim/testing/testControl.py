@@ -1,15 +1,21 @@
-import Control as ctrl
+import AirSimControl as ctrl
+import Observations as observations
+import AirSimObservations as obsImpl
 import math as m
 import time
+from PIL import Image
 #
 # clTest cases for use of control.
-with ctrl.AirControl() as ct:
+observer = obsImpl.AirSimObservations()
+obs = observations.Observation()
+with ctrl.AirSimControl() as ct:
     # ct.followPathSync(5,5,50)
     # ct.followPathSync(5,5,-50)
-    ct.setPath(5, 50)
-    time.sleep(10)
-    ct.setPath(5, -50)
-    time.sleep(10)
+    # ct.setPath(5, 50)
+    observer.observe(obs)
+    print(obs.cameraImageU8.shape)
+    # ct.setPath(5, -50)
+    time.sleep(3)
 
 print("done")
 

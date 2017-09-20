@@ -3,9 +3,10 @@ from PythonClient import *
 from debug import *
 import time
 import threading
+import traceback
 #
 # Initial class to help determine the control API.
-class AirControl(threading.Thread):
+class AirSimControl(threading.Thread):
     #
     # Constructor.
     def __init__(self):
@@ -21,7 +22,7 @@ class AirControl(threading.Thread):
         #
         # Begin construction.
         if not self.client.confirmConnection():
-            print("Connection failed.")
+            printError("Connection failed.")
         #
         # Enabling twice might break stuff.
         if not self.client.isApiControlEnabled():
@@ -43,7 +44,7 @@ class AirControl(threading.Thread):
     def __exit__(self, type, value, traceback):
         self.running = False
         self.join()
-        return isinstance(value, TypeError)
+        return False
     #
     # Send a single command for path following.
     def followPathStep(self, v_t, radius):
@@ -51,7 +52,8 @@ class AirControl(threading.Thread):
         yaw = self.client.getRollPitchYaw()[2]
         v_x = v_t * m.cos(yaw)
         v_y = v_t * m.sin(yaw)
-        self.client.moveByVelocity(v_x, v_y, 0, 1, DrivetrainType.ForwardOnly, YawMode(True, w_deg))
+        if not self.client.moveByVelocity(v_x, v_y, 0, 1, DrivetrainType.ForwardOnly, YawMode(True, w_deg)):
+            print('Control: velocity command failed.')
     #
     # Follow a path based on a radius Blocking.
     def followPathSync(self, t = 1, v_t = 1, radius = m.inf):
