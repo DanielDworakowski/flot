@@ -8,8 +8,8 @@ import cv2
 class AirSimObservations(observations.Observer):
     #
     # Constructor.
-    def __init__(self):
-        observations.Observer.__init__(self)
+    def __init__(self, obsDir):
+        observations.Observer.__init__(self, obsDir)
         #
         # Member variables.
         self.client = AirSimClient()
@@ -59,6 +59,7 @@ class AirSimObservations(observations.Observer):
         cameraOrient = self.fillOrientation(img.camera_orientation)
         obs.valid = True
         obs.timestamp = img.time_stamp
+        obs.cameraImageCompressed = self.imgs
         obs.cameraImageU8 = cv2.cvtColor(cv2.imdecode(AirSimClient.stringToUint8Array(img.image_data_uint8), cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2RGB)
         obs.cameraPosition.x = cameraPos[b'x_val']
         obs.cameraPosition.y = cameraPos[b'y_val']
@@ -90,7 +91,3 @@ class AirSimObservations(observations.Observer):
         # Fill in all of the data.
         self.fillObservations(obs)
         return True
-    # #
-    # # Do the observation.
-    # def observe(self, obs):
-    #     return super(observations.Observer(), self).observe(obs)

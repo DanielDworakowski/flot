@@ -6,14 +6,13 @@ import time
 from PIL import Image
 #
 # clTest cases for use of control.
-observer = obsImpl.AirSimObservations()
-obs = observations.Observation()
+observer = obsImpl.AirSimObservations('/home/ddworakowski/flot/sim/testing')
 with ctrl.AirSimControl() as ct:
     # ct.followPathSync(5,5,50)
     # ct.followPathSync(5,5,-50)
     # ct.setPath(5, 50)
-    observer.observe(obs)
-    print(obs.cameraImageU8.shape)
+    observer.observe()
+    print(observer.obs.cameraImageU8.shape)
     # ct.setPath(5, -50)
     time.sleep(3)
 
