@@ -30,3 +30,8 @@ def PrintFrame():
 def printError(errstr):
     msg = 'ERR: %s:  %s'%(Error(), errstr)
     printColor(msg, colours.FAIL)
+#
+# Print a warning.
+def printWarn(warnstr):
+    msg = 'WARN: %s:  %s'%(Error(), warnstr)
+    printColor(msg, colours.WARNING) 

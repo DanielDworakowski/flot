@@ -5,7 +5,7 @@ import Observations as observations
 import cv2
 #
 # Recorder, run in seperate process.
-class AirSimObservations(observations.Observer):
+class AirSimObserver(observations.Observer):
     #
     # Constructor.
     def __init__(self, obsDir):
@@ -15,17 +15,6 @@ class AirSimObservations(observations.Observer):
         self.client = AirSimClient()
         self.collInfo = None
         self.imgs = None
-    #
-    # Serialize image data.
-    @staticmethod
-    def saveImages(imgs):
-        for img in imgs:
-            if img.pixels_as_float:
-                print("Type %d, size %d" % (img.image_type, len(img.image_data_float)))
-                AirSimClient.write_pfm(os.path.normpath('/home/ddworakowski/flot/sim/testing/py1.pfm'), AirSimClient.getPfmArray(img))
-            else:
-                print("Type %d, size %d" % (img.image_type, len(img.image_data_uint8)))
-                AirSimClient.write_file(os.path.normpath('/home/ddworakowski/flot/sim/testing/py1.png'), img.image_data_uint8)
     #
     # Get a single image from the simulator.
     def getSingleImage(self):
@@ -54,20 +43,19 @@ class AirSimObservations(observations.Observer):
     #
     # Fill in the observations.
     def fillObservations(self, obs):
+        obs.valid = True
         img = self.imgs[0]
         cameraPos = img.camera_position
         cameraOrient = self.fillOrientation(img.camera_orientation)
-        obs.valid = True
-        obs.timestamp = img.time_stamp
-        obs.cameraImageCompressed = self.imgs
-        obs.cameraImageU8 = cv2.cvtColor(cv2.imdecode(AirSimClient.stringToUint8Array(img.image_data_uint8), cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2RGB)
-        obs.cameraPosition.x = cameraPos[b'x_val']
-        obs.cameraPosition.y = cameraPos[b'y_val']
-        obs.cameraPosition.z = cameraPos[b'z_val']
-        obs.cameraRotation.pitch = cameraOrient[0]
-        obs.cameraRotation.roll = cameraOrient[1]
-        obs.cameraRotation.yaw = cameraOrient[2]
-        obs.hasCollided = self.collInfo.has_collided
+        obs.serializable['timestamp_ns'].val = img.time_stamp
+        obs.serializable['img'].pngImgs = self.imgs
+        obs.serializable['cameraPosition'].x = cameraPos[b'x_val']
+        obs.serializable['cameraPosition'].y = cameraPos[b'y_val']
+        obs.serializable['cameraPosition'].z = cameraPos[b'z_val']
+        obs.serializable['cameraRotation'].pitch = cameraOrient[0]
+        obs.serializable['cameraRotation'].roll = cameraOrient[1]
+        obs.serializable['cameraRotation'].yaw = cameraOrient[2]
+        obs.serializable['hasCollided'].val = self.collInfo.has_collided
     #
     # Fills in the observations data structure.
     def observeImpl(self, obs):
