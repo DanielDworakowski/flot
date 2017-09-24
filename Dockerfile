@@ -91,8 +91,9 @@ RUN usermod -a -G sudo user
 RUN apt-get update
 RUN apt-get install wget
 RUN apt-get install unzip
-COPY /AirSim/ /home/user/AirSim/
-WORKDIR /home/user/AirSim/
+WORKDIR /home/user/
+RUN git clone https://github.com/Microsoft/AirSim.git
+WORKDIR /home/user/AirSim
 RUN ./setup.sh
 RUN ./build.sh
 RUN pip3 install msgpack-rpc-python
