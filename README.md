@@ -23,9 +23,7 @@ Clone this repo
 
 ```cd flot_ws```
 
-```git clone https://github.com/Microsoft/AirSim.git```
-
-Copy the LinuxNoEditor packaged enviroment in the /home/user/workspace/simulation_enviroments
+Copy the LinuxNoEditor packaged enviroment in the /home/user/workspace/SimulationEnvironments
 
 # Run
 ```sudo docker build . -t flot_ws ```
