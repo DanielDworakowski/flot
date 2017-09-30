@@ -76,7 +76,7 @@ class CompressedImage():
         if len(self.pngImgs) > 1:
             printWarn('More than one image may not be saving the correct type.')
         img = self.pngImgs[0]
-        path = '%s/%s_%s_%s'%(self.path, self.name, self.idx, img.time_stamp)
+        path = '%s/%s_%s'%(self.path, self.name, self.idx)
         if img.pixels_as_float:
             print("Type %d, size %d" % (img.image_type, len(img.image_data_float)))
             printError('Saving float images is not supported.')

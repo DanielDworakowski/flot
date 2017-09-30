@@ -48,7 +48,6 @@ def loop(conf):
             step(agent, env)
 #
 # Main code.
-# if __name__ == 'main':
 args = getInputArgs()
 conf = getConfig(args)
 loop(conf)
