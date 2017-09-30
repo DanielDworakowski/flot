@@ -104,4 +104,4 @@ ENV/
 .mypy_cache/
 
 # Test environment directory
-testEnvs/*
+workspace/testEnvs/*
