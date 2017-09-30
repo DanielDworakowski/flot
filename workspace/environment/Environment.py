@@ -9,10 +9,9 @@ class EnvironmentOptions():
     # Configuration for each of the types.
     def getAirSimConfig():
         import AirSimObservations as obs
+        import AirSimActions as act
         observer = obs.AirSimObserver
-        actionClient = None
-        printError('Air sim config')
-        # actionClient = act.Action()
+        actionClient = act.AirSimActionEngine
         return [observer, actionClient]
     #
     # Blimp configuration options.
@@ -49,7 +48,7 @@ class Environment():
             if obs == None or act == None:
                 printError('Could not initialize environment.')
             self.observer = obs(saveDirectory)
-            # self.actionEngine = act()
+            self.actionEngine = act()
         except KeyError:
             printError('Passed type does not have a configuration.')
             raise KeyError
@@ -66,8 +65,7 @@ class Environment():
     #
     # Do action.
     def runAction(self, action):
-        printError('run action here.')
-        # return self.actionEngine.act(action)
+        return self.actionEngine.executeAction(action)
     #
     # Get observation.
     def observe(self):

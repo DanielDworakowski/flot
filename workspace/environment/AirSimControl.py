@@ -16,12 +16,12 @@ class AirSimControl(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
-        self.client = AirSimClient()
-        self.f = 30. 
+        self.client = MultirotorClient()
+        self.f = 30.
         self.running = False
         self.set_pose_request = False
         self.set_pose_position = Vector3r(0,0,0)
-        self.set_pose_quaternion = AirSimClient.toQuaternion(0,0,0)
+        self.set_pose_quaternion = AirSimClientBase.toQuaternion(0,0,0)
         self.v_t = 0. # target tangential velocity m/s
         self.v_z = 0. # target velocity in z m/s
         self.w = 0. # target angular velocity m/s
@@ -40,7 +40,7 @@ class AirSimControl(threading.Thread):
         """ Start the thread """
         self.start()
         return self
-    
+
     def __exit__(self, type, value, traceback):
         """ Exit the thread """
         self.running = False
@@ -65,7 +65,7 @@ class AirSimControl(threading.Thread):
     def setPose(self, x, y, z, pitch, roll, yaw):
         self.set_pose_request = True
         self.set_pose_position = Vector3r(x, y, -z)
-        self.set_pose_quaternion = AirSimClient.toQuaternion(pitch, roll, yaw)
+        self.set_pose_quaternion = AirSimClientBase.toQuaternion(pitch, roll, yaw)
 
     def run(self):
         """ Keep going until obj destruction """

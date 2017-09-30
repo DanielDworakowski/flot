@@ -1,11 +1,11 @@
 import AirSimControl
 from Actions import ActionEngine
-import numpy as np 
+import numpy as np
 from debug import *
 
 class AirSimActionEngine(ActionEngine):
-	def __init__(self, act_dim=3, sim=True, max_v_t=2.0, max_w=2.0):
-		ActionEngine.__init__(self, act_dim, sim, max_v_t, max_w)
+	def __init__(self, act_dim=3, max_v_t=2.0, max_w=2.0):
+		ActionEngine.__init__(self, act_dim, max_v_t, max_w)
 		self.asc = AirSimControl.AirSimControl()
 
 	def reset(self, pose=None):
