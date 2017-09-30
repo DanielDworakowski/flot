@@ -12,7 +12,7 @@ class AirSimObserver(observations.Observer):
         observations.Observer.__init__(self, obsDir)
         #
         # Member variables.
-        self.client = AirSimClient()
+        self.client = MultirotorClient()
         self.collInfo = None
         self.imgs = None
     #
@@ -39,7 +39,7 @@ class AirSimObserver(observations.Observer):
         q.x_val = strdict[b'x_val']
         q.y_val = strdict[b'y_val']
         q.z_val = strdict[b'z_val']
-        return AirSimClient.toEulerianAngle(q)
+        return AirSimClientBase.toEulerianAngle(q)
     #
     # Fill in the observations.
     def fillObservations(self, obs):

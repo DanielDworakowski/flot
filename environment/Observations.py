@@ -53,7 +53,7 @@ class CompressedImage():
     def decompressPNG(self):
         if len(self.pngImgs[0] > 1):
             printWarn('More than one image may not be decompressing the correct type.')
-        self.uint8Img = cv2.cvtColor(cv2.imdecode(AirSimClient.stringToUint8Array(img.image_data_uint8), cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2RGB)
+        self.uint8Img = cv2.cvtColor(cv2.imdecode(np.fromstring(img.image_data_uint8, np.uint8), cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2RGB)
         return self.uint8Img
     #
     # String format for consistency.
@@ -80,7 +80,6 @@ class CompressedImage():
         if img.pixels_as_float:
             print("Type %d, size %d" % (img.image_type, len(img.image_data_float)))
             printError('Saving float images is not supported.')
-            # AirSimClient.write_pfm(os.path.normpath('/home/ddworakowski/flot/sim/testing/py1.pfm'), AirSimClient.getPfmArray(img))
         else:
             print("Type %d, size %d" % (img.image_type, len(img.image_data_uint8)))
             print(path)
