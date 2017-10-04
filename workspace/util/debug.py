@@ -34,4 +34,4 @@ def printError(errstr):
 # Print a warning.
 def printWarn(warnstr):
     msg = 'WARN: %s:  %s'%(Error(), warnstr)
-    printColor(msg, colours.WARNING) 
+    printColor(msg, colours.WARNING)
