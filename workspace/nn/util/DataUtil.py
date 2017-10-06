@@ -93,7 +93,7 @@ class ToTensor(object):
 
     def __call__(self, sample):
         image, labels = sample['image'], sample['labels']
-        # 
+        #
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W

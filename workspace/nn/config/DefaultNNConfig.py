@@ -1,4 +1,6 @@
 from enum import Enum
+from torchvision import transforms
+import DataUtil
 import os
 #
 # The hyper parameters.
@@ -30,7 +32,10 @@ class DefaultConfig():
     imgName = 'front_camera'
     #
     # Transforms.
-    transforms = None
+    transforms = transforms.Compose([
+        DataUtil.ToTensor(),
+        transforms.Normalize([0.0, 0.0, 0.0], [1, 1, 1])
+    ])
     #
     # Transform relative to absolute paths.
     @staticmethod

@@ -5,11 +5,11 @@ import torch
 import pandas as pd
 from skimage import io, transform
 import numpy as np
-from torch.utils.data import Dataset, DataLoader
+import torch.utils.data
 from torchvision import transforms, utils
 from interval_tree import IntervalTree
 
-class DataLoader(Dataset):
+class Dataset(torch.utils.data.Dataset):
     '''Read from a list all of the data files.'''
 
     def __init__(self, conf, pathList, transform):
@@ -47,7 +47,7 @@ class DataLoader(Dataset):
             return None
         return self.dataList[binIdx].__getitem__[idx - self.offsets[idx]]
 
-class DataFolder(Dataset):
+class DataFolder(torch.utils.data.Dataset):
     '''Read from a data folder.'''
 
     def __init__(self, conf, dataPath, transform = None):
