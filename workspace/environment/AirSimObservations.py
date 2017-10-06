@@ -1,4 +1,4 @@
-from PythonClient import *
+from AirSimClient import *
 from debug import *
 from multiprocessing import Process, Queue
 import Observations as observations

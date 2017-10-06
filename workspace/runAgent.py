@@ -41,13 +41,12 @@ def step(agent, env):
 def loop(conf):
     agent = conf.agentConstructor()
     exitNow = SigHandler.SigHandler()
-    print(exitNow.exit)
-    Environment.Environment(conf.envType, conf.getFullSavePath(), conf.serialize)
     with Environment.Environment(conf.envType, conf.getFullSavePath(), conf.serialize) as env:
         while not exitNow.exit:
             step(agent, env)
 #
 # Main code.
-args = getInputArgs()
-conf = getConfig(args)
-loop(conf)
+if __name__ == '__main__':
+    args = getInputArgs()
+    conf = getConfig(args)
+    loop(conf)

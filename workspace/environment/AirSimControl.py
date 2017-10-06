@@ -1,6 +1,6 @@
 import math as m
 import numpy as np
-from PythonClient import *
+from AirSimClient import *
 from debug import *
 import time
 import threading
