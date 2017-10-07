@@ -55,7 +55,7 @@ class AirSimObserver(observations.Observer):
         obs.serializable['cameraRotation'].pitch = cameraOrient[0]
         obs.serializable['cameraRotation'].roll = cameraOrient[1]
         obs.serializable['cameraRotation'].yaw = cameraOrient[2]
-        obs.serializable['hasCollided'].val = self.collInfo.has_collided
+        obs.serializable['hasCollided'].val = self.collInfo.has_collided * 1
     #
     # Fills in the observations data structure.
     def observeImpl(self, obs):
