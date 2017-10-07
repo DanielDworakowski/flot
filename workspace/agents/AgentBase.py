@@ -1,7 +1,5 @@
 import Observations as obv
-# import Actions
 from debug import *
-printError('Import actions here')
 from abc import ABC, abstractmethod
 #
 # Base class for agents for common interface.

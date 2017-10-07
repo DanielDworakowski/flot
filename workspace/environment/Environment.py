@@ -56,11 +56,13 @@ class Environment():
     # Open observation file.
     def __enter__(self):
         self.observer.__enter__()
+        self.actionEngine.__enter__()
         return self
     #
     # Close the observation file.
     def __exit__(self, type, value, traceback):
         self.observer.__exit__(type, value, traceback)
+        self.actionEngine.__exit__(type, value, traceback)
         return False
     #
     # Do action.

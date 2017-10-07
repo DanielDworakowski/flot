@@ -28,15 +28,15 @@ Copy the LinuxNoEditor packaged enviroment in the /home/user/workspace/Simulatio
 # Run
 ```sudo docker build . -t flot_ws ```
 
-```sudo nvidia-docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" -v $(pwd)/workspace:/home/user/workspace --privileged --net=host --name flot_ws_c flot_ws```
+```sudo nvidia-docker run -it --env="DISPLAY" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" -v $(pwd)/workspace:/home/user/workspace --privileged --net=host --name flot flot_ws```
 
 - to run additional terminal 
 
-```sudo docker exec -it flot_ws_c bash```
+```sudo docker exec -it flot bash```
 
 - for lazy, to kill all docker
 
-```sudo docker stop $(sudo docker ps -aq); sudo docker rm $(sudo docker ps -aq)```
+```sudo docker stop flot; sudo docker rm flot```
 
 - useful docker commands
 

@@ -94,14 +94,27 @@ RUN apt-get install unzip
 WORKDIR /home/user/
 RUN git clone https://github.com/Microsoft/AirSim.git
 WORKDIR /home/user/AirSim
+RUN git pull
 RUN ./setup.sh
 RUN ./build.sh
 RUN pip3 install msgpack-rpc-python
+RUN pip3 install interval_tree
+RUN pip3 install ratelimiter
+RUN pip3 install visdom
+RUN pip3 install tensorboardX
+RUN pip3 install tensorflow-tensorboard
 
 # workspace
 RUN mkdir /home/user/workspace
 WORKDIR /home/user/workspace
 
 USER user
+RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/workspace/environment:${PYTHOPATH}' >> ~/.bashrc
+RUN echo 'export PYTHONPATH=/home/user/workspace/agents' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/workspace/configs:${PYTHONPATH}' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/workspace/environment:${PYTHONPATH}' >> ~/.bashrc
+RUN echo 'export PYTHONPATH=/home/user/workspace/examples:${PYTHONPATH}' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/workspace/nn:${PYTHONPATH}' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/workspace/util:${PYTHONPATH}' >> ~/.bashrc
 RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient:${PYTHONPATH}' >> ~/.bashrc 
-RUN echo 'export PYTHONPATH=/home/user/workspace/environment:${PYTHONPATH}' >> ~/.bashrc 
