@@ -12,7 +12,5 @@ class Agent(base.AgentBase):
         else:
         	# return np.array([1,0,0])
         	# return np.array([0,0,1])
-        	import pdb
-        	pdb.set_trace()
         	return np.array([0,1,0])
         	# return np.random.randn(3)
