@@ -1,19 +1,18 @@
 import matplotlib.pyplot as plt
+import torch
+from torchvision import transforms, utils
 
-def plotSample(samples):
-    ''' Plots samples from a dataset.
-    args:
+def plotSample(sample):
+    ''' Plot an image batch.
 
     '''
-    fig = plt.figure()
-    size = len(samples)
-    for i in range(size):
-        ax = plt.subplot(1, size, i + 1)
-        plt.tight_layout()
-        ax.set_title('Sample: ' + i)
-        ax.axis('off')
-    plt.show()
+    images_batch = sample['img']
+    batch_size = len(images_batch)
+    im_size = images_batch.size(2)
 
+    grid = utils.make_grid(images_batch)
+    plt.imshow(grid.numpy().transpose((1, 2, 0)))
+    plt.show()
 
 class Rescale(object):
     '''Rescale the image in a sample to a given size.
@@ -30,7 +29,7 @@ class Rescale(object):
         self.output_size = output_size
 
     def __call__(self, sample):
-        image, labels = sample['image'], sample['labels']
+        image, labels = sample['img'], sample['labels']
 
         h, w = image.shape[:2]
         if isinstance(self.output_size, int):
@@ -48,7 +47,7 @@ class Rescale(object):
         img = transform.resize(image, (new_h, new_w))
         #
         # Can add label transformation here.
-        return {'image': img, 'labels': labels}
+        return {'img': img, 'labels': labels}
 
 
 class RandomCrop(object):
@@ -70,7 +69,7 @@ class RandomCrop(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, labels = sample['image'], sample['labels']
+        image, labels = sample['img'], sample['labels']
 
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
@@ -83,7 +82,7 @@ class RandomCrop(object):
 
         labels = labels - [left, top]
 
-        return {'image': image, 'labels': labels}
+        return {'img': image, 'labels': labels}
 
 
 class ToTensor(object):
@@ -92,11 +91,27 @@ class ToTensor(object):
     '''
 
     def __call__(self, sample):
-        image, labels = sample['image'], sample['labels']
+        image, labels = sample['img'], sample['labels']
         #
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
+        image = image[:,:,0:3] # Strip the alpha channel.
         image = image.transpose((2, 0, 1))
-        return {'image': torch.from_numpy(image),
-                'labels': torch.from_numpy(labels)}
+        return {'img': torch.from_numpy(image),
+                'labels': torch.from_numpy(labels.as_matrix())}
+
+
+class Normalize(object):
+    '''Normalizes an image.
+    http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
+    '''
+
+    def __init__(self, means, variances):
+        assert len(means) == 3
+        assert len(variances) == 3
+        self.norm = transforms.Normalize(means, variances)
+
+    def __call__(self, sample):
+        sample['img'] = self.norm(sample['img'])
+        return sample

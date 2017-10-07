@@ -3,7 +3,7 @@ from debug import *
 import os
 import torch
 import pandas as pd
-from skimage import io, transform
+from skimage import io, transform, img_as_float
 import numpy as np
 import torch.utils.data
 from torchvision import transforms, utils
@@ -41,12 +41,11 @@ class Dataset(torch.utils.data.Dataset):
         return self.len
 
     def __getitem__(self, idx):
-        binIdx = self.binSelector.find_range([idx, idx])
+        binIdx = self.binSelector.find_range([idx, idx])[0]
         if binIdx == None:
             printError('selected impossible index %s', idx)
             return None
-        return self.dataList[binIdx].__getitem__[idx - self.offsets[idx]]
-
+        return self.dataList[binIdx].__getitem__(idx - self.offsets[binIdx])
 class DataFolder(torch.utils.data.Dataset):
     '''Read from a data folder.'''
 
@@ -56,9 +55,11 @@ class DataFolder(torch.utils.data.Dataset):
 
         '''
         self.csvFileName = conf.csvFileName
-        self.rootDir = rootDir
+        self.rootDir = dataPath
         self.transform = transform
-        self.csvFrame = pd.read_csv(rootDir + '/' + csvFileName)
+        self.csvFrame = pd.read_csv(self.rootDir + '/' + self.csvFileName)
+        self.imgColIdx = self.csvFrame.columns.get_loc('idx')
+        self.conf = conf
 
     def __len__(self):
         '''
@@ -72,9 +73,9 @@ class DataFolder(torch.utils.data.Dataset):
         Args:
 
         '''
-        imName = os.path.join(self.rootDir, self.imgName + '_' + idx + '.png')
-        img = io.imread(imName)
-        labels = self.csvFrame.ix[idx, 1:]
+        labels = self.csvFrame.ix[idx]
+        imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
+        img = img_as_float(io.imread(imName))
         sample = {'img': img, 'labels': labels}
         #
         # Transform as needed.
