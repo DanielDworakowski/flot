@@ -1,4 +1,4 @@
-from PythonClient import *
+from AirSimClient import *
 from debug import *
 from multiprocessing import Process, Queue
 import Observations as observations
@@ -51,7 +51,7 @@ class AirSimObserver(observations.Observer):
         obs.serializable['img'].pngImgs = self.imgs
         obs.serializable['cameraPosition'].x = cameraPos[b'x_val']
         obs.serializable['cameraPosition'].y = cameraPos[b'y_val']
-        obs.serializable['cameraPosition'].z = cameraPos[b'z_val']
+        obs.serializable['cameraPosition'].z = -cameraPos[b'z_val']
         obs.serializable['cameraRotation'].pitch = cameraOrient[0]
         obs.serializable['cameraRotation'].roll = cameraOrient[1]
         obs.serializable['cameraRotation'].yaw = cameraOrient[2]

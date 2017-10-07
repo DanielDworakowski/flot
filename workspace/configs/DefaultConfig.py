@@ -10,7 +10,7 @@ class EnvironmentTypes(Enum):
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():
     #
-# The type of environment.
+    # The type of environment.
     envType = EnvironmentTypes.AirSim
     #
     # The agent that will be used.

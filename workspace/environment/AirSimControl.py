@@ -1,10 +1,11 @@
 import math as m
 import numpy as np
-from PythonClient import *
+from AirSimClient import *
 from debug import *
 import time
 import threading
 import traceback
+import SigHandler
 #
 # Initial class to help determine the control API.
 class AirSimControl(threading.Thread):
