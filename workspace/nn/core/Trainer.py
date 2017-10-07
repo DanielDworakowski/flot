@@ -8,7 +8,7 @@ import torchvision
 from torchvision import datasets, models, transforms
 import time
 import os
-import DataLoader
+import Dataset
 
 class Trainer():
     ''' Implements training neural networks.

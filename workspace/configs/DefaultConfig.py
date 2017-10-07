@@ -1,5 +1,7 @@
 from enum import Enum
 import os
+import time
+from pathlib import Path
 #
 # Describing the supported environments.
 class EnvironmentTypes(Enum):
@@ -19,6 +21,9 @@ class DefaultConfig():
     # The file path to save to.
     savePath = './'
     #
+    # The folder to save in.
+    saveFolder = None
+    #
     # The agent file name.
     agentType = 'testAgent'
     #
@@ -37,6 +42,11 @@ class DefaultConfig():
     #
     # Get the full save path.
     def getFullSavePath(self):
+        if self.saveFolder == None:
+            self.saveFolder = '/%s_%s_%s/'%(self.agentType, self.envType, time.strftime('%d-%m-%Y-%H-%M-%S'))
+            self.savePath = self.savePath + self.saveFolder
+        path = Path(self.savePath)
+        path.mkdir(parents=True, exist_ok=True)
         return self.getAbsPath(self.savePath)
 #
 # Class to use the default configuration.
