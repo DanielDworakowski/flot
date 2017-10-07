@@ -15,34 +15,30 @@ class Trainer():
         adapted from: http://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     '''
 
-    def __init__(self, model, criteria, optimizer, scheduler, numEpochs, conf):
+    def __init__(self, conf):
         ''' Set the training criteria.
         '''
         #
         # Save preferences.
+        self.conf = conf
+        hyperparam = self.conf.hyperparam
+        self.model = hyperparam.model
+        self.numEpochs = hyperparam.numEpochs
+        self.criteria = hyperparam.criteria
+        self.optimizer = hyperparam.optimizer
         self.bestModel = model.state_dict()
-        self.model = model
         self.bestAcc = 0
-        self.numEpochs = numEpochs
-        self.criteria = criteria
-        self.optimizer = optimizer
-        self.scheduler = scheduler
-        #
-        # Check if cuda is available.
-        if not torch.cuda.is_available():
-            printError('CUDA is not available!')
-        self.gpu = (torch.cuda.is_available() and conf.usegpu)
         #
         # Setup the dataset.
         train = DataLoader.DataLoader(conf, conf.dataTrainList, conf.transforms)
         test = DataLoader.DataLoader(conf, conf.dataValList, conf.transforms)
         self.dataloaders = {
-            'train': torch.utils.data.DataLoader(train, batch_size = conf.hyperparam.batchSize, num_workers = conf.numWorkers, shuffle = True),
-            'val': torch.utils.data.DataLoader(val, batch_size = conf.hyperparam.batchSize, num_workers = conf.numWorkers, shuffle = True),
+            'train': torch.utils.data.DataLoader(train, batch_size = conf.hyperparam.batchSize, num_workers = conf.numWorkers, shuffle = True,  pin_memory = True),
+            'val': torch.utils.data.DataLoader(val, batch_size = conf.hyperparam.batchSize, num_workers = conf.numWorkers, shuffle = True,  pin_memory = True),
         }
         #
         # No validation data, no need to evaluate it.
-        if len(self.dataLoaders['val']) == 0:
+        if self.dataLoaders['val'] == None or len(self.dataLoaders['val']) == 0:
             del self.dataLoaders['val']
 
     def train(self):
@@ -51,11 +47,9 @@ class Trainer():
         for epoch in range(self.numEpochs):
             printColor('Epoch {}/{}'.format(epoch, num_epochs - 1), colours.HEADER)
             for phase in ['train', 'val']:
-                if phase == 'train':
-                    scheduler.step()
-                    model.train(True)
-                else:
-                    model.train(False)
+                #
+                # Switch on / off gradients.
+                model.train(phase == 'train')
                 #
                 # The current loss.
                 runningLoss = 0.0
@@ -64,7 +58,7 @@ class Trainer():
                 # Iterate over data.
                 for data in self.dataloaders[phase]:
                     inputs, labels = data
-                    if self.gpu:
+                    if self.conf.useGpu:
                         inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
@@ -80,11 +74,6 @@ class Trainer():
                         loss.backward()
                         optimizer.step()
                     #
-            #
-            # Copy back the best model.
-            model.load_state_dict(self.bestModel)
-            return model
-
                     #  Stats.
                     runningLoss += loss.data[0]
                     runningCorrect += torch.sum(preds == labels.data)
@@ -100,11 +89,6 @@ class Trainer():
             if phase == 'val' and epoch_acc > best_acc:
                 self.bestAcc = epoch_acc
                 self.bestModel = self.model.state_dict()
-            #
-            # Copy back the best model.
-            model.load_state_dict(self.bestModel)
-            return model
-
             #
             # Copy back the best model.
             model.load_state_dict(self.bestModel)

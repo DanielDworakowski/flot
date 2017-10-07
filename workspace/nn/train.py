@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import DataLoader
+import Dataset
 import argparse
 import Trainer
 from debug import *
@@ -21,9 +21,10 @@ def getConfig(args):
 #
 # Main loop for running the agent.
 def train(conf):
-    train = Trainer.Trainer()
+    train = Trainer.Trainer(conf)
 #
 # Main code.
-args = getInputArgs()
-conf = getConfig(args)
-train(conf)
+if __name__ == '__main__'
+    args = getInputArgs()
+    conf = getConfig(args)
+    train(conf)
