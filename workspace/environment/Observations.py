@@ -169,7 +169,7 @@ class Observer():
     #
     # Open observation file.
     def __enter__(self):
-        self.obsCsv = open(self.obsDir + '/labels.csv', 'w')
+        self.obsCsv = open(self.obsDir + '/observations.csv', 'w')
         self.obsCsv.write(self.obs.getFormat() + '\n')
         return self
     #
