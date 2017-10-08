@@ -16,9 +16,9 @@ cd ../external/AirSim
 cd $LOCAL_HOME
 #
 # Install the rate limiter python package.
-sudo pip install ratelimiterecho export PYTHONPATH=$PWD/../external/AirSim/PythonClient:$PYTHONPATH >> $HOME/.bashrc
-
+sudo pip install ratelimiter
 sudo pip install visdom
 sudo pip install tensorboardX
 sudo pip install tensorflow-tensorboard
 pip install interval_tree
+pip install tqdm

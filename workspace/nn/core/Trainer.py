@@ -13,7 +13,9 @@ import torchvision
 from torchvision import datasets, models, transforms
 #
 # Other.
+from tensorboardX import SummaryWriter
 import numpy as np
+import tqdm
 #
 # Flot.
 import Dataset
@@ -23,6 +25,42 @@ class Trainer():
     ''' Implements training neural networks.
         adapted from: http://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     '''
+
+    def __setupDatasets(self):
+        ''' Setups up datasets from configuration.
+        '''
+        train = Dataset.Dataset(self.conf, self.conf.dataTrainList, self.conf.transforms)
+        self.dataloaders = {
+        'train': torch.utils.data.DataLoader(train, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True),
+        }
+        #
+        # No validation data, no need to evaluate it.
+        if self.conf.dataValList != None and len(self.conf.dataValList) > 0:
+            test = Dataset.Dataset(self.conf, self.conf.dataValList, self.conf.transforms)
+            self.dataloaders['val'] = torch.utils.data.DataLoader(val, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
+
+    def __setupLogging(self):
+        ''' Configuration for logging the training process.
+        '''
+        #
+        # Setup tensorboard as require.
+        def doNothing(self, tmp = None):
+            pass
+        def logEpochTensorboard(self, epochSummary):
+            self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
+            self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
+            for name, param in self.model.named_parameters():
+                self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
+        def closeTensorboard(self):
+            self.logger.close()
+        self.logEpoch = doNothing
+        self.closeLogger = doNothing
+        #
+        # Change defaults.
+        if self.conf.useTensorBoard:
+            self.logger = SummaryWriter()
+            self.logEpoch = logEpochTensorboard
+            self.closeLogger = closeTensorboard
 
     def __init__(self, conf):
         ''' Set the training criteria.
@@ -37,17 +75,12 @@ class Trainer():
         self.optimizer = hyperparam.optimizer
         self.bestModel = self.model.state_dict()
         self.bestAcc = 0
-        #
-        # Setup the dataset.
-        train = Dataset.Dataset(conf, conf.dataTrainList, conf.transforms)
-        self.dataloaders = {
-        'train': torch.utils.data.DataLoader(train, batch_size = conf.hyperparam.batchSize, num_workers = conf.numWorkers, shuffle = True,  pin_memory = True),
-        }
-        #
-        # No validation data, no need to evaluate it.
-        if conf.dataValList != None and len(conf.dataValList) > 0:
-            test = Dataset.Dataset(conf, conf.dataValList, conf.transforms)
-            self.dataloaders['val'] = torch.utils.data.DataLoader(val, batch_size = conf.hyperparam.batchSize, num_workers = conf.numWorkers, shuffle = True,  pin_memory = True)
+        self.logger = None
+        self.logEpoch = None
+        self.closeLogger = None
+        self.__setupDatasets()
+        self.__setupLogging()
+
 
     def train(self):
         ''' Trains a neural netowork according to specified criteria.
@@ -64,6 +97,8 @@ class Trainer():
                 runningCorrect = 0.0
                 #
                 # Iterate over data.
+                numMini = len(self.dataloaders[phase])
+                pbar = tqdm.tqdm(total=numMini)
                 for data in self.dataloaders[phase]:
                     inputs, labels = data['img'], data['labels']
                     if self.conf.usegpu:
@@ -86,20 +121,30 @@ class Trainer():
                     #  Stats.
                     runningLoss += loss.data[0]
                     runningCorrect += torch.sum(preds == labels.data)
+                    pbar.update(1)
+                pbar.close()
                 #
                 # Overall stats.
                 epochLoss = runningLoss / len(self.dataloaders[phase])
                 epochAcc = runningCorrect / len(self.dataloaders[phase])
-            #
-            # Print per epoch results.
-            print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epochLoss, epochAcc))
-            #
-            # Check if we have the new best model.
-            if phase == 'val' and epochAcc > self.bestAcc:
-                self.bestAcc = epochAcc
-                self.bestModel = self.model.state_dict()
-            #
-            # Copy back the best model.
-            self.model.load_state_dict(self.bestModel)
+                #
+                # Check if we have the new best model.
+                if phase == 'val' and epochAcc > self.bestAcc:
+                    self.bestAcc = epochAcc
+                    self.bestModel = self.model.state_dict()
+                #
+                # Print per epoch results.
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epochLoss, epochAcc))
+                summary = {
+                    'phase': phase,
+                    'epoch': epoch,
+                    'loss': epochLoss,
+                    'acc': epochAcc
+                }
+                self.logEpoch(self, summary)
+        #
+        # Copy back the best model.
+        self.model.load_state_dict(self.bestModel)
         printColor('Epochs complete!', colours.OKBLUE)
+        self.closeLogger(self)
         return self.model
