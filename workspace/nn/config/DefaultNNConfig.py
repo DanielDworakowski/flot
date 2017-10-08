@@ -1,6 +1,7 @@
 from enum import Enum
 from torchvision import transforms, models
 import torch
+import torch.nn as nn
 import DataUtil
 import os
 #
@@ -13,11 +14,14 @@ class HyperParam():
     # Number of images in a batch.
     batchSize = 32
     #
+    # How many epochs to train for.
+    numEpochs = 10
+    #
     # Criteria.
-    criterion = nn.CrossEntropyLoss()
+    criteria = nn.CrossEntropyLoss()
     #
     # Optimizer.
-    optimizer = torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
     #
     # Scheduler.
     scheduler = None
@@ -30,7 +34,7 @@ class DefaultConfig():
     #
     # The default data path.
     dataTrainList = [
-        '/disk1/data/testAgent_EnvironmentTypes.AirSim_06-10-2017-20-51-32/'
+        '/disk1/data/testAgent_EnvironmentTypes.AirSim_07-10-2017-18-29-03'
     ]
     #
     # The default validation set.
@@ -39,7 +43,7 @@ class DefaultConfig():
     ]
     #
     # The csv file name.
-    csvFileName = 'labels.csv'
+    csvFileName = 'observations.csv'
     #
     # The image type name.
     imgName = 'front_camera'
@@ -64,7 +68,9 @@ class DefaultConfig():
     # Check if cuda is available.
     if not torch.cuda.is_available():
         printError('CUDA is not available!')
-    useGpu = (torch.cuda.is_available() and conf.usegpu)
+    usegpu = (torch.cuda.is_available() and usegpu)
+    if usegpu:
+        hyperparam.model.cuda()
 
 #
 # Class to use the default configuration.

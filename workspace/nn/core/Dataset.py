@@ -46,6 +46,7 @@ class Dataset(torch.utils.data.Dataset):
             printError('selected impossible index %s', idx)
             return None
         return self.dataList[binIdx].__getitem__(idx - self.offsets[binIdx])
+
 class DataFolder(torch.utils.data.Dataset):
     '''Read from a data folder.'''
 
@@ -75,7 +76,7 @@ class DataFolder(torch.utils.data.Dataset):
         '''
         labels = self.csvFrame.ix[idx]
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
-        img = img_as_float(io.imread(imName))
+        img = io.imread(imName) / np.float32(255)
         sample = {'img': img, 'labels': labels}
         #
         # Transform as needed.

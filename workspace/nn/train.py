@@ -22,9 +22,10 @@ def getConfig(args):
 # Main loop for running the agent.
 def train(conf):
     train = Trainer.Trainer(conf)
+    train.train()
 #
 # Main code.
-if __name__ == '__main__'
+if __name__ == '__main__':
     args = getInputArgs()
     conf = getConfig(args)
     train(conf)
