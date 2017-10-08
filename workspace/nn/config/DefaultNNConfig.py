@@ -62,6 +62,9 @@ class DefaultConfig():
     # Doesnt usually need to be changed.
     usegpu = True
     #
+    # Save tensorboard data.
+    useTensorBoard = False
+    #
     # Number of workers for loading data.
     numWorkers = 8
     #

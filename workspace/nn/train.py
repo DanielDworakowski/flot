@@ -8,6 +8,7 @@ from debug import *
 def getInputArgs():
     parser = argparse.ArgumentParser('General tool to train a NN based on passed configuration.')
     parser.add_argument('--config', dest='configStr', default='DefaultNNConfig', type=str, help='Name of the config file to import.')
+    parser.add_argument('--tensorBoard', dest='useTensorBoard', default=False, type=bool, help='Whether to create a tensorboard visualization.')
     args = parser.parse_args()
     return args
 #
@@ -17,6 +18,7 @@ def getConfig(args):
     conf = configuration.Config()
     #
     # Modifications to the configuration happen here.
+    conf.useTensorBoard = args.useTensorBoard
     return conf
 #
 # Main loop for running the agent.
