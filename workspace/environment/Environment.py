@@ -66,8 +66,8 @@ class Environment():
         return False
     #
     # Do action.
-    def runAction(self, action):
-        return self.actionEngine.executeAction(action)
+    def runAction(self, action, obs):
+        return self.actionEngine.executeAction(action, obs)
     #
     # Get observation.
     def observe(self):

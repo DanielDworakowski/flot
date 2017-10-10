@@ -103,6 +103,8 @@ RUN pip3 install ratelimiter
 RUN pip3 install visdom
 RUN pip3 install tensorboardX
 RUN pip3 install tensorflow-tensorboard
+RUN pip3 install tqdm
+RUN pip3 install pandas
 
 # workspace
 RUN mkdir /home/user/workspace

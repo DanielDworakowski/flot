@@ -34,7 +34,7 @@ Copy the LinuxNoEditor packaged enviroment in the /home/user/workspace/Simulatio
 
 ```sudo docker exec -it flot bash```
 
-- for lazy, to kill all docker
+- to kill container
 
 ```sudo docker stop flot; sudo docker rm flot```
 

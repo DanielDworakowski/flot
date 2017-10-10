@@ -35,7 +35,7 @@ def step(agent, env):
     obs = env.observe()
     agent.giveObservation(obs)
     action = agent.getAction()
-    env.runAction(action)
+    env.runAction(action, obs)
 #
 # Main loop for running the agent.
 def loop(conf):

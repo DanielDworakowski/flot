@@ -15,7 +15,7 @@ class ActionEngine():
         self.v_t = 0.
         self.v_z = 0.
         self.w = 0.
-        self.home_pose = np.zeros(6) # x, y, z, pitch, roll, yaw
+        self.home_pose = [0.,0.,0.5,0.,0.,0.] # x, y, z, pitch, roll, yaw
 
     @abstractmethod    
     def __enterImpl__(self):
@@ -47,9 +47,9 @@ class ActionEngine():
         self.w = self.max_w*w_norm
 
     @abstractmethod
-    def executeActionImpl(self):
+    def executeActionImpl(self, obs):
         pass
 
-    def executeAction(self, action):
+    def executeAction(self, action, obs):
         self.setAction(action)
-        return self.executeActionImpl()
+        return self.executeActionImpl(obs)

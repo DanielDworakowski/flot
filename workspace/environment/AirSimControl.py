@@ -63,7 +63,8 @@ class AirSimControl(threading.Thread):
         self.w = w_ref
         self.v_z = v_z_ref
 
-    def setPose(self, x, y, z, pitch, roll, yaw):
+    def setPose(self, pose):
+        x, y, z, pitch, roll, yaw = pose
         self.set_pose_request = True
         self.set_pose_position = Vector3r(x, y, -z)
         self.set_pose_quaternion = AirSimClientBase.toQuaternion(pitch, roll, yaw)

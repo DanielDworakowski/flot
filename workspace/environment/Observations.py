@@ -157,6 +157,7 @@ class Observation():
         else:
             printError('Unable to serialize data.')
             return ''
+
 #
 # Abstract class defining the interface of an observer.
 class Observer():

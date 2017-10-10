@@ -19,9 +19,11 @@ class AirSimActionEngine(ActionEngine):
             self.home_pose = pose
         self.asc.setPose(self.home_pose)
 
-    def executeActionImpl(self):
+    def executeActionImpl(self, obs):
         success = True
         try:
+            if obs.serializable['hasCollided'].val:
+                self.reset()
             self.asc.setCommand(self.v_t, self.w)
             # print(self.v_t, self.w)
         except:
