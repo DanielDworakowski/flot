@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import argparse
+import os
 
 def labellingParam():
     #
     # All the params are normalized to one. e.g 0.5 == 50%
-    #
     # throwaway buffer for start and end of trajectory
     start_throwaway_buffer = 0.1
     end_throwaway_buffer = 0.1
@@ -26,8 +26,9 @@ def labellingParam():
 # Parse the input arguments.
 def getInputArgs():
     parser = argparse.ArgumentParser('Auto labelling script via collision data')
-    parser.add_argument('--obs', dest='observationsPath', default=None, type=str, help='Directory to the observations')
+    parser.add_argument('--obs', dest='observationsPath', default=None, type=str, help='Full path to the obervations csv.')
     args = parser.parse_args()
+    args.observationsPath = os.path.abspath(args.observationsPath)
     return args
 #
 # Auto label data from collision information
@@ -66,4 +67,6 @@ def labelData(args):
 # Main code.
 if __name__ == "__main__":
     args = getInputArgs()
+    if args.observationsPath == None:
+        print('Must specify path to parse.')
     labelData(args)
