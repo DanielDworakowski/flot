@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import Dataset
 import argparse
 import Trainer
 from debug import *

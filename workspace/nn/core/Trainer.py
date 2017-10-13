@@ -18,7 +18,7 @@ import numpy as np
 import tqdm
 #
 # Flot.
-import Dataset
+import FlotDataset
 from debug import *
 
 class Trainer():
@@ -29,14 +29,14 @@ class Trainer():
     def __setupDatasets(self):
         ''' Setups up datasets from configuration.
         '''
-        train = Dataset.Dataset(self.conf, self.conf.dataTrainList, self.conf.transforms)
+        train = FlotDataset.FlotDataset(self.conf, self.conf.dataTrainList, self.conf.transforms)
         self.dataloaders = {
         'train': torch.utils.data.DataLoader(train, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True),
         }
         #
         # No validation data, no need to evaluate it.
         if self.conf.dataValList != None and len(self.conf.dataValList) > 0:
-            test = Dataset.Dataset(self.conf, self.conf.dataValList, self.conf.transforms)
+            test = FlotDataset.FlotDataset(self.conf, self.conf.dataValList, self.conf.transforms)
             self.dataloaders['val'] = torch.utils.data.DataLoader(val, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
 
     def __setupLogging(self):
