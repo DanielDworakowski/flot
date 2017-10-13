@@ -1,5 +1,6 @@
 from enum import Enum
 from torchvision import transforms, models
+import pathlib
 import torch
 import torch.nn as nn
 import DataUtil
@@ -81,9 +82,21 @@ class DefaultConfig():
     #
     # Resize the network as needed.
     networkModification = resizeFC
+    #
+    # Save every x epochs.
+    epochSaveInterval = 1
+    #
+    # Model save path.
+    modelSavePath = '/disk1/model/'
+    #
+    # Load a model.
+    modelLoadPath = None
     ###########################################################################
     # Functions to run config.
     ###########################################################################
+    #
+    # Create paths for saving models.
+    pathlib.Path(modelSavePath).mkdir(parents=True, exist_ok=True)
     #
     # Run the resize.
     if networkModification != None:
@@ -95,7 +108,6 @@ class DefaultConfig():
     usegpu = (torch.cuda.is_available() and usegpu)
     if usegpu:
         hyperparam.model.cuda()
-
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):

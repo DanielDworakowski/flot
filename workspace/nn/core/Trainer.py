@@ -46,13 +46,19 @@ class Trainer():
         # Setup tensorboard as require.
         def doNothing(self, tmp = None):
             pass
+        #
+        # Run every epoch.
         def logEpochTensorboard(self, epochSummary):
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
             for name, param in self.model.named_parameters():
                 self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
+        #
+        # Write everything as needed.
         def closeTensorboard(self):
             self.logger.close()
+        #
+        # Setup functions.
         self.logEpoch = doNothing
         self.closeLogger = doNothing
         #
@@ -61,6 +67,32 @@ class Trainer():
             self.logger = SummaryWriter()
             self.logEpoch = logEpochTensorboard
             self.closeLogger = closeTensorboard
+
+    def __loadModel(self):
+        ''' Load model from a specified directory.
+        '''
+        if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
+            checkpoint = torch.load(self.conf.modelLoadPath)
+            self.model.load_state_dict(checkpoint['state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer'])
+            self.startingEpoch = checkpoint['epoch']
+            printColour('Loaded model from path: %s'%self.conf.modelLoadPath, colours.OKBLUE)
+        elif self.conf.modelLoadPath != None:
+            printError('Unable to load specified model: %s'%(self.conf.modelLoadPath))
+
+
+    def __saveCheckpoint(self, epoch, isBest):
+        ''' Save a model.
+        '''
+        state = {
+                'epoch': epoch + 1,
+                'state_dict': self.model.state_dict(),
+                'optimizer' : self.optimizer.state_dict(),
+            }
+        savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
+        torch.save(state, savePath)
+        if isBest:
+            shutil.copyfile(savePath, '%s/model_best.pth.tar'%(self.conf.modelSavePath))
 
     def __init__(self, conf):
         ''' Set the training criteria.
@@ -75,18 +107,19 @@ class Trainer():
         self.optimizer = hyperparam.optimizer
         self.bestModel = self.model.state_dict()
         self.bestAcc = 0
+        self.startingEpoch = 0
         self.logger = None
         self.logEpoch = None
         self.closeLogger = None
+        self.__loadModel() # must happen after loading of config.
         self.__setupDatasets()
         self.__setupLogging()
-
 
     def train(self):
         ''' Trains a neural netowork according to specified criteria.
         '''
-        for epoch in range(self.numEpochs):
-            printColor('Epoch {}/{}'.format(epoch, self.numEpochs - 1), colours.HEADER)
+        for epoch in range(self.startingEpoch, self.startingEpoch + self.numEpochs):
+            printColour('Epoch {}/{}'.format(epoch, self.startingEpoch + self.numEpochs - 1), colours.HEADER)
             for phase in self.dataloaders:
                 #
                 # Switch on / off gradients.
@@ -129,7 +162,9 @@ class Trainer():
                 epochAcc = runningCorrect / len(self.dataloaders[phase])
                 #
                 # Check if we have the new best model.
+                isBest = False
                 if phase == 'val' and epochAcc > self.bestAcc:
+                    isBest = True
                     self.bestAcc = epochAcc
                     self.bestModel = self.model.state_dict()
                 #
@@ -142,9 +177,13 @@ class Trainer():
                     'acc': epochAcc
                 }
                 self.logEpoch(self, summary)
+                #
+                # Save model as needed.
+                if (epoch % self.conf.epochSaveInterval) == 0 or isBest:
+                    self.__saveCheckpoint(epoch, isBest)
         #
         # Copy back the best model.
         self.model.load_state_dict(self.bestModel)
-        printColor('Epochs complete!', colours.OKBLUE)
+        printColour('Epochs complete!', colours.OKBLUE)
         self.closeLogger(self)
         return self.model

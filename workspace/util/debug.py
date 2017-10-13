@@ -19,19 +19,19 @@ def Error():
     return '%s: __%s__:%d'%(info.filename, info.function, info.lineno)
 #
 # Print something in color.
-def printColor(str, type):
+def printColour(str, type):
     print(type + str + colours.ENDC)
 #
 # Print error information.
-def PrintFrame():
-    printColor(Error(), colours.WARNING)
+def printFrame():
+    printColour(Error(), colours.WARNING)
 #
 # Print an error.
 def printError(errstr):
     msg = 'ERR: %s:  %s'%(Error(), errstr)
-    printColor(msg, colours.FAIL)
+    printColour(msg, colours.FAIL)
 #
 # Print a warning.
 def printWarn(warnstr):
     msg = 'WARN: %s:  %s'%(Error(), warnstr)
-    printColor(msg, colours.WARNING)
+    printColour(msg, colours.WARNING)
