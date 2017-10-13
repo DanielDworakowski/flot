@@ -54,7 +54,7 @@ class DefaultConfig():
     ]
     #
     # The csv file name.
-    csvFileName = 'observations.csv'
+    csvFileName = 'labels.csv'
     #
     # The image type name.
     imgName = 'front_camera'
