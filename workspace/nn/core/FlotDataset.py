@@ -74,9 +74,12 @@ class DataFolder(torch.utils.data.Dataset):
         Args:
 
         '''
-        labels = self.csvFrame.ix[idx].to_dict()
+        labels = self.csvFrame.ix[idx]
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
         img = io.imread(imName) / np.float32(255)
+        #
+        # Remove the column index.
+        labels.drop(labels.index[self.imgColIdx])
         sample = {'img': img, 'labels': labels}
         #
         # Transform as needed.

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import FlotDataset
 import DefaultNNConfig
 import torch
