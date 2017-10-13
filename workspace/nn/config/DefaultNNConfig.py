@@ -25,6 +25,17 @@ class HyperParam():
     #
     # Scheduler.
     scheduler = None
+    #
+    # The training signals.
+    trainSignals = ['trajectoryIndicator']
+    #
+    # Network modification fn.
+    networkModification = None
+#
+# Resize the network.
+def resizeFC(net, param):
+    numFeat = net.fc.in_features
+    net.fc = nn.Linear(numFeat, len(param.trainSignals))
 #
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():
@@ -67,6 +78,16 @@ class DefaultConfig():
     #
     # Number of workers for loading data.
     numWorkers = 8
+    #
+    # Resize the network as needed.
+    networkModification = resizeFC
+    ###########################################################################
+    # Functions to run config.
+    ###########################################################################
+    #
+    # Run the resize.
+    if networkModification != None:
+        networkModification(hyperparam.model, hyperparam)
     #
     # Check if cuda is available.
     if not torch.cuda.is_available():
