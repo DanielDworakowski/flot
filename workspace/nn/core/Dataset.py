@@ -9,7 +9,7 @@ import torch.utils.data
 from torchvision import transforms, utils
 from interval_tree import IntervalTree
 
-class Dataset(torch.utils.data.Dataset):
+class FlotDataset(torch.utils.data.Dataset):
     '''Read from a list all of the data files.'''
 
     def __init__(self, conf, pathList, transform):
@@ -74,7 +74,7 @@ class DataFolder(torch.utils.data.Dataset):
         Args:
 
         '''
-        labels = self.csvFrame.ix[idx]
+        labels = self.csvFrame.ix[idx].to_dict()
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
         img = io.imread(imName) / np.float32(255)
         sample = {'img': img, 'labels': labels}

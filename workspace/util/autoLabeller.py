@@ -59,9 +59,11 @@ def labelData(args):
             traj[middle_throwaway_idx:bad_idx] = 0
             traj[bad_idx:] = -1
         labels=np.append(labels,traj)
-    dataset = pd.DataFrame(data=labels, columns=["label"])
+    data_dict = {'idx':np.arange(labels.shape[0]),'collision_free':labels}
+    dataset = pd.DataFrame(data_dict)
+    dataset = dataset[dataset.collision_free!=-1]
     labels_path = args.observationsPath.replace("observations.csv","labels.csv")
-    dataset.to_csv(labels_path)
+    dataset.to_csv(labels_path, index=False)
 
 #
 # Main code.
