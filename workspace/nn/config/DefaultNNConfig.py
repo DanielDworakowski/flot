@@ -62,7 +62,8 @@ class DefaultConfig():
     # Transforms.
     transforms = transforms.Compose([
         DataUtil.ToTensor(),
-        DataUtil.Normalize([0.0, 0.0, 0.0], [1, 1, 1])
+        DataUtil.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) # imagenet values
+        # DataUtil.Normalize([0.08086318, 0.09237641,  0.12678191], [ 0.08651822,  0.09291226,  0.10738404])
     ])
     #
     # Transform relative to absolute paths.

@@ -73,6 +73,7 @@ class Trainer():
         '''
         if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
             checkpoint = torch.load(self.conf.modelLoadPath)
+            self.model = checkpoint['model']
             self.model.load_state_dict(checkpoint['state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer'])
             self.startingEpoch = checkpoint['epoch']
@@ -88,6 +89,7 @@ class Trainer():
                 'epoch': epoch + 1,
                 'state_dict': self.model.state_dict(),
                 'optimizer' : self.optimizer.state_dict(),
+                'model': self.model
             }
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
