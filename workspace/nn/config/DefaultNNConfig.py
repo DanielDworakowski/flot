@@ -46,7 +46,6 @@ class DefaultConfig():
     #
     # The default data path.
     dataTrainList = [
-        '/disk1/data/testAgent_EnvironmentTypes.AirSim_07-10-2017-18-29-03'
     ]
     #
     # The default validation set.
@@ -87,7 +86,7 @@ class DefaultConfig():
     epochSaveInterval = 1
     #
     # Model save path.
-    modelSavePath = '/disk1/model/'
+    modelSavePath = ''
     #
     # Load a model.
     modelLoadPath = None
@@ -115,3 +114,5 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self):
         super(Config, self).__init__()
+        self.modelSavePath = '/disk1/model/'
+        self.dataTrainList = ['/disk1/data/testAgent_EnvironmentTypes.AirSim_07-10-2017-18-29-03']
