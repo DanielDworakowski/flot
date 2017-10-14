@@ -101,7 +101,6 @@ class ToTensor(object):
         return {'img': torch.from_numpy(image),
                 'labels': torch.from_numpy(labels.as_matrix())}
 
-
 class Normalize(object):
     '''Normalizes an image.
     http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
