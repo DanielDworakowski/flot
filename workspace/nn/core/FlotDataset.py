@@ -79,7 +79,7 @@ class DataFolder(torch.utils.data.Dataset):
         img = io.imread(imName) / np.float32(255)
         #
         # Remove the column index.
-        labels.drop(labels.index[self.imgColIdx])
+        labels = labels.drop(labels.index[self.imgColIdx])
         sample = {'img': img, 'labels': labels}
         #
         # Transform as needed.

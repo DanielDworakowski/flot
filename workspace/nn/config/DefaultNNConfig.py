@@ -36,7 +36,7 @@ class HyperParam():
 # Resize the network.
 def resizeFC(net, param):
     numFeat = net.fc.in_features
-    net.fc = nn.Linear(numFeat, len(param.trainSignals))
+    net.fc = nn.Linear(numFeat, len(param.trainSignals) + 1) # need for positive and negative class.
 #
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():
