@@ -41,5 +41,7 @@ class Agent(base.AgentBase):
         npimg = obs['img'].decompressPNG()[:,:,0:3]
         img = Variable(self.toTensor(npimg).unsqueeze_(0).cuda())
         out = self.model(img)
-        print(out)
+        _, predicted = torch.max(out.data, 1)
+        #
+        # Do more stuff.
         return np.array([0,0,0])
