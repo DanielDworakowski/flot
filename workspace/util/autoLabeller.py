@@ -26,15 +26,14 @@ def labellingParam():
 # Parse the input arguments.
 def getInputArgs():
     parser = argparse.ArgumentParser('Auto labelling script via collision data')
-    parser.add_argument('--obs', dest='observationsPath', default=None, type=str, help='Full path to the obervations csv.')
+    parser.add_argument('--obs', dest='observationsPath', nargs='+', default=None, type=str, help='Full path to the obervations csv.')
     args = parser.parse_args()
-    args.observationsPath = os.path.abspath(args.observationsPath)
     return args
 #
 # Auto label data from collision information
-def labelData(args):
+def labelData(observationsPath):
     start_throwaway_buffer, end_throwaway_buffer, good_buffer, bad_buffer, middle_throwaway_buffer, min_traj_len = labellingParam()
-    observations = pd.read_csv(args.observationsPath)
+    observations = pd.read_csv(observationsPath)
     observations = observations.rename(columns=lambda x: x.strip())
     collision_data = observations["raw_collision"].values
     col_idx = np.squeeze(np.argwhere(collision_data==1))
@@ -62,13 +61,15 @@ def labelData(args):
     data_dict = {'idx':np.arange(labels.shape[0]),'collision_free':labels}
     dataset = pd.DataFrame(data_dict)
     dataset = dataset[dataset.collision_free!=-1]
-    labels_path = args.observationsPath.replace("observations.csv","labels.csv")
+    labels_path = observationsPath.replace("observations.csv","labels.csv")
     dataset.to_csv(labels_path, index=False)
 
 #
 # Main code.
 if __name__ == "__main__":
     args = getInputArgs()
-    if args.observationsPath == None:
+    if args.observationsPath[0] == None:
         print('Must specify path to parse.')
-    labelData(args)
+    for observationsPath in args.observationsPath:
+        labelData(os.path.abspath(observationsPath)
+)

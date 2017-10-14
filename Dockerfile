@@ -105,6 +105,9 @@ RUN pip3 install tensorboardX
 RUN pip3 install tensorflow-tensorboard
 RUN pip3 install tqdm
 RUN pip3 install pandas
+RUN apt remove -y python3-matplotlib python3-scipy python3-numpy
+RUN pip3 install matplotlib scipy numpy
+RUN pip3 install scikit-image
 
 # workspace
 RUN mkdir /home/user/workspace
@@ -112,11 +115,5 @@ WORKDIR /home/user/workspace
 
 USER user
 RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient' >> ~/.bashrc 
-RUN echo 'export PYTHONPATH=/home/user/workspace/environment:${PYTHOPATH}' >> ~/.bashrc
-RUN echo 'export PYTHONPATH=/home/user/workspace/agents' >> ~/.bashrc 
-RUN echo 'export PYTHONPATH=/home/user/workspace/configs:${PYTHONPATH}' >> ~/.bashrc 
-RUN echo 'export PYTHONPATH=/home/user/workspace/environment:${PYTHONPATH}' >> ~/.bashrc
-RUN echo 'export PYTHONPATH=/home/user/workspace/examples:${PYTHONPATH}' >> ~/.bashrc 
-RUN echo 'export PYTHONPATH=/home/user/workspace/nn:${PYTHONPATH}' >> ~/.bashrc 
-RUN echo 'export PYTHONPATH=/home/user/workspace/util:${PYTHONPATH}' >> ~/.bashrc
 RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient:${PYTHONPATH}' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=$( find /home/user/workspace/ -type d -printf ":%p" ):${PYTHONPATH}' >> ~/.bashrc
