@@ -2,6 +2,7 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 from debug import *
+import cv2
 #
 # Class defining a position vector.
 class Vec3():
@@ -51,8 +52,9 @@ class CompressedImage():
     #
     # Decompress the image into a unit8.
     def decompressPNG(self):
-        if len(self.pngImgs[0] > 1):
+        if len(self.pngImgs) > 1:
             printWarn('More than one image may not be decompressing the correct type.')
+        img = self.pngImgs[0]
         self.uint8Img = cv2.cvtColor(cv2.imdecode(np.fromstring(img.image_data_uint8, np.uint8), cv2.IMREAD_UNCHANGED), cv2.COLOR_BGR2RGB)
         return self.uint8Img
     #
@@ -122,6 +124,10 @@ class Observation():
         #
         # Keep track of how many lines have been saved.
         self.serializable['idx'].val = 0
+    #
+    # Get a particular observation by key.
+    def __getitem__(self, key):
+        return self.serializable[key]
     #
     # String format for header.
     def getFormat(self):

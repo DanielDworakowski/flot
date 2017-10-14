@@ -1,8 +1,11 @@
 from debug import *
 import AgentBase as base
-import numpy as np
 import Observations as obv
+import os
+import numpy as np
 import torch
+from torchvision import transforms
+from torch.autograd import Variable
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
@@ -11,6 +14,7 @@ class Agent(base.AgentBase):
     def __init__(self, conf):
         super(Agent, self).__init__(conf)
         self.conf = conf
+        self.toTensor = transforms.ToTensor()
         #
         # Load the model.
         if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
@@ -34,4 +38,8 @@ class Agent(base.AgentBase):
     # Reference to an observation
     def getActionImpl(self):
         obs = self.obs
-        img = torch.from_numpy(obs['img'].decompressPNG())
+        npimg = obs['img'].decompressPNG()[:,:,0:3]
+        img = Variable(self.toTensor(npimg).unsqueeze_(0).cuda())
+        out = self.model(img)
+        print(out)
+        return np.array([0,0,0])
