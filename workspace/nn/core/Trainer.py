@@ -51,6 +51,8 @@ class Trainer():
         def logEpochTensorboard(self, epochSummary):
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
+            for i in range(epochSummary['data']['labels'].shape[0]):
+                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i].numpy()[0])), epochSummary['data']['img'][i], epochSummary['epoch'])
             for name, param in self.model.named_parameters():
                 self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
         #
@@ -105,6 +107,7 @@ class Trainer():
         hyperparam = self.conf.hyperparam
         self.model = hyperparam.model
         self.numEpochs = hyperparam.numEpochs
+        self.batchSize = hyperparam.batchSize
         self.criteria = hyperparam.criteria
         self.optimizer = hyperparam.optimizer
         self.bestModel = self.model.state_dict()
@@ -159,9 +162,9 @@ class Trainer():
                     pbar.update(1)
                 pbar.close()
                 #
-                # Overall stats.
+                # Overall stats
                 epochLoss = runningLoss / len(self.dataloaders[phase])
-                epochAcc = runningCorrect / len(self.dataloaders[phase])
+                epochAcc = runningCorrect / (len(self.dataloaders[phase])*self.batchSize)
                 #
                 # Check if we have the new best model.
                 isBest = False
@@ -176,7 +179,9 @@ class Trainer():
                     'phase': phase,
                     'epoch': epoch,
                     'loss': epochLoss,
-                    'acc': epochAcc
+                    'acc': epochAcc,
+                    'data': data,
+                    'pred' : preds
                 }
                 self.logEpoch(self, summary)
                 #

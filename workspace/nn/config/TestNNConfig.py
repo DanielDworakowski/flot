@@ -13,5 +13,6 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self):
         super(Config, self).__init__()
-        self.modelSavePath = '/home/user/workspace/data'
-        self.dataTrainList = ['/home/user/workspace/data']
+        self.hyperparam.numEpochs = 10
+        self.modelSavePath = '/home/user/workspace/data/'
+        self.dataTrainList = ['/home/user/workspace/data/test_dataset']
