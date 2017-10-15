@@ -1,5 +1,5 @@
 # Ignore simulation enviroments, would be nice to make this a submodule
-SimulationEnviroments/
+workspace/SimulationEnvironments/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

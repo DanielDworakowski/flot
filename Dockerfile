@@ -103,4 +103,5 @@ RUN mkdir /home/user/workspace
 WORKDIR /home/user/workspace
 
 USER user
-RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient:${PYTHONPATH}' >> ~/.bashrc 
+RUN echo 'export PYTHONPATH=/home/user/workspace/environment:${PYTHONPATH}' >> ~/.bashrc 
