@@ -8,7 +8,7 @@ class ActionEngine():
     This class is used to communicate which action to take. The Action class can take in an one-hot vector and convert to an approaportate tangential velocty and angiular velocity. Support for velocity in z is TODO for later.
 
     """
-    def __init__(self, act_dim=3, max_v_t=1.0, max_w=2.0):
+    def __init__(self, act_dim=11, max_v_t=1.0, max_w=2.0):
         self.act_dim = act_dim
         self.max_v_t = max_v_t
         self.max_w = max_w
@@ -35,7 +35,6 @@ class ActionEngine():
 
     def setAction(self, action):
         """ setting which action to take. action is a vector of length D, where D is the dimension of the action space. action vector can be one-hot vector but this function will take the argmax. """
-
         action_idx = np.argmax(action)
         #
         # action_norm is 0 when the action_idx is in the middle of the act_dim, 1 when it is (act_dim-1), and -1 when action_idx is 0
@@ -45,6 +44,7 @@ class ActionEngine():
         w_norm = np.sin(action_in_rad)
         self.v_t = self.max_v_t*v_t_norm
         self.w = self.max_w*w_norm
+        print(self.v_t, "   ", self.w)
 
     @abstractmethod
     def executeActionImpl(self, obs):

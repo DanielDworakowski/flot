@@ -108,6 +108,8 @@ RUN pip3 install pandas
 RUN apt remove -y python3-matplotlib python3-scipy python3-numpy
 RUN pip3 install matplotlib scipy numpy
 RUN pip3 install scikit-image
+RUN mkdir -p /home/user/Documents/AirSim
+COPY ./workspace/testEnvs/settings.json /home/user/Documents/AirSim/settings.json
 
 # workspace
 RUN mkdir /home/user/workspace
