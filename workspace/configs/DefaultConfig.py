@@ -30,6 +30,9 @@ class DefaultConfig():
     # Save training data.
     serialize = True
     #
+    # Use the gpu or not.
+    usegpu = True
+    #
     # Retrieve the actual constructor.
     def getAgentConstructor(self):
         ag = __import__(self.agentType)

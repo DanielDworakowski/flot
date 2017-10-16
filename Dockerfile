@@ -15,6 +15,7 @@ RUN apt-add-repository -y ppa:x2go/stable
 RUN apt-get update 
 
 # install core packages
+RUN apt update
 RUN apt-get install -y python3-pip git
 RUN apt-get install -y python3-matplotlib python3-scipy python3-numpy
 
@@ -114,6 +115,7 @@ COPY ./workspace/testEnvs/settings.json /home/user/Documents/AirSim/settings.jso
 # workspace
 RUN mkdir /home/user/workspace
 WORKDIR /home/user/workspace
+RUN chown -R user /home/user
 
 USER user
 RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient' >> ~/.bashrc 

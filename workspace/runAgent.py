@@ -39,7 +39,7 @@ def step(agent, env):
 #
 # Main loop for running the agent.
 def loop(conf):
-    agent = conf.agentConstructor()
+    agent = conf.agentConstructor(conf)
     exitNow = SigHandler.SigHandler()
     with Environment.Environment(conf.envType, conf.getFullSavePath(), conf.serialize) as env:
         while not exitNow.exit:

@@ -89,6 +89,7 @@ class ToTensor(object):
     '''Convert ndarrays in sample to Tensors.
     http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
     '''
+    toTensor = transforms.ToTensor()
 
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
@@ -97,8 +98,7 @@ class ToTensor(object):
         # numpy image: H x W x C
         # torch image: C X H X W
         image = image[:,:,0:3] # Strip the alpha channel.
-        image = image.transpose((2, 0, 1))
-        return {'img': torch.from_numpy(image),
+        return {'img': self.toTensor(image),
                 'labels': torch.from_numpy(labels.as_matrix())}
 
 class Normalize(object):

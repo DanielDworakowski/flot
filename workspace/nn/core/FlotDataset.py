@@ -76,7 +76,7 @@ class DataFolder(torch.utils.data.Dataset):
         '''
         labels = self.csvFrame.ix[idx]
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
-        img = io.imread(imName) / np.float32(255)
+        img = io.imread(imName) #/ np.float32(255)
         #
         # Remove the column index.
         labels = labels.drop(labels.index[self.imgColIdx])
