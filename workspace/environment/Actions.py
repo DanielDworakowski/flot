@@ -2,8 +2,15 @@ import numpy as np
 from debug import *
 from abc import ABC, abstractmethod
 
+class Action():
+
+    def __init__(self, move_array, v_t, w): #maybe include observation
+        self.move_array = np.array[]
+        self.v_t = 0.
+        self.w = 0.               
+
 class ActionEngine():
-    """ Stores information to specify an action 
+    """ Stores information to specify an action
 
     This class is used to communicate which action to take. The Action class can take in an one-hot vector and convert to an approaportate tangential velocty and angiular velocity. Support for velocity in z is TODO for later.
 
@@ -17,7 +24,7 @@ class ActionEngine():
         self.w = 0.
         self.home_pose = [0.,0.,0.5,0.,0.,0.] # x, y, z, pitch, roll, yaw
 
-    @abstractmethod    
+    @abstractmethod
     def __enterImpl__(self):
         pass
 
