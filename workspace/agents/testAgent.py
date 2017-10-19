@@ -19,7 +19,7 @@ class Agent(base.AgentBase):
         if self.obs == None:
             printError("Agent's Observation is None, make sure to giveObservation to Agent before calling getAction")
         else:
-            if self.numObs == self.obsCount:
+            if self.numObs <= self.obsCount:
                 print("Data Collection Complete")
                 sys.exit()
             self.obsCount += 1

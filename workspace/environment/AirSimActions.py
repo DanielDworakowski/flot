@@ -3,6 +3,12 @@ from Actions import ActionEngine
 import numpy as np
 from debug import *
 
+class AirSimAction():
+    def __init__(self, v_t):
+        self.
+
+
+
 class AirSimActionEngine(ActionEngine):
     def __init__(self, act_dim=11, max_v_t=1.0, max_w=1.0):
         ActionEngine.__init__(self, act_dim, max_v_t, max_w)
