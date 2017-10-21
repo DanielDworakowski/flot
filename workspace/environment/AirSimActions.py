@@ -1,17 +1,16 @@
 import AirSimControl
-from Actions import ActionEngine
+from Actions import ActionEngine, Action
 import numpy as np
 from debug import *
 
-class AirSimAction():
-    def __init__(self, v_t):
-        self.
-
+class AirSimAction(Action):
+    def __init__(self, array, v_t, w): #add teleport thing
+        Action.__init__(self, array, v_t, w)
 
 
 class AirSimActionEngine(ActionEngine):
-    def __init__(self, act_dim=11, max_v_t=1.0, max_w=1.0):
-        ActionEngine.__init__(self, act_dim, max_v_t, max_w)
+    def __init__(self, max_v_t=1.0, max_w=1.0):
+        ActionEngine.__init__(self, max_v_t, max_w)
         self.asc = AirSimControl.AirSimControl()
 
     def __enterImpl__(self):
