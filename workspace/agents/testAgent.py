@@ -27,6 +27,6 @@ class Agent(base.AgentBase):
             if self.obsCount % 50 == 0:
                 print("{} Data Collected".format(self.obsCount))
 
-            self.testAction = Action( array = abs(np.random.randn(11)*np.array([3,6,12,25,50,80,50,25,12,6,3])))
+            self.testAction = Action( array = abs(np.random.randn(3)*np.array([0,0,0])))
 
             return self.testAction

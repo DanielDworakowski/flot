@@ -13,14 +13,19 @@ class Action():
         def normalize(self):
             """ setting which action to take. action is a vector of length D, where D is the dimension of the action space. action vector can be one-hot vector but this function will take the argmax. """
             action_idx = np.argmax(self.array)
-            #
-            # action_norm is 0 when the action_idx is in the middle of the act_dim, 1 when it is (act_dim-1), and -1 when action_idx is 0
-            action_norm = 2.0*(1.*action_idx/(len(self.array)-1)-0.5)
-            action_in_rad = action_norm*np.pi/2.
-            v_t_norm = np.cos(action_in_rad)
-            w_norm = np.sin(action_in_rad)
-            self.v_t = v_t_norm
-            self.w = w_norm
+
+            if action_idx == 0:
+                self.v_t = 0
+                self.w =  0
+            else:
+                #
+                # action_norm is 0 when the action_idx is in the middle of the act_dim, 1 when it is (act_dim-1), and -1 when action_idx is 0
+                action_norm = 2.0*(1.*action_idx/(len(self.array)-1)-0.5)
+                action_in_rad = action_norm*np.pi/2.
+                v_t_norm = np.cos(action_in_rad)
+                w_norm = np.sin(action_in_rad)
+                self.v_t = v_t_norm
+                self.w = w_norm
         #
         #Check if v_t and w are the ONLY inputs
         if ( v_t is not None and w is not None and array is None):
