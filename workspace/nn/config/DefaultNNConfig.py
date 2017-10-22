@@ -119,4 +119,4 @@ class Config(DefaultConfig):
     def __init__(self):
         super(Config, self).__init__()
         self.modelSavePath = '/disk1/model/'
-        self.dataTrainList = ['/disk1/data/testAgent_EnvironmentTypes.AirSim_07-10-2017-18-29-03']
+        self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']

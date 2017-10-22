@@ -4,7 +4,10 @@ import DefaultConfig
 class Config(DefaultConfig.DefaultConfig):
     #
     # Where to load the model from.
-    modelLoadPath = '/disk1/model/14-10-2017-11-28-45_epoch_0.pth.tar'
+    modelLoadPath = '/disk1/model/21-10-2017-17-01-31_epoch_9.pth.tar'
+    #
+    # Save training data.
+    serialize = False
     #
     # Initialize.
     def __init__(self):

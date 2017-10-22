@@ -74,7 +74,8 @@ class AirSimControl(threading.Thread):
         self.running = True
         while self.running:
             if self.set_pose_request:
-                self.client.simSetPose(self.set_pose_position, self.set_pose_quaternion)
+                newPose = Pose(self.set_pose_position, self.set_pose_quaternion)
+                self.client.simSetPose(newPose, True)
                 self.set_pose_request = False
             self.executeCommand()
             time.sleep(1/ self.f)

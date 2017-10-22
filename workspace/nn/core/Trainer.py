@@ -91,7 +91,8 @@ class Trainer():
                 'epoch': epoch + 1,
                 'state_dict': self.model.state_dict(),
                 'optimizer' : self.optimizer.state_dict(),
-                'model': self.model
+                'model': self.model,
+                'conf': self.conf
             }
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
