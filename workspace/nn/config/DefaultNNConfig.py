@@ -12,6 +12,9 @@ class HyperParam():
     # The model being used.
     model = models.resnet18(pretrained=True)
     #
+    # Image shape
+    image_shape = (224, 224, 3)
+    #
     # Number of images in a batch.
     batchSize = 32
     #
