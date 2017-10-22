@@ -9,6 +9,18 @@ import torch.utils.data
 from torchvision import transforms, utils
 from interval_tree import IntervalTree
 
+import functools
+import time
+def timeit(func):
+    @functools.wraps(func)
+    def newfunc(*args, **kwargs):
+        startTime = time.time()
+        func(*args, **kwargs)
+        elapsedTime = time.time() - startTime
+        print('function [{}] finished in {} ms'.format(
+            func.__name__, int(elapsedTime * 1000)))
+    return newfunc
+
 class FlotDataset(torch.utils.data.Dataset):
     '''Read from a list all of the data files.'''
 
@@ -41,6 +53,7 @@ class FlotDataset(torch.utils.data.Dataset):
         return self.len
 
     def __getitem__(self, idx):
+
         binIdx = self.binSelector.find_range([idx, idx])[0]
         if binIdx == None:
             printError('selected impossible index %s', idx)
@@ -74,15 +87,17 @@ class DataFolder(torch.utils.data.Dataset):
         Args:
 
         '''
+
         labels = self.csvFrame.ix[idx]
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
         img = io.imread(imName) #/ np.float32(255)
         #
         # Remove the column index.
-        labels = labels.drop(labels.index[self.imgColIdx])
+        labels = np.delete(labels.as_matrix(), self.imgColIdx)
         sample = {'img': img, 'labels': labels}
         #
         # Transform as needed.
         if self.transform:
             sample = self.transform(sample)
+
         return sample

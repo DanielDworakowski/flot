@@ -97,9 +97,9 @@ class ToTensor(object):
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        image = image[:,:,0:3] # Strip the alpha channel.
-        return {'img': self.toTensor(image),
-                'labels': torch.from_numpy(labels.as_matrix())}
+        # image = image[:,:,0:3] # Strip the alpha channel.
+        return {'img': self.toTensor(image[:,:,0:3]),
+                'labels': torch.from_numpy(labels)}
 
 class Normalize(object):
     '''Normalizes an image.
