@@ -142,7 +142,7 @@ class Trainer():
                     inputs, labels = data['img'], data['labels']
                     if self.conf.usegpu:
                         labels =  labels.type(torch.LongTensor)[:,-1] #!!!remove this!!!
-                        inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
+                        inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
                     #
