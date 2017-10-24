@@ -2,6 +2,7 @@
 # Built in.
 import time
 import os
+from queue import Empty,Full,Queue
 #
 # Torch.
 import torch
@@ -29,15 +30,25 @@ class Trainer():
     def __setupDatasets(self):
         ''' Setups up datasets from configuration.
         '''
+        #
+        # Plain CPU dataloaders.
         train = FlotDataset.FlotDataset(self.conf, self.conf.dataTrainList, self.conf.transforms)
+        self.dataQueues = {
+            'train': Queue(maxsize = 128)
+        }
         self.dataloaders = {
-        'train': torch.utils.data.DataLoader(train, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True),
+            'train': torch.utils.data.DataLoader(train, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True),
+        }
+        self.cudaLoaders = {
+            'train': FlotDataset.CudaDataLoader(self.dataQueues['train'], self.dataloaders['train'], self.conf.usegpu)
         }
         #
         # No validation data, no need to evaluate it.
         if self.conf.dataValList != None and len(self.conf.dataValList) > 0:
-            test = FlotDataset.FlotDataset(self.conf, self.conf.dataValList, self.conf.transforms)
+            val = FlotDataset.FlotDataset(self.conf, self.conf.dataValList, self.conf.transforms)
             self.dataloaders['val'] = torch.utils.data.DataLoader(val, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
+            self.dataQueues['val'] = Queue(max = 128)
+            self.cudaLoaders['val'] = FlotDataset.CudaDataLoader(self.dataQueues['val'], self.dataloaders['val'], self.conf.usegpu)
 
     def __setupLogging(self):
         ''' Configuration for logging the training process.
@@ -121,7 +132,7 @@ class Trainer():
         self.__setupDatasets()
         self.__setupLogging()
 
-    def train(self):
+    def trainSerialLoader(self):
         ''' Trains a neural netowork according to specified criteria.
         '''
         for epoch in range(self.startingEpoch, self.startingEpoch + self.numEpochs):
@@ -140,9 +151,10 @@ class Trainer():
                 pbar = tqdm.tqdm(total=numMini)
                 for data in self.dataloaders[phase]:
                     inputs, labels = data['img'], data['labels']
+                    start = time.time()
                     if self.conf.usegpu:
-                        labels =  labels.type(torch.LongTensor)[:,-1] #!!!remove this!!!
-                        inputs, labels = Variable(inputs.cuda()), Variable(labels.cuda())
+                        labels =  labels.type(torch.LongTensor)[:, -1] #!!!remove this!!!]
+                        inputs, labels = Variable(inputs.cuda(async = True)), Variable(labels.cuda(async = True))
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
                     #
@@ -161,6 +173,8 @@ class Trainer():
                     runningLoss += loss.data[0]
                     runningCorrect += torch.sum(preds == labels.data)
                     pbar.update(1)
+                    end = time.time()
+                    print('Elapsed %dus'%((end-start)*1e6))
                 pbar.close()
                 #
                 # Overall stats
@@ -194,4 +208,112 @@ class Trainer():
         self.model.load_state_dict(self.bestModel)
         printColour('Epochs complete!', colours.OKBLUE)
         self.closeLogger(self)
+        return self.model
+
+    def train(self):
+        ''' Trains a neural netowork according to specified criteria.
+        '''
+        #
+        # Start cuda loaders.
+        for loader in self.cudaLoaders:
+            self.cudaLoaders[loader].startThread()
+        time.sleep(5)
+        #
+        # Iterate epochs.
+        for epoch in range(self.startingEpoch, self.startingEpoch + self.numEpochs):
+            printColour('Epoch {}/{}'.format(epoch, self.startingEpoch + self.numEpochs - 1), colours.HEADER)
+            for phase in self.dataloaders:
+                #
+                # Switch on / off gradients.
+                self.model.train(phase == 'train')
+                #
+                # The current loss.
+                runningLoss = 0.0
+                runningCorrect = 0.0
+                #
+                # Iterate over data.
+                numMini = len(self.dataloaders[phase])
+                pbar = tqdm.tqdm(total=numMini)
+                q = self.dataQueues[phase]
+                inputs = None
+                labels = None
+                for idx in range(numMini):
+                    #
+                    # Grab from dataset.
+                    try:
+                        inputs, labels = q.get(block = True, timeout = 1)
+                    except Empty:
+                        printError('Missed a batch')
+                        continue
+                    #
+                    # Backward pass.
+                    self.optimizer.zero_grad()
+                    out = self.model(inputs)
+                    _, preds = torch.max(out.data, 1)
+                    loss = self.criteria(out, labels)
+                    #
+                    #  Backwards pass.
+                    start = time.time()
+                    if phase == 'train':
+                        loss.backward()
+                        self.optimizer.step()
+                    #
+                    #  Stats.
+                    # runningLoss += loss.data[0]
+                    # runningCorrect += torch.sum(preds == labels.data)
+                    pbar.update(1)
+                    end = time.time()
+                    print('Elapsed %dus'%((end-start)*1e6))
+                pbar.close()
+                #
+                # Overall stats
+                epochLoss = runningLoss / len(self.dataloaders[phase])
+                epochAcc = runningCorrect / (len(self.dataloaders[phase])*self.batchSize)
+                #
+                # Check if we have the new best model.
+                isBest = False
+                if phase == 'val' and epochAcc > self.bestAcc:
+                    isBest = True
+                    self.bestAcc = epochAcc
+                    self.bestModel = self.model.state_dict()
+                #
+                # Print per epoch results.
+                print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epochLoss, epochAcc))
+                summary = {
+                    'phase': phase,
+                    'epoch': epoch,
+                    'loss': epochLoss,
+                    'acc': epochAcc,
+                    'data': {'img': inputs, 'labels': labels},
+                    'pred' : preds
+                }
+                self.logEpoch(self, summary)
+                #
+                # Save model as needed.
+                if (epoch % self.conf.epochSaveInterval) == 0 or isBest:
+                    self.__saveCheckpoint(epoch, isBest)
+        #
+        # Copy back the best model.
+        self.model.load_state_dict(self.bestModel)
+        printColour('Epochs complete!', colours.OKBLUE)
+        self.closeLogger(self)
+        #
+        # For each of the queues call join.
+        print('join queues')
+        for q in self.dataQueue:
+            self.cudaLoaders[q].join()
+        #
+        # Close data loaders.
+        print('join loaders')
+        for loader in self.cudaLoaders:
+            self.cudaLoaders[loader].stop()
+        #
+        # Empty Queues.
+        print('dataq')
+        for q in self.dataQueue:
+            for i in range(loader.qsize()):
+                self.dataQueue[q].get()
+                self.dataQueue[q].task_done()
+        for loader in self.cudaLoaders:
+            self.cudaLoaders[loader].join()
         return self.model
