@@ -3,7 +3,11 @@ from debug import *
 from abc import ABC, abstractmethod
 
 class Action():
-    def __init__(self, array = None , v_t = None, w = None): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=1.0, max_w=2.0): #TODO maybe include observation
+        #
+        # set max vt and w
+        self.max_v_t = max_v_t
+        self.max_w = max_w
         #
         # Error checking: Too many inputs
         if (array is not None and v_t is not None and w is not None):
@@ -55,9 +59,7 @@ class ActionEngine():
     This class is used to communicate which action to take. The Action class can take in an one-hot vector and convert to an approaportate tangential velocty and angiular velocity. Support for velocity in z is TODO for later.
 
     """
-    def __init__(self, max_v_t=1.0, max_w=2.0):
-        self.max_v_t = max_v_t
-        self.max_w = max_w
+    def __init__(self):
         self.v_t = 0.
         self.v_z = 0.
         self.w = 0.
@@ -82,10 +84,10 @@ class ActionEngine():
     # saturator function
     def setAction(self, action):
 
-        self.v_t = self.max_v_t*action.v_t
-        self.w = self.max_w*action.w
+        self.v_t = action.max_v_t*action.v_t
+        self.w = action.max_w*action.w
 
-        print(self.v_t, "   ", self.w)
+        # print(self.v_t, "   ", self.w)
 
     @abstractmethod
     def executeActionImpl(self, obs):
