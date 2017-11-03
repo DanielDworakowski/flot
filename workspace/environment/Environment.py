@@ -64,9 +64,16 @@ class Environment():
         self.observer.__exit__(type, value, traceback)
         self.actionEngine.__exit__(type, value, traceback)
         return False
+
+    # reset if requested
+    def reset(self, action):
+        pose = action.reset_pose
+        if pose==1: self.actionEngine.reset()
+        elif pose: self.actionEngine.reset(pose)
     #
     # Do action.
     def runAction(self, action, obs):
+        self.reset(action)
         return self.actionEngine.executeAction(action, obs)
     #
     # Get observation.
@@ -75,3 +82,4 @@ class Environment():
         if self.serialize:
             self.observer.serialize()
         return self.observer.obs
+

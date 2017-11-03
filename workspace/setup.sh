@@ -2,7 +2,7 @@
 #
 # Setup paths.
 export LOCAL_HOME=$PWD
-echo export PYTHONPATH=$PWD/../external/AirSim/PythonClient:"$(find $LOCAL_HOME/ -maxdepth 4 -type d -not -path '*__pycache__*' | sed '/\/\./d' | tr '\n' ':' | sed 's/:$//')" >> $HOME/.bashrc
+#echo export PYTHONPATH=$PWD/../external/AirSim/PythonClient:"$(find $LOCAL_HOME/ -maxdepth 4 -type d -not -path '*__pycache__*' | sed '/\/\./d' | tr '\n' ':' | sed 's/:$//')" >> $HOME/.bashrc
 # echo export PYTHONPATH=$PWD/../external/AirSim/PythonClient:$PYTHONPATH >> $HOME/.bashrc
 source $HOME/.bashrc
 #
@@ -20,5 +20,5 @@ sudo pip install ratelimiter
 sudo pip install visdom
 sudo pip install tensorboardX
 sudo pip install tensorflow-tensorboard
-pip install interval_tree
-pip install tqdm
+sudo pip install interval_tree
+sudo pip install tqdm

@@ -3,7 +3,7 @@ from debug import *
 from abc import ABC, abstractmethod
 
 class Action():
-    def __init__(self, array = None , v_t = None, w = None): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, reset_pose = None): #TODO maybe include observation
         #
         # Error checking: Too many inputs
         if (array is not None and v_t is not None and w is not None):
@@ -31,6 +31,9 @@ class Action():
         if ( v_t is not None and w is not None and array is None):
             #
             #Check if the types are valid
+            if isinstance(v_t, int): v_t = float(v_t)
+            if isinstance(w, int): w = float(w)
+
             if ( isinstance(v_t, float) and isinstance(w, float)):
                 self.v_t = v_t
                 self.w = w
@@ -48,6 +51,11 @@ class Action():
                 printError("wrong type for array, use []")
         else:
             printError("Incorrect format, input array XOR v_t and w")
+
+        if isinstance(reset_pose, list) and len(reset_pose) == 6 and all(isinstance(x,float) or isinstance(x,int) for x in reset_pose) or reset_pose==1:
+            self.reset_pose = reset_pose
+        else:
+            self.reset_pose = None
 
 class ActionEngine():
     """ Stores information to specify an action
