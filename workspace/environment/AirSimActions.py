@@ -9,8 +9,8 @@ class AirSimAction(Action):
 
 
 class AirSimActionEngine(ActionEngine):
-    def __init__(self, max_v_t=1.0, max_w=1.0):
-        ActionEngine.__init__(self, max_v_t, max_w)
+    def __init__(self):
+        ActionEngine.__init__(self)
         self.asc = AirSimControl.AirSimControl()
 
     def __enterImpl__(self):
