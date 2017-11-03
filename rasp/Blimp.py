@@ -40,44 +40,53 @@ class Blimp:
     def is_connected(self):
         return self.requester.is_connected()
 
-    # Enter value between -32768 to 32768
+    # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for left propeller
     def left(self, value):
-        byte_array = "0000".decode('hex')
 
         if self.is_connected():
-            if -32768 < value < 0:
-                byte_array = "0:04x".format(int(-1*value)).decode('hex')
-            elif 0 < value < 32768:
-                byte_array = "0:04x".format(int(65536 - value)).decode('hex')
-            self.requester.write_by_handle(34,byte_array)
+            if -32768 < value < 32768:
+                if value < 0:
+                    command = '{:04x}'.format(-1*int(value))
+                else:
+                    command = '{:04x}'.format(65535 - int(value))
+
+                self.requester.write_by_handle(34, command.decode('hex'))
+            else:
+                print("Command value is must be integer between -32767 & 32767")
         else:
             print("First connect to target before commanding thrust")
 
-    # Enter value between -32768 to 32768
+    # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for right propeller
     def right(self, value):
-        byte_array = "0000".decode('hex')
-
+        
         if self.is_connected():
-            if -32768 < value < 0:
-                byte_array = "0:04x".format(int(-1*value)).decode('hex')
-            elif 0 < value < 32768:
-                byte_array = "0:04x".format(int(65536 - value)).decode('hex')
-            self.requester.write_by_handle(36,byte_array)
+            if -32768 < value < 32768:
+                if value < 0:
+                    command = '{:04x}'.format(-1*int(value))
+                else:
+                    command = '{:04x}'.format(65535 - int(value))
+
+                self.requester.write_by_handle(36, command.decode('hex'))
+            else:
+                print("Command value is must be integer between -32767 & 32767")
         else:
             print("First connect to target before commanding thrust")
 
-    # Enter value between -32768 to 32768
+    # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for down propeller
     def down(self, value):
-        byte_array = "0000".decode('hex')
 
         if self.is_connected():
-            if -32768 < value < 0:
-                byte_array = "0:04x".format(int(-1*value)).decode('hex')
-            elif 0 < value < 32768:
-                byte_array = "0:04x".format(int(65536 - value)).decode('hex')
-            self.requester.write_by_handle(38, byte_array)
+            if -32768 < value < 32768:
+                if value < 0:
+                    command = '{:04x}'.format(-1*int(value))
+                else:
+                    command = '{:04x}'.format(65535 - int(value))
+
+                self.requester.write_by_handle(38, command.decode('hex'))
+            else:
+                print("Command value is must be integer between -32767 & 32767")
         else:
             print("First connect to target before commanding thrust")
