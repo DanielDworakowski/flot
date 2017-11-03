@@ -10,51 +10,60 @@ import random
 class Agent(base.AgentBase):
     PI = math.pi
     SPEED = 5.0
-    ROT_SPEED = 30.0
+    ROT_SPEED = 5.0
+    TOLERANCE = 0.1
 
     def __init__(self, conf):
         super(Agent, self).__init__()
 
-        self.dumbAction = None
+        self.dumbAction = Action(v_t=self.SPEED, w=0.0)
+        # self.dumbAction = None
         self.angle = None
-        self.move = False
+        # self.mode = 0
+        self.mode = 1
         self.localCollisionCount = 0
-        self.currpose = None
 
     def getActionImpl(self):
         camRot = self.obs['cameraRotation']
         camPos = self.obs['cameraPosition']
+        col = self.obs['hasCollided'].val
 
         print('{}: {}'.format(camRot.getFormat(), camRot.serialize()))
         print('{}: {}'.format(camPos.getFormat(), camPos.serialize()))
         print('{}: {}'.format('self.angle', self.angle))
-        print('{}: {}'.format('self.move', self.move))
+        print('{}: {}'.format('self.mode', self.mode))
         print('{}: {}'.format('self.localCollisionCount', self.localCollisionCount))
-        print('{}: {}'.format('self.currpose', self.currpose))
+        print('{}: {}'.format('col', col))
 
-        if not self.angle:
+        if not self.angle and self.mode==0:
             self.angle = random.uniform(-self.PI,self.PI)
             # if abs(self.angle - camRot.yaw) > self.PI:
                 # self.dumbAction = Action(v_t=0.0, w=self.ROT_SPEED)
             # else:
                 # self.dumbAction = Action(v_t=0.0, w=-self.ROT_SPEED)
-            # might be unused
+            # # might be unused
             self.dumbAction = Action(v_t=0.0, w=self.ROT_SPEED)
-            # return self.dumbAction
 
-        if not self.move and abs(self.angle - camRot.yaw)<0.05:
+        elif self.mode ==0 and  abs(self.angle - camRot.yaw)<self.TOLERANCE:
             self.dumbAction = Action(v_t=self.SPEED, w=0.0)
-            self.move = True
-            # return self.dumbAction
+            self.mode = 1
 
-        col = self.obs['hasCollided'].val
-        print('{}: {}'.format('col', col))
-
-        if col:
+        elif col and self.mode==1:
+            # self.angle = self.angle + self.PI
+            # if self.angle > self.PI:
+                # self.angle = self.angle - 2*self.PI
             self.angle = None
-            self.move = False
-            self.dumbAction = Action(v_t=0.0, w=0.0, reset_pose=1)
+            # self.mode = 2
+            self.mode=0
+            # self.dumbAction = Action(v_t=0.0, w=self.ROT_SPEED)
+            self.dumbAction = Action(v_t=0.0, w=0.0)
             self.localCollisionCount += 1
+
+        # elif abs(self.angle - camRot.yaw)<self.TOLERANCE and self.mode==2:
+            # self.mode = 0
+            # self.angle = None
+            # self.dumbAction = Action(v_t=0.0, w=0.0)
+
 
         print('')
         return self.dumbAction
