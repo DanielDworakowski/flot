@@ -20,9 +20,10 @@ class AirSimActionEngine(ActionEngine):
         self.asc.__exit__(type, value, traceback)
 
     def reset(self, pose=None):
-        if pose is not None:
-            self.home_pose = pose
-        self.asc.setPose(self.home_pose)
+        if pose:
+            self.asc.setPose(pose)
+        else:
+            self.asc.setPose(self.home_pose)
 
     def executeActionImpl(self, obs):
         success = True

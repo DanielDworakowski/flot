@@ -24,8 +24,8 @@ class Vec3():
 class RotationEuler():
     #
     # Constructor.
-    roll = np.float32(0)
     pitch = np.float32(0)
+    roll = np.float32(0)
     yaw = np.float32(0)
     #
     # Order in string format.
