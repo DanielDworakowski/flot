@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import DataUtil
 import os
+from debug import *
 #
 # The hyper parameters.
 class HyperParam():
