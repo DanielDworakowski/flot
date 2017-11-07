@@ -16,11 +16,8 @@ import rospy
 # ROS Messages
 from sensor_msgs.msg import CompressedImage
 
-
-
 # Init camera and output RGB array
 camera = picamera.PiCamera()
-
 
 def main():
     image_pub = rospy.Publisher("/output/image_raw/compressed", CompressedImage, queue_size = 1)
@@ -53,3 +50,4 @@ if __name__ == '__main__':
         main()
     except rospy.ROSInterruptException:
         pass
+
