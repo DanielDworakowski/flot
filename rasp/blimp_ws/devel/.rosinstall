@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/user/workspace/blimp_ws/devel/setup.sh
+    local-name: /home/pi/flot/rasp/blimp_ws/devel/setup.sh
