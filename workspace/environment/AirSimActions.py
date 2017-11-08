@@ -29,9 +29,10 @@ class AirSimActionEngine(ActionEngine):
         success = True
         try:
             if obs.serializable['hasCollided'].val:
+                # print("@34")
                 self.reset()
             self.asc.setCommand(self.v_t, self.w)
-            # print(self.v_t, self.w)
+            print(self.v_t, self.w)
         except:
             success = False
             printError("Failed to execute command in AirSim!")

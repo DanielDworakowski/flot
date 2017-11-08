@@ -76,11 +76,11 @@ class AirSimControl(threading.Thread):
         while self.running:
             if self.set_pose_request:
                 newPose = Pose(self.set_pose_position, self.set_pose_quaternion)
-                self.client.simSetPose(newPose, True)
-
+                # self.client.simSetPose(newPose, True)
+                self.client.reset()
                 self.client.enableApiControl(True)
                 self.client.armDisarm(True)
-                self.client.takeoff()
+                # self.client.takeoff()
 
                 self.set_pose_request = False
             self.executeCommand()
