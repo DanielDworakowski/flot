@@ -3,14 +3,18 @@ from debug import *
 from abc import ABC, abstractmethod
 
 class Action():
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=1.0, max_w=2.0, reset_pose = None): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=1.0, max_w=2.0, z=None): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t
         self.max_w = max_w
+        self.v_t = None
+        self.w = None
+        self.array = None
+        self.z = z
         #
         # Error checking: Too many inputs
-        if (array is not None and v_t is not None and w is not None):
+        if (array is not None and v_t is not None and w is not None and z is not None):
             printError("Only input either array xor v_t and w")
         #
         # function to turn an array value to tangential (v_t) and angular(w) velocities
@@ -53,13 +57,10 @@ class Action():
                 normalize(self)
             else:
                 printError("wrong type for array, use []")
-        else:
+        elif z is None:
             printError("Incorrect format, input array XOR v_t and w")
 
-        if isinstance(reset_pose, list) and len(reset_pose) == 6 and all(isinstance(x,float) or isinstance(x,int) for x in reset_pose) or reset_pose==1:
-            self.reset_pose = reset_pose
-        else:
-            self.reset_pose = None
+
 
 class ActionEngine():
     """ Stores information to specify an action
@@ -72,6 +73,7 @@ class ActionEngine():
         self.v_z = 0.
         self.w = 0.
         self.home_pose = [0.,0.,0.5,0.,0.,0.] # x, y, z, pitch, roll, yaw
+        self.z = None
 
     @abstractmethod
     def __enterImpl__(self):
@@ -91,9 +93,10 @@ class ActionEngine():
     #
     # saturator function
     def setAction(self, action):
-
-        self.v_t = action.max_v_t*action.v_t
-        self.w = action.max_w*action.w
+        if action.v_t is not None and action.w is not None:
+            self.v_t = action.max_v_t*action.v_t
+            self.w = action.max_w*action.w
+        self.z = action.z
 
         # print(self.v_t, "   ", self.w)
 
