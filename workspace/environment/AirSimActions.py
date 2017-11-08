@@ -29,8 +29,8 @@ class AirSimActionEngine(ActionEngine):
         success = True
         try:
             # fix/reformat later
-            # if obs.serializable['hasCollided'].val:
-                # self.reset()
+            if obs.serializable['hasCollided'].val:
+                self.reset()
             self.asc.setCommand(self.v_t, self.w, self.z)
             # print(self.v_t, self.w)
         except:
