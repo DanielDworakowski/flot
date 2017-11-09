@@ -16,7 +16,7 @@ class Agent(base.AgentBase):
     SPEED = 1.0
     ROT_SPEED = 20.0
     TOLERANCE = 0.05
-    DEBUG = False
+    DEBUG = True
 
     def __init__(self, conf):
         super(Agent, self).__init__()
@@ -109,7 +109,7 @@ class Agent(base.AgentBase):
 
             elif self.mode==1 and col:
                 self.mode=0
-                # self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
+                self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
 
         self.dumbAction.z = -1.45
         return self.dumbAction
