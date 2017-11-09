@@ -94,6 +94,7 @@ RUN apt-get install wget
 RUN apt-get install unzip
 WORKDIR /home/user/
 RUN apt-get update
+RUN apt-get update
 RUN git clone https://github.com/Microsoft/AirSim.git
 WORKDIR /home/user/AirSim
 RUN git pull
