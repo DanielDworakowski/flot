@@ -67,13 +67,14 @@ class Environment():
 
     # reset if requested
     def reset(self, action):
-        pose = action.reset_pose
+        #fix later
+        pose = action.pose
         if pose==1: self.actionEngine.reset()
         elif pose: self.actionEngine.reset(pose)
     #
     # Do action.
     def runAction(self, action, obs):
-        self.reset(action)
+        # self.reset(action)
         return self.actionEngine.executeAction(action, obs)
     #
     # Get observation.
@@ -82,4 +83,3 @@ class Environment():
         if self.serialize:
             self.observer.serialize()
         return self.observer.obs
-

@@ -8,18 +8,29 @@ import math
 import random
 import time
 
+def angdiff(t,s):
+    return math.atan2(math.sin(t-s), math.cos(t-s))
+
 class Agent(base.AgentBase):
     PI = math.pi
-    SPEED = 0.5
-    DEBUG = True
+    SPEED = 1.0
+    ROT_SPEED = 20.0
+    TOLERANCE = 0.05
+    DEBUG = False
 
     def __init__(self, conf):
         super(Agent, self).__init__()
 
         self.dumbAction = None
+        self.angle = None
         self.mode = 0
-        self.poses = []
-        self.first_pose = None
+        self.last_time = None
+
+        self.last_pose = None
+        self.still_counter = 0
+        self.reset_counter = 0
+
+        self.flight_duration = None
         self.localCollisionCount = 0
         random.seed(time.time())
 
@@ -28,41 +39,68 @@ class Agent(base.AgentBase):
         camRot = self.obs['cameraRotation']
         col = self.obs['hasCollided'].val
 
-        pose = [camPos.x, camPos.y, camPos.z, camRot.pitch, camRot.roll, camRot.yaw]
-        self.poses.append(pose)
-        if not self.first_pose:
-            self.first_pose = pose
-        pose[2] = self.first_pose[2]
+        pose = [camPos.x, camPos.y, camPos.z, \
+                camRot.pitch, camRot.roll, camRot.yaw]
 
-        print('{}: {}'.format(camRot.getFormat(), camRot.serialize()))
-        print('{}: {}'.format(camPos.getFormat(), camPos.serialize()))
+        if self.last_pose != pose:
+            self.last_pose = pose
+            self.still_counter = 0
+        else:
+            self.still_counter += 1
+
+        print('{}: {}'.format('pose', pose))
+        print('{}: {}'.format('self.angle', self.angle))
         print('{}: {}'.format('self.mode', self.mode))
         print('{}: {}'.format('self.localCollisionCount', self.localCollisionCount))
+        print('{}: {}'.format('self.reset_counter', self.reset_counter))
+        print('{}: {}'.format('self.still_counter', self.still_counter))
         print('{}: {}'.format('col', col))
         print()
-        print('{}: {}'.format('self.first_pose', self.first_pose))
+
+        if self.angle:
+            diff = angdiff(self.angle, camRot.yaw)
 
         if not self.DEBUG:
-            if self.mode == 0:
-                self.mode = 1
-                pose_len = len(self.poses)
-                pose_ind = 0 if pose_len==1 else random.randint(1, pose_len-1)
-                position = self.poses[pose_ind][:-1]
 
-                angle = random.uniform(-self.PI,self.PI)
-                position.append(angle)
-
-                self.dumbAction = Action(v_t=0.0, w=0.0, reset_pose=position)
-                self.poses = []
-
-            elif self.mode == 1:
-                self.mode = 2
-                self.dumbAction = Action(v_t=self.SPEED, w=0.0)
-
-            elif self.mode == 2 and col:
+            if self.still_counter > 15 and self.reset_counter==0: #arbitrary value
+                self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
+                self.reset_counter += 1
                 self.mode = 0
+
+            elif self.mode == 0 and self.angle is None:
+                self.angle = random.uniform(-self.PI,self.PI)
+                self.dumbAction = Action(v_t=0.0, w=0.0)
+
+            elif self.mode ==0 and abs(diff) > self.TOLERANCE:
+                speed = self.ROT_SPEED*diff
+                # if angdiff(self.angle, camRot.yaw) < 0:
+                    # speed *= -1
+                self.dumbAction = Action(v_t=0.0, w=speed)
+
+            elif self.mode ==0 and abs(diff) < self.TOLERANCE:
+                self.dumbAction = Action(v_t=self.SPEED, w=0.0)
+                self.mode = 1
+                self.last_time = time.time()
+
+            elif self.mode==1 and col:
+                duration = random.uniform(0,time.time()-self.last_time)
+                self.flight_duration = duration if duration > 0.5 else 0.5
+                self.mode = 2
+
+                self.angle = None
                 self.dumbAction = Action(v_t=0.0, w=0.0)
                 self.localCollisionCount += 1
+                self.last_time = time.time()
+
+            elif self.mode==2 and time.time()-self.last_time > 1.5:
+                self.mode = 3
+                self.dumbAction = Action(v_t=-self.SPEED, w=0.0)
+                self.last_time = time.time()
+
+            elif self.mode==3 and time.time()-self.last_time > self.flight_duration:
+                self.mode = 0
+                self.dumbAction = Action(v_t=0.0, w=0.0)
+                self.last_time = None
 
         if self.DEBUG:
             if self.mode==0:
@@ -71,7 +109,7 @@ class Agent(base.AgentBase):
 
             elif self.mode==1 and col:
                 self.mode=0
-                self.dumbAction = Action(v_t=0.0, w=0.0, reset_pose=1)
+                # self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
 
-        print('')
+        self.dumbAction.z = -1.45
         return self.dumbAction

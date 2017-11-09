@@ -28,11 +28,20 @@ class AirSimActionEngine(ActionEngine):
     def executeActionImpl(self, obs):
         success = True
         try:
-            if obs.serializable['hasCollided'].val:
+            if self.isReset:
                 self.reset()
-            self.asc.setCommand(self.v_t, self.w)
-            print(self.v_t, self.w)
-        except:
+            # fix/reformat later
+            # if obs.serializable['hasCollided'].val:
+                # self.reset()
+            self.asc.setCommand(self.v_t, self.w, self.z)
+            # print(self.v_t, self.w)
+        except Exception as e:
             success = False
             printError("Failed to execute command in AirSim!")
+            if hasattr(e, 'message'):
+                printError(e.message)
+            else:
+                printError(e)
+
+
         return success
