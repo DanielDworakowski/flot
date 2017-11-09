@@ -25,8 +25,12 @@ class Agent(base.AgentBase):
         self.angle = None
         self.mode = 0
         self.last_time = None
+
+        self.last_pose = None
+        self.still_counter = 0
+        self.reset_counter = 0
+
         self.flight_duration = None
-        self.poses = []
         self.localCollisionCount = 0
         random.seed(time.time())
 
@@ -37,20 +41,33 @@ class Agent(base.AgentBase):
 
         pose = [camPos.x, camPos.y, camPos.z, \
                 camRot.pitch, camRot.roll, camRot.yaw]
-        self.poses.append(pose)
 
-        print('{}: {}'.format(camRot.getFormat(), camRot.serialize()))
-        print('{}: {}'.format(camPos.getFormat(), camPos.serialize()))
+        if self.last_pose != pose:
+            self.last_pose = pose
+            self.still_counter = 0
+        else:
+            self.still_counter += 1
+
+        print('{}: {}'.format('pose', pose))
         print('{}: {}'.format('self.angle', self.angle))
         print('{}: {}'.format('self.mode', self.mode))
         print('{}: {}'.format('self.localCollisionCount', self.localCollisionCount))
+        print('{}: {}'.format('self.reset_counter', self.reset_counter))
+        print('{}: {}'.format('self.still_counter', self.still_counter))
         print('{}: {}'.format('col', col))
+        print()
 
         if self.angle:
             diff = angdiff(self.angle, camRot.yaw)
 
         if not self.DEBUG:
-            if self.mode == 0 and self.angle is None:
+
+            if self.still_counter > 15 and self.reset_counter==0: #arbitrary value
+                self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
+                self.reset_counter += 1
+                self.mode = 0
+
+            elif self.mode == 0 and self.angle is None:
                 self.angle = random.uniform(-self.PI,self.PI)
                 self.dumbAction = Action(v_t=0.0, w=0.0)
 
@@ -92,8 +109,7 @@ class Agent(base.AgentBase):
 
             elif self.mode==1 and col:
                 self.mode=0
-                # self.dumbAction = Action(v_t=0.0, w=0.0, reset_pose=1)
+                # self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
 
-        print('')
         self.dumbAction.z = -1.45
         return self.dumbAction

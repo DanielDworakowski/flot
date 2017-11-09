@@ -28,5 +28,7 @@ class Agent(base.AgentBase):
                 print("{} Data Collected".format(self.obsCount))
 
             self.testAction = Action( array = abs(np.random.randn(3)*np.array([0,1,0])))
+            if self.obs['hasCollided'].val:
+                self.testAction = Action(v_t=0.0,w=0.0,isReset=True)
 
             return self.testAction

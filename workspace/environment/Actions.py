@@ -3,7 +3,7 @@ from debug import *
 from abc import ABC, abstractmethod
 
 class Action():
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=1.0, max_w=2.0, z=None): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=1.0, max_w=2.0, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t
@@ -11,7 +11,10 @@ class Action():
         self.v_t = None
         self.w = None
         self.array = None
+
         self.z = z
+        self.isReset = isReset
+
         #
         # Error checking: Too many inputs
         if (array is not None and v_t is not None and w is not None and z is not None):
@@ -74,6 +77,7 @@ class ActionEngine():
         self.w = 0.
         self.home_pose = [0.,0.,0.5,0.,0.,0.] # x, y, z, pitch, roll, yaw
         self.z = None
+        self.isReset = False
 
     @abstractmethod
     def __enterImpl__(self):
@@ -97,6 +101,7 @@ class ActionEngine():
             self.v_t = action.max_v_t*action.v_t
             self.w = action.max_w*action.w
         self.z = action.z
+        self.isReset = action.isReset
 
         # print(self.v_t, "   ", self.w)
 

@@ -90,21 +90,15 @@ class AirSimControl(threading.Thread):
         self.running = True
         while self.running:
             if self.set_pose_request:
-                # newPose = Pose(self.set_pose_position, self.set_pose_quaternion)
-                # self.client.simSetPose(newPose, True)
-                # self.client.reset()
-                # self.client.enableApiControl(True)
-                # self.client.armDisarm(True)
-                # self.client.takeoff()
-
                 # self.client.moveToPosition(self.pose[0],self.pose[1],self.pose[2],20)
                 # self.client.rotateToYaw(self.pose[-1], margin=0.05)
+
                 newPose = Pose(self.set_pose_position, self.set_pose_quaternion)
-                # self.client.simSetPose(newPose, True)
                 self.client.reset()
                 self.client.enableApiControl(True)
                 self.client.armDisarm(True)
                 # self.client.takeoff()
+                print("here")
 
                 self.set_pose_request = False
             self.executeCommand()
