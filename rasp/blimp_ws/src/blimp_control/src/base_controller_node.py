@@ -14,7 +14,7 @@ class ControlLoop():
     # Default topics: sonar = 'hr_sr04', imu = 'bno055'
     # Blimp and controller objects can be custom defined and passed as constructor argument
     def __init__(self, node_name, queue_size=10, refresh_rate=10, sonar_topic='hr_sr04', imu_topic='bno055',
-                 blimp=Blimp.Blimp(), controller=PID.PID()):
+                 nn_topic='nn_output', blimp=Blimp.Blimp(), controller=PID.PID()):
 
         # Initiate controller node
         rospy.init_node(node_name, anonymous=True)
@@ -22,28 +22,49 @@ class ControlLoop():
         # Set refresh rate in Hz
         self.rate = rospy.Rate(refresh_rate)
 
-        # Subscribe to sonar topic
+        # Subscribe to Sonar topic
         rospy.Subscriber(sonar_topic, Float32, self.sonar_callback, queue_size=queue_size)
 
         # Subscribe to IMU topic
         rospy.Subscriber(imu_topic, Imu, self.imu_callback, queue_size=queue_size)
 
+        # Subscribe to Neural Network output
+        rospy.Subscriber(nn_topic, TwistWithCovarianceStamped, self.nn_callback, queue_size=queue_size)
+
+        # Current feedback data
         self.sonar = None
         self.imu = None
-        self.isStarted = False
 
+        # Attached class objects
         self.blimp = blimp
         self.controller = controller
 
+        # Current reference
+        self.ref = None
+        self.ref.x = None       # reference for tangential velocity
+        self.ref.w = None       # reference for angular velocity
+        self.covariance = None  # covariance matrix
+        self.ref_stamp = None
+
+        # Current actuation commands
         self.left_cmd = None
         self.right_cmd = None
         self.down_cmd = None
+
+        # Flags
+        self.isStarted = False
 
     def sonar_callback(self, msg):
         self.sonar = msg.data
 
     def imu_callback(self, msg):
         self.imu = msg.data
+
+    def nn_callback(self, msg):
+        self.ref.x = msg.twist.twist.linear.x
+        self.ref.w = msg.twist.twist.angular.z
+        self.covariance = msg.twist.covariance
+        self.ref_stamp = msg.header.stamp
 
     def start(self):
         self.isStarted = True
@@ -60,7 +81,8 @@ class ControlLoop():
                     print('Failed to connect to blimp')
 
             # Get latest actuation values from controller
-            [self.left_cmd, self.right_cmd, self.down_cmd] = self.controller.update(self.sonar, self.imu)
+            [self.left_cmd, self.right_cmd, self.down_cmd] = \
+                self.controller.update(self.ref, self.ref_stamp, self.sonar, self.imu)
 
             # Send new actuation values
             self.blimp.left(self.denomalize(self.left_cmd)
