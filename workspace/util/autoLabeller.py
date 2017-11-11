@@ -8,18 +8,18 @@ def labellingParam():
     #
     # All the params are normalized to one. e.g 0.5 == 50%
     # throwaway buffer for start and end of trajectory
-    start_throwaway_buffer = 0.1
-    end_throwaway_buffer = 0.1
+    start_throwaway_buffer = 0.5
+    end_throwaway_buffer = 0.0
     #
     # good and bad sections of the trajectory
-    good_buffer = 0.3
-    bad_buffer = 0.3
+    good_buffer = 0.35
+    bad_buffer = 0.1
     #
     # middle throwaway buffer
     middle_throwaway_buffer = 1. - start_throwaway_buffer - end_throwaway_buffer - good_buffer - bad_buffer
     #
     # minimum trajectory length
-    min_traj_len = 10
+    min_traj_len = 40
     return (start_throwaway_buffer, end_throwaway_buffer, good_buffer, bad_buffer, middle_throwaway_buffer, min_traj_len)
 
 #
@@ -27,6 +27,7 @@ def labellingParam():
 def getInputArgs():
     parser = argparse.ArgumentParser('Auto labelling script via collision data')
     parser.add_argument('--obs', dest='observationsPath', nargs='+', default=None, type=str, help='Full path to the obervations csv.')
+    parser.add_argument('--obsFolders', dest='folderPath', nargs='+', default=None, type=str, help='Folder that contains multiple data folders')
     args = parser.parse_args()
     return args
 #
@@ -68,8 +69,13 @@ def labelData(observationsPath):
 # Main code.
 if __name__ == "__main__":
     args = getInputArgs()
-    if args.observationsPath[0] == None:
+    if args.observationsPath == None and args.folderPath == None:
         print('Must specify path to parse.')
-    for observationsPath in args.observationsPath:
-        labelData(os.path.abspath(observationsPath)
-)
+    elif args.observationsPath != None:
+        for observationsPath in args.observationsPath:
+            labelData(os.path.abspath(observationsPath))
+    else:
+        observationsPath = [x[0]+'/observations.csv' for x in os.walk(args.folderPath[0])][1:]
+        for observationPath in observationsPath:
+            labelData(os.path.abspath(observationPath))      
+
