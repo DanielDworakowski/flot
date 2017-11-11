@@ -55,8 +55,6 @@ class PID:
         self.last_time = self.current_time
         self.last_error = error
 
-
-
     def setKp(self, proportional_gain):
         """Proportional Gain"""
         self.k_p = proportional_gain
