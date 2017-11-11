@@ -3,14 +3,14 @@ import time
 class PID:
     """PID Controller"""
 
-    def __init__(self, P = 0.0, I = 0.0, D = 0.0, min_v = 0.0, max_v = 0.0):
+    def __init__(self, P = 0.0, I = 0.0, D = 0.0, min_ = 0.0, max_ = 0.0):
 
         self.k_p = P
         self.k_i = I
         self.k_d = D
 
-        self.min_ = min_v
-        self.max_ = max_v
+        self.min_ = min_
+        self.max_ = max_
 
         self.current_time = time.time()
         self.last_time = self.current_time
@@ -41,7 +41,7 @@ class PID:
         self.i_error += delta_time*k_i*error
 
         """Anti-windup"""
-        self.i_error += min(max(i_error, min_),max_)
+        self.i_error += min(max(i_error, self.min_),self.max_)
 
         """p and d error"""
         self.p_error = error
@@ -49,7 +49,7 @@ class PID:
 
         """calculate command"""
         self.command = (self.k_p*self.p_error) + (self.k_i * self.i_error) + (self.k_d * self.d_error)
-        self.command = min(max(self.output, min_ ), max_)
+        self.command = min(max(self.output, self.min_ ), self.max_)
 
         # Remember last time and last error for next calculation
         self.last_time = self.current_time
