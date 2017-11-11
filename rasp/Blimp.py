@@ -90,3 +90,14 @@ class Blimp:
                 print("Command value is must be integer between -32767 & 32767")
         else:
             print("First connect to target before commanding thrust")
+
+    # Function to stop all actuators
+    def stop(self):
+        if self.is_connected():
+                command = '{:04x}'.format(65535)
+                self.requester.write_by_handle(34, command.decode('hex'))
+                self.requester.write_by_handle(36, command.decode('hex'))
+                self.requester.write_by_handle(38, command.decode('hex'))
+        else:
+            print("Command failed; not connected to target")
+
