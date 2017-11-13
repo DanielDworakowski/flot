@@ -43,7 +43,7 @@ class Agent(base.AgentBase):
         self.action_array_dim = 11
         #
         # minimum probability of collision free to go straight
-        self.straight_min_prob = 0.65
+        self.straight_min_prob = 0.85
         #
         # minimum probability of collision free to stop
         self.stop_min_prob = 0.0
@@ -101,22 +101,26 @@ class Agent(base.AgentBase):
             action_array[int(self.action_array_dim/2)] = 1
             action = Action(action_array)
 
-        elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
-            action = Action(action_array)
+        # elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
+        #     action = Action(action_array)
 
-        elif left_prob > right_prob and left_prob < self.turn_min_prob:
-            action_array[0] = 1
-            action = Action(action_array)
+        # elif left_prob > right_prob and left_prob < self.turn_min_prob:
+        #     action_array[0] = 1
+        #     action = Action(action_array)
 
-        elif right_prob >= left_prob and right_prob < self.turn_min_prob:
-            action_array[-1] = 1
-            action = Action(action_array)
+        # elif right_prob >= left_prob and right_prob < self.turn_min_prob:
+        #     action_array[-1] = 1
+        #     action = Action(action_array)
             
-        elif left_prob > right_prob:
-            action = Action(v_t=left_prob*self.max_v_t,w=left_prob*self.max_w)
+        # elif left_prob > right_prob:
+        #     action = Action(v_t=left_prob*self.max_v_t,w=left_prob*self.max_w)
 
-        else:
-            action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)         
-        #
+        # else:
+        #     action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)         
+        action = Action(action_array)
+        print('_____________________________________________________________________________________________________________________________________')
+        print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
+        print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
+
         # Do more stuff.
         return action

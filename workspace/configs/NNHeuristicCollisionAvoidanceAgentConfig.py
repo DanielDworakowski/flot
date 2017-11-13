@@ -4,7 +4,7 @@ import DefaultConfig
 class Config(DefaultConfig.DefaultConfig):
     #
     # Where to load the model from.
-    modelLoadPath = '/home/user/workspace/data/21-10-2017-17-01-31_epoch_9.pth.tar'
+    modelLoadPath = '/home/user/workspace/data/model_best.pth.tar'
     #
     # Image shape
     image_shape = (224, 224, 3)
