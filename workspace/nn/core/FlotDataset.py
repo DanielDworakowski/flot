@@ -58,7 +58,7 @@ class FlotDataset(torch.utils.data.Dataset):
         if binIdx == None:
             printError('selected impossible index %s', idx)
             return None
-        return self.dataList[binIdx].__getitem__(idx - self.offsets[binIdx], idx)
+        return self.dataList[binIdx].__getitem__(idx - self.offsets[binIdx])
 
 class DataFolder(torch.utils.data.Dataset):
     '''Read from a data folder.'''
@@ -85,7 +85,7 @@ class DataFolder(torch.utils.data.Dataset):
         '''
         return len(self.csvFrame)
 
-    def __getitem__(self, idx, globalIdx):
+    def __getitem__(self, idx):
         '''
         Args:
 
@@ -100,7 +100,13 @@ class DataFolder(torch.utils.data.Dataset):
         #
         # Remove the column index.
         labels = np.delete(labels.as_matrix(), self.imgColIdx)
-        sample = {'img': img, 'labels': labels, 'globalIdx': globalIdx}
+        #
+        # Construct meta data.
+        meta = {
+            'filedir': self.rootDir,
+            'index': idx
+        }
+        sample = {'img': img, 'labels': labels, 'meta': meta}
         #
         # Transform as needed.
         if self.transform:

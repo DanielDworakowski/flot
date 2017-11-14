@@ -7,15 +7,18 @@ from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 import argparse
 import numpy as np
-from PIL import Image
 import math
 import matplotlib.pyplot as plt
 import os
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw
 #
 # Parse the input arguments.
 def getInputArgs():
     parser = argparse.ArgumentParser('Create visualization based on a network.')
     parser.add_argument('--config', dest='configStr', default='DefaultNNConfig', type=str, help='Name of the config file to import.')
+    parser.add_argument('--batchSize', dest='bsize', default=32, type=int, help='How many images to put in a batch')
     args = parser.parse_args()
     return args
 #
@@ -28,12 +31,34 @@ def getConfig(args):
     # conf.useTensorBoard = args.useTensorBoard
     return conf
 #
+# Plot the image results from best to worst.
+def plotBatch(conf, meta, sorted, batchinfo):
+    numImg = len(meta['index'])
+    sidel = int(math.sqrt(numImg)) + 1
+    testim =  os.path.join(meta['filedir'][0], '%s_%s.png'%(conf.imgName, int(meta['index'][0])))
+    im = Image.open(testim)
+    width, height = im.size
+    grid = Image.new('RGB', (width * sidel, height * sidel))
+    draw = ImageDraw.Draw(grid)
+    font = ImageFont.truetype("sans-serif.ttf", 25)
+    for i, y in enumerate(range(0, width * sidel, width)):
+        for j, x in enumerate(range(0, height * sidel, height)):
+            infoIdx = i * sidel + j
+            if infoIdx >= numImg:
+                break
+            idx = sorted[i * sidel + j]
+            imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
+            im = Image.open(imName)
+            grid.paste(im, (x,y))
+            draw.text((x,y),'%s'%(i*sidel + j),(255,255,255),font=font)
+    plt.imshow(grid)
+    plt.show()
+#
 # Gather data.
-def gatherResponses(conf):
+def gatherResponses(conf, bsize):
     train = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
-    dataset = torch.utils.data.DataLoader(train, batch_size = 32, num_workers = 1,
+    dataset = torch.utils.data.DataLoader(train, batch_size = bsize, num_workers = 1,
                                           shuffle = True, pin_memory = False)
-    writer = SummaryWriter()
     loss = None
     probStack = None
     labelsStack = None
@@ -62,31 +87,18 @@ def gatherResponses(conf):
     labelVec.scatter_(1, labelsStack, 1)
     diff = probStack.cpu() - labelVec
     dist = torch.sum(torch.mul(diff, diff), dim=1)
-
+    #
+    # Get the sorted version of the batch.
     sortedList, idx = torch.sort(dist)
-    numImg = len(meta['index'])
-    sidel = int(math.sqrt(numImg))
-    f, axarr = plt.subplots(sidel,sidel)
-    for x in range(sidel):
-        for y in range(sidel):
-            if (x*y) > numImg:
-                break
-            idx = x * sidel + y
-            imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
-            im = Image.open(imName)
-            axarr[x,y].imshow(im)
-            axarr[x,y].axis('off')
-
-
-    plt.subplots_adjust(wspace=0, hspace=0)
-    # plotSample()
-    plt.show()
-    writer.close()
-
-
+    return {'meta': meta, 'sorted': idx, 'metric': dist}
+#
+# Visualize.
+def visualize(conf, args):
+    batchinfo = gatherResponses(conf, args.bsize)
+    plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
 #
 # main.
 if __name__ == '__main__':
     args = getInputArgs()
     conf = getConfig(args)
-    gatherResponses(conf)
+    visualize(conf, args)
