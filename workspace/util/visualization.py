@@ -7,6 +7,10 @@ from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 import argparse
 import numpy as np
+from PIL import Image
+import math
+import matplotlib.pyplot as plt
+import os
 #
 # Parse the input arguments.
 def getInputArgs():
@@ -36,8 +40,9 @@ def gatherResponses(conf):
     model = conf.hyperparam.model
     model.train(False)
     sm = torch.nn.Softmax()
+    meta = None
     #
-    # Iterate through the dataset.
+    # Take a random sample from the dataset.
     for idx, data in enumerate(dataset):
         out = None
         labels = None
@@ -48,29 +53,34 @@ def gatherResponses(conf):
         else:
             out = conf.hyperparam.model(Variable(data['img']))
 
-        if probStack is None:
-            probStack = sm(out).data
-            labelsStack = data['labels'].long()
-        else:
-            torch.stack((probStack,sm(out).data))
-            torch.stack((labelsStack,data['labels'].long()))
+        probStack = sm(out).data
+        labelsStack = data['labels'].long()
+        meta = data['meta']
+        break
 
-
-        # # for i in range (labels.size()[0]):
-        # #     if (probability[0][i][0] < probability [0][i][0]) == labels
-        # # max_index, val = torch.max(probability,1)
-        # print ("out")
-        # print(out)
-        # #print(torch.max(probability,1))
-        # print ("probability")
-        print(probStack)
-        # print(labels)
-        # break
     labelVec = torch.zeros(probStack.size())
     labelVec.scatter_(1, labelsStack, 1)
     diff = probStack.cpu() - labelVec
     dist = torch.sum(torch.mul(diff, diff), dim=1)
 
+    sortedList, idx = torch.sort(dist)
+    numImg = len(meta['index'])
+    sidel = int(math.sqrt(numImg))
+    f, axarr = plt.subplots(sidel,sidel)
+    for x in range(sidel):
+        for y in range(sidel):
+            if (x*y) > numImg:
+                break
+            idx = x * sidel + y
+            imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
+            im = Image.open(imName)
+            axarr[x,y].imshow(im)
+            axarr[x,y].axis('off')
+
+
+    plt.subplots_adjust(wspace=0, hspace=0)
+    # plotSample()
+    plt.show()
     writer.close()
 
 
