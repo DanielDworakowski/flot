@@ -73,6 +73,7 @@ class DataFolder(torch.utils.data.Dataset):
         self.transform = transform
         self.csvFrame = pd.read_csv(self.rootDir + '/' + self.csvFileName)
         self.imgColIdx = self.csvFrame.columns.get_loc('idx')
+        self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
         self.conf = conf
         if self.__len__() < 1:
             printError('File %s has no data. This will cause issues'%conf.csvFileName)
@@ -96,16 +97,18 @@ class DataFolder(torch.utils.data.Dataset):
             printError('idx error')
             raise ValueError
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
-        img = io.imread(imName)
-        #
-        # Remove the column index.
-        labels = np.delete(labels.as_matrix(), self.imgColIdx)
         #
         # Construct meta data.
         meta = {
             'filedir': self.rootDir,
-            'index': idx
+            'index': idx,
+            'allLabels':  labels.to_dict()
         }
+        img = io.imread(imName)
+        #
+        # Remove the column index.
+        # labels = np.delete(labels.as_matrix(), self.imgColIdx)
+        labels = np.full((1,1),labels.as_matrix()[self.labelIdx], dtype='long')
         sample = {'img': img, 'labels': labels, 'meta': meta}
         #
         # Transform as needed.
