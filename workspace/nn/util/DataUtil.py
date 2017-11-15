@@ -99,7 +99,7 @@ class ToTensor(object):
         # torch image: C X H X W
         # image = image[:,:,0:3] # Strip the alpha channel.
         return {'img': self.toTensor(image[:,:,0:3]),
-                'labels': torch.from_numpy(labels), 'meta': sample['meta']}
+                'labels': torch.from_numpy(labels).squeeze_(), 'meta': sample['meta']}
 
 class Normalize(object):
     '''Normalizes an image.

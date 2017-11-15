@@ -13,12 +13,18 @@ import os
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
+import matplotlib as mpl
+from mpl_toolkits.mplot3d import Axes3D
 #
 # Parse the input arguments.
 def getInputArgs():
     parser = argparse.ArgumentParser('Create visualization based on a network.')
     parser.add_argument('--config', dest='configStr', default='DefaultNNConfig', type=str, help='Name of the config file to import.')
     parser.add_argument('--batchSize', dest='bsize', default=32, type=int, help='How many images to put in a batch')
+    parser.add_argument('--plotVisited', dest='pltVisited', default=False,  help='Plot what was visited by the blimp', action='store_true')
+    parser.add_argument('--plotBatch', dest='pltBatch', default=False, help='Plot and order the responses of a random batch', action='store_true')
+    parser.add_argument('--plotMT', dest='pltMeanTraj', default=False, help='Plot the mean trajectories.', action='store_true')
+    parser.add_argument('--watch', dest='watch', default=False,  help='Watch somee of the plots grow up', action='store_true')
     args = parser.parse_args()
     return args
 #
@@ -55,10 +61,7 @@ def plotBatch(conf, meta, sorted, batchinfo):
     plt.show()
 #
 # Gather data.
-def gatherResponses(conf, bsize):
-    train = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
-    dataset = torch.utils.data.DataLoader(train, batch_size = bsize, num_workers = 1,
-                                          shuffle = True, pin_memory = False)
+def gatherResponses(conf, dataloader):
     loss = None
     probStack = None
     labelsStack = None
@@ -67,8 +70,8 @@ def gatherResponses(conf, bsize):
     sm = torch.nn.Softmax()
     meta = None
     #
-    # Take a random sample from the dataset.
-    for idx, data in enumerate(dataset):
+    # Take a random sample from the dataloader.
+    for idx, data in enumerate(dataloader):
         out = None
         labels = None
         if conf.usegpu:
@@ -77,7 +80,6 @@ def gatherResponses(conf, bsize):
             out = conf.hyperparam.model(Variable(data['img']).cuda(async = True))
         else:
             out = conf.hyperparam.model(Variable(data['img']))
-
         probStack = sm(out).data
         labelsStack = data['labels'].long()
         meta = data['meta']
@@ -92,10 +94,42 @@ def gatherResponses(conf, bsize):
     sortedList, idx = torch.sort(dist)
     return {'meta': meta, 'sorted': idx, 'metric': dist}
 #
+# make matplot lib plots.
+def plotTrajectory(args, conf, dataloader, dataset):
+    mpl.rcParams['legend.fontsize']= 14
+    fig = plt.figure()
+    #
+    # Scatter plot for the visited locations.
+    axScatter = plt.gca()
+    axScatter.set_xlabel('X')
+    axScatter.set_ylabel('Y')
+    fighist = plt.figure()
+    histax = fighist.gca()
+    numBins = 2
+    histData = np.ones(len(dataset))
+    #
+    # Iteratively create the plots.
+    if args.watch:
+        plt.ion()
+    for idx, data in enumerate(dataloader):
+        if args.watch:
+            plt.pause(0.00001)
+        allLabels = data['meta']['allLabels']
+        for miniIdx in range(len(allLabels['x[m]'])):
+            axScatter.scatter(allLabels['x[m]'][miniIdx], allLabels['y[m]'][miniIdx])
+            histidx = idx * args.bsize + miniIdx
+            histData[histidx] = allLabels['collision_free'][miniIdx]
+    histax.hist(histData, numBins)
+    plt.show()
+#
 # Visualize.
 def visualize(conf, args):
-    batchinfo = gatherResponses(conf, args.bsize)
-    plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
+    dataset = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size = args.bsize, num_workers = 8,
+                                          shuffle = True, pin_memory = False)
+    # batchinfo = gatherResponses(conf, dataloader)
+    # plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
+    plotTrajectory(args, conf, dataloader, dataset)
 #
 # main.
 if __name__ == '__main__':
