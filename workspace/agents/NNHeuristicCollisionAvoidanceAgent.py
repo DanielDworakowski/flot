@@ -43,13 +43,13 @@ class Agent(base.AgentBase):
         self.action_array_dim = 11
         #
         # minimum probability of collision free to go straight
-        self.straight_min_prob = 0.65
+        self.straight_min_prob = 0.80
         #
         # minimum probability of collision free to stop
         self.stop_min_prob = 0.0
         #
         # min turning probabilty
-        self.turn_min_prob = 0.5
+        self.turn_min_prob = 0.70
         #
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
@@ -95,8 +95,8 @@ class Agent(base.AgentBase):
         #
         # collision free probability
         left_prob, center_prob, right_prob = collision_free_prob
+        left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
         action_array = np.zeros(self.action_array_dim)
-
         if center_prob > self.straight_min_prob:
             action_array[int(self.action_array_dim/2)] = 1
             action = Action(action_array)
@@ -117,6 +117,10 @@ class Agent(base.AgentBase):
 
         else:
             action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)         
-        #
+        # action = Action(action_array)
+        print('_____________________________________________________________________________________________________________________________________')
+        print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
+        print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
+
         # Do more stuff.
         return action

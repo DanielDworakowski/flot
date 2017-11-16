@@ -3,7 +3,7 @@ from debug import *
 from abc import ABC, abstractmethod
 
 class Action():
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=1.0, max_w=2.0, z=None, isReset=False): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.3, max_w=2.0, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t
@@ -24,6 +24,7 @@ class Action():
         def normalize(self):
             """ setting which action to take. action is a vector of length D, where D is the dimension of the action space. action vector can be one-hot vector but this function will take the argmax. """
             action_idx = np.argmax(self.array)
+            action_sum = np.sum(self.array)
 
             if action_idx == 0:
                 self.v_t = 0
@@ -35,8 +36,8 @@ class Action():
                 action_in_rad = action_norm*np.pi/2.
                 v_t_norm = np.cos(action_in_rad)
                 w_norm = np.sin(action_in_rad)
-                self.v_t = v_t_norm
-                self.w = w_norm
+                self.v_t = v_t_norm*self.max_v_t
+                self.w = w_norm*self.max_w
         #
         #Check if v_t and w are the ONLY inputs
         if ( v_t is not None and w is not None and array is None):

@@ -2,6 +2,7 @@
 # Built in.
 import time
 import os
+import shutil
 #
 # Torch.
 import torch
@@ -37,7 +38,7 @@ class Trainer():
         # No validation data, no need to evaluate it.
         if self.conf.dataValList != None and len(self.conf.dataValList) > 0:
             test = FlotDataset.FlotDataset(self.conf, self.conf.dataValList, self.conf.transforms)
-            self.dataloaders['val'] = torch.utils.data.DataLoader(val, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
+            self.dataloaders['val'] = torch.utils.data.DataLoader(test, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
 
     def __setupLogging(self):
         ''' Configuration for logging the training process.
@@ -141,7 +142,7 @@ class Trainer():
                 for data in self.dataloaders[phase]:
                     inputs, labels = data['img'], data['labels']
                     if self.conf.usegpu:
-                        labels =  labels.type(torch.LongTensor)[:,-1] #!!!remove this!!!
+                        labels.squeeze_()
                         inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)

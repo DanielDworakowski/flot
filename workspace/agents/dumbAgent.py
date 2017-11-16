@@ -16,7 +16,7 @@ class Agent(base.AgentBase):
     SPEED = 1.0
     ROT_SPEED = 20.0
     TOLERANCE = 0.05
-    DEBUG = False
+    DEBUG = True
 
     def __init__(self, conf):
         super(Agent, self).__init__()
