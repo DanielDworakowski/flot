@@ -63,8 +63,9 @@ class Agent(base.AgentBase):
         if not self.DEBUG:
 
             if self.still_counter > 15 and self.reset_counter==0: #arbitrary value
-                self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
-                self.reset_counter += 1
+                # self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
+                # self.reset_counter += 1
+                quit()
                 self.mode = 0
 
             elif self.mode == 0 and self.angle is None:
@@ -109,6 +110,7 @@ class Agent(base.AgentBase):
 
             elif self.mode==1 and col:
                 self.mode=0
+                quit()
                 # self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
 
         self.dumbAction.z = -1.45

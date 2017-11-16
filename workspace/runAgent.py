@@ -50,3 +50,4 @@ if __name__ == "__main__":
     args = getInputArgs()
     conf = getConfig(args)
     loop(conf)
+
