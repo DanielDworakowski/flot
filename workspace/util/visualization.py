@@ -7,6 +7,7 @@ from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 import argparse
 import numpy as np
+import pandas as pd
 import math
 import matplotlib.pyplot as plt
 import os
@@ -120,19 +121,63 @@ def plotTrajectory(args, conf, dataloader, dataset):
             histidx = idx * args.bsize + miniIdx
             histData[histidx] = allLabels['collision_free'][miniIdx]
     histax.hist(histData, numBins)
-    plt.show()
+#
+# Gather and plot the trajectory lengths.
+def plotMeanTraj(args, conf):
+    allTrajs = []
+    for dir in conf.dataTrainList:
+        distl = getMeanTrajSingle(conf, dir)
+        allTrajs.extend(distl)
+    figHist = plt.figure()
+    histax = figHist.gca()
+    numBins = int(math.sqrt(len(allTrajs)))
+    histax.hist(allTrajs, numBins)
+#
+# Get the mean trajectory length in the data.
+def getMeanTrajSingle(conf, dir):
+    observations = pd.read_csv(dir + '/observations.csv')
+    observations = observations.rename(columns=lambda x: x.strip())
+    x_idx = observations.columns.get_loc('x[m]')
+    y_idx = observations.columns.get_loc('y[m]')
+    z_idx = observations.columns.get_loc('z[m]')
+    collision_data = observations["raw_collision"].values
+    col_idx = np.squeeze(np.argwhere(collision_data==1))
+    trajs = np.array_split(observations.as_matrix(), col_idx)
+    distList = []
+    #
+    # Calculate the lengths of each of the trajectories
+    for traj in trajs:
+        if len(traj) < 3:
+            continue
+        traj_x = traj[:, x_idx]
+        traj_y = traj[:, y_idx]
+        traj_z = traj[:, z_idx]
+        traj_x_shift = np.delete(np.roll(np.copy(traj_x), -1), -1)
+        traj_y_shift = np.delete(np.roll(np.copy(traj_y), -1), -1)
+        traj_z_shift = np.delete(np.roll(np.copy(traj_z), -1), -1)
+        traj_x = np.delete(traj_x,-1)
+        traj_y = np.delete(traj_y,-1)
+        traj_z = np.delete(traj_z,-1)
+        dist = np.sum(np.sqrt(np.power(traj_x - traj_x_shift, 2) + np.power(traj_y - traj_y_shift, 2) + np.power(traj_z - traj_z_shift, 2)))
+        distList.append(dist)
+    return distList
 #
 # Visualize.
 def visualize(conf, args):
     dataset = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size = args.bsize, num_workers = 8,
                                           shuffle = True, pin_memory = False)
-    # batchinfo = gatherResponses(conf, dataloader)
-    # plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
-    plotTrajectory(args, conf, dataloader, dataset)
+    if args.pltBatch:
+        batchinfo = gatherResponses(conf, dataloader)
+        plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
+    if args.pltVisited:
+        plotTrajectory(args, conf, dataloader, dataset)
+    if args.pltMeanTraj:
+        plotMeanTraj(args, conf)
 #
 # main.
 if __name__ == '__main__':
     args = getInputArgs()
     conf = getConfig(args)
     visualize(conf, args)
+    plt.show()
