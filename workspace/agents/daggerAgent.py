@@ -7,9 +7,23 @@ import torch
 from torchvision import transforms
 from torch.autograd import Variable
 from Actions import Action
+
+import sys
+import math
+import random
+import time
+
+def angdiff(t,s):
+    return math.atan2(math.sin(t-s), math.cos(t-s))
+
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
+    PI = math.pi
+    SPEED = 1.0
+    ROT_SPEED = 20.0
+    TOLERANCE = 0.05
+
     #
     # Constructor.
     def __init__(self, conf):
@@ -66,6 +80,13 @@ class Agent(base.AgentBase):
         self.max_v_t = action_.max_v_t
         self.max_w = action_.max_w
 
+        self.mode = 0
+        self.angle = None
+        self.last_pose = None
+        self.last_time = None
+        self.still_counter = 0
+        random.seed(time.time())
+
     #
     # Crop image into three sections, left center right.
     def cropImageToThree(self, npimg):
@@ -96,11 +117,8 @@ class Agent(base.AgentBase):
 
         return [left_img, center_img, right_img]
 
-    #
-    # Reference to an observation
-    def getActionImpl(self):
-        obs = self.obs
-        npimg = obs['img'].decompressPNG()[:,:,0:3]
+    def smartAction(self):
+        npimg = self.obs['img'].decompressPNG()[:,:,0:3]
         cropped_imgs = self.cropImageToThree(npimg)
         collision_free_prob = []
         softmax = torch.nn.Softmax()
@@ -138,9 +156,83 @@ class Agent(base.AgentBase):
         else:
             action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)
         # action = Action(action_array)
+
         print('_____________________________________________________________________________________________________________________________________')
         print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
         print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
+        print("Collided: ".format(True if col else False))
 
         # Do more stuff.
+        return action
+
+    #
+    # Reference to an observation
+    def getActionImpl(self):
+        col = self.obs['hasCollided'].val
+        camPos = self.obs['cameraPosition']
+        camRot = self.obs['cameraRotation']
+        pose = [camPos.x, camPos.y, camPos.z, \
+                camRot.pitch, camRot.roll, camRot.yaw]
+
+        if self.last_pose != pose:
+            self.last_pose = pose
+            self.still_counter = 0
+        else:
+            self.still_counter += 1
+
+        # print('{}: {}'.format('pose', pose))
+        # print('{}: {}'.format('self.angle', self.angle))
+        # print('{}: {}'.format('self.mode', self.mode))
+        # print('{}: {}'.format('self.localCollisionCount', self.localCollisionCount))
+        # print('{}: {}'.format('self.still_counter', self.still_counter))
+        # print('{}: {}'.format('col', col))
+        # print()
+
+        if self.angle:
+            diff = angdiff(self.angle, camRot.yaw)
+
+        if self.still_counter > 15:
+            quit()
+
+        elif self.mode == 0 and self.angle is None:
+            self.angle = random.uniform(-self.PI,self.PI)
+            action = Action(v_t=0.0, w=0.0)
+
+        elif self.mode == 0 and abs(diff) > self.TOLERANCE:
+            speed = self.ROT_SPEED*diff
+            action = Action(v_t=0.0, w=speed)
+
+        elif self.mode == 0 and abs(diff) < self.TOLERANCE:
+            action = Action(v_t=0.0, w=0.0)
+            self.mode = 1
+
+        elif self.mode == 1 and not col:
+            action = self.smartAction()
+            ############################
+
+        elif self.mode == 1 and col:
+            self.flight_duration = random.uniform(0.5,3)
+            self.mode = 2
+
+            self.angle = None
+            action = Action(v_t=0.0, w=0.0)
+            self.last_time = time.time()
+
+        elif self.mode == 2 and time.time()-self.last_time <= 1.5:
+            action = Action(v_t=0.0, w=0.0)
+
+        elif self.mode == 2 and time.time()-self.last_time > 1.5:
+            self.mode = 3
+            action = Action(v_t=-self.SPEED, w=0.0)
+            self.last_time = time.time()
+
+        elif self.mode == 3 and time.time()-self.last_time <= self.flight_duration:
+            action = Action(v_t=-self.SPEED, w=0.0)
+
+        elif self.mode == 3 and time.time()-self.last_time > self.flight_duration:
+            self.mode = 0
+            action = Action(v_t=0.0, w=0.0)
+            self.last_time = None
+
+        # action.z = -1.45
         return action
