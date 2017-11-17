@@ -107,8 +107,8 @@ class DefaultConfig():
         networkModification(hyperparam.model, hyperparam)
     #
     # Check if cuda is available.
-    if not torch.cuda.is_available():
-        printError('CUDA is not available!')
+    # if not torch.cuda.is_available():
+        # printError('CUDA is not available!')
     usegpu = (torch.cuda.is_available() and usegpu)
     if usegpu:
         hyperparam.model.cuda()
