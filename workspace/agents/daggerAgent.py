@@ -160,7 +160,6 @@ class Agent(base.AgentBase):
         print('_____________________________________________________________________________________________________________________________________')
         print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
         print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
-        print("Collided: ".format(True if col else False))
 
         # Do more stuff.
         return action
@@ -180,13 +179,10 @@ class Agent(base.AgentBase):
         else:
             self.still_counter += 1
 
-        # print('{}: {}'.format('pose', pose))
-        # print('{}: {}'.format('self.angle', self.angle))
-        # print('{}: {}'.format('self.mode', self.mode))
-        # print('{}: {}'.format('self.localCollisionCount', self.localCollisionCount))
-        # print('{}: {}'.format('self.still_counter', self.still_counter))
-        # print('{}: {}'.format('col', col))
-        # print()
+        print('{}: {}'.format('self.mode', self.mode))
+        print('{}: {}'.format('pose', pose))
+        print('{}: {}'.format('col', col))
+        print()
 
         if self.angle:
             diff = angdiff(self.angle, camRot.yaw)
@@ -211,7 +207,7 @@ class Agent(base.AgentBase):
             ############################
 
         elif self.mode == 1 and col:
-            self.flight_duration = random.uniform(0.5,3)
+            self.flight_duration = random.uniform(0.5,2.5)
             self.mode = 2
 
             self.angle = None
@@ -234,5 +230,5 @@ class Agent(base.AgentBase):
             action = Action(v_t=0.0, w=0.0)
             self.last_time = None
 
-        # action.z = -1.45
+        action.z = -1.45
         return action
