@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 import FlotDataset
 import DefaultNNConfig
-import torch
-from DataUtil import plotSample
-from tensorboardX import SummaryWriter
-from torch.autograd import Variable
 import argparse
+import os
+import math
 import numpy as np
 import pandas as pd
-import math
-import matplotlib.pyplot as plt
-import os
 from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import torch
+from torch.autograd import Variable
+from tensorboardX import SummaryWriter
 #
 # Parse the input arguments.
 def getInputArgs():
@@ -41,13 +40,14 @@ def getConfig(args):
 # Plot the image results from best to worst.
 def plotBatch(conf, meta, sorted, batchinfo):
     numImg = len(meta['index'])
-    sidel = int(math.sqrt(numImg)) + 1
+    sidel = int(math.ceil(math.sqrt(numImg)))
     testim =  os.path.join(meta['filedir'][0], '%s_%s.png'%(conf.imgName, int(meta['index'][0])))
     im = Image.open(testim)
     width, height = im.size
     grid = Image.new('RGB', (width * sidel, height * sidel))
     draw = ImageDraw.Draw(grid)
     font = ImageFont.truetype("sans-serif.ttf", 25)
+    fillarr = ['red', 'blue']
     for i, y in enumerate(range(0, width * sidel, width)):
         for j, x in enumerate(range(0, height * sidel, height)):
             infoIdx = i * sidel + j
@@ -57,9 +57,16 @@ def plotBatch(conf, meta, sorted, batchinfo):
             imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
             im = Image.open(imName)
             grid.paste(im, (x,y))
-            draw.text((x,y),'%s'%(i*sidel + j),(255,255,255),font=font)
-    plt.imshow(grid)
-    plt.show()
+            space = 15
+            draw.ellipse((x,y, x + space, y + space), fill=fillarr[batchinfo['labels'][idx][0]])
+            _, predicted = torch.max(batchinfo['probs'][idx], 0)
+            draw.ellipse((x + space, y, x + 2 * space, y + space), fill=fillarr[predicted[0]])
+            draw.text((x + 3 * space,y),'%s'%(i*sidel + j),(255,255,255),font=font)
+            draw.text((x,y + space),'%1.2f'%batchinfo['probs'][idx][1],(255,255,255),font=font)
+    implt = plt.figure()
+    impltax = implt.gca()
+    impltax.imshow(grid)
+    impltax.axis('off')
 #
 # Gather data.
 def gatherResponses(conf, dataloader):
@@ -93,7 +100,12 @@ def gatherResponses(conf, dataloader):
     #
     # Get the sorted version of the batch.
     sortedList, idx = torch.sort(dist)
-    return {'meta': meta, 'sorted': idx, 'metric': dist}
+    figHist = plt.figure()
+    histax = figHist.gca()
+    histax.set_xlabel('Score (Lower is better)')
+    histax.set_ylabel('Frequency')
+    histax.hist(dist.numpy(), int(math.ceil(math.sqrt(dist.size()[0])))) # Dont do sqrt so up to 2.
+    return {'probs': probStack, 'meta': meta, 'sorted': idx, 'metric': dist, 'labels': labelsStack}
 #
 # make matplot lib plots.
 def plotTrajectory(args, conf, dataloader, dataset):
@@ -106,6 +118,8 @@ def plotTrajectory(args, conf, dataloader, dataset):
     axScatter.set_ylabel('Y')
     fighist = plt.figure()
     histax = fighist.gca()
+    histax.set_xlabel('Trajectory length (m)')
+    histax.set_ylabel('Frequency')
     numBins = 2
     histData = np.ones(len(dataset))
     #
