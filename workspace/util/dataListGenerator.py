@@ -17,7 +17,7 @@ def file_len(fname):
 def getInputArgs():
     parser = argparse.ArgumentParser('Generate data lists by spliting testing and training data.')
     parser.add_argument('--baseDir', dest='baseDir', default=None, type=str, help='Base directory to check for data.', required=True)
-    parser.add_argument('--split', dest='split', default=0.2, type=float, help='What \% is validation.')
+    parser.add_argument('--split', dest='split', default=0.2, type=float, help='What  is validation.')
     args = parser.parse_args()
     return args
 #
