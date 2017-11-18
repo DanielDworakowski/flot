@@ -188,6 +188,7 @@ class Agent(base.AgentBase):
             diff = angdiff(self.angle, camRot.yaw)
 
         if self.still_counter > 15:
+            print('quit\n')
             quit()
 
         elif self.mode == 0 and self.angle is None:

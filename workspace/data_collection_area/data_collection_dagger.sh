@@ -16,17 +16,18 @@ do
     echo -e "\nrun $COUNT\n" >> $airsim_log
     echo -e "\nrun $COUNT\n" >> $python_log
     ########################################## CHANGE THIS DIRECTORY. NOTE: that it isn't the OrangeRoom.sh, you have to go 2 more folders down to just "OrangeRoom"
-    ~/Downloads/LinuxNoEditor/OrangeRoom/Binaries/Linux/OrangeRoom OrangeRoom -windowed >> $airsim_log 2>&1 &
+    #~/Downloads/LinuxNoEditor/OrangeRoom/Binaries/Linux/OrangeRoom OrangeRoom -windowed >> $airsim_log 2>&1 &
+    ~/Downloads/orange/OrangeRoom/Binaries/Linux/OrangeRoom OrangeRoom -windowed >> $airsim_log 2>&1 &
     AIRSIM_PID=$!
     sleep 10s
 
     ########################################## CHANGE THIS DIRECTORY
-    python3 ~/code/flot/workspace/runAgent.py --agent=daggerAgent >> $python_log 2>&1
+    python3 ~/code/flot/workspace/runAgent.py --agent=daggerAgent --config=daggerAgentConfig >> $python_log 2>&1
     ps aux | grep -i runAgent
 
     echo -e "CRASHED\n\n"
     kill -9 $AIRSIM_PID
-    sleep 7s
+    sleep 10s
 
     COUNT=$(( $COUNT + 1  ))
 
