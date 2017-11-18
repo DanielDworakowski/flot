@@ -34,11 +34,19 @@ def getInputArgs():
 # Auto label data from collision information
 def labelData(observationsPath):
     start_throwaway_buffer, end_throwaway_buffer, good_buffer, bad_buffer, middle_throwaway_buffer, min_traj_len = labellingParam()
-    observations = pd.read_csv(observationsPath)
+    try:
+        observations = pd.read_csv(observationsPath)
+    except:
+        print('Unable to open %s'%observationsPath)
+        return
     observations = observations.rename(columns=lambda x: x.strip())
     collision_data = observations["raw_collision"].values
     col_idx = np.squeeze(np.argwhere(collision_data==1))
-    trajs = np.split(collision_data, col_idx)
+    try:
+        trajs = np.split(collision_data, col_idx)
+    except:
+        print('No collisions detected in file %s'%observationPath)
+        return
     labels = np.array([])
     for traj in trajs:
         traj_len = traj.shape[0]
@@ -77,5 +85,4 @@ if __name__ == "__main__":
     else:
         observationsPath = [x[0]+'/observations.csv' for x in os.walk(args.folderPath[0])][1:]
         for observationPath in observationsPath:
-            labelData(os.path.abspath(observationPath))      
-
+            labelData(os.path.abspath(observationPath))
