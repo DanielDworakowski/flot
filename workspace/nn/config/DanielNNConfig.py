@@ -13,10 +13,12 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self):
         super(Config, self).__init__()
-        self.hyperparam.numEpochs = 10
+        self.hyperparam.numEpochs = 32
+        self.epochSaveInterval = 1
+
         self.modelSavePath = '/disk1/model/'
-        self.modelLoadPath = '/disk1/model/model_best.pth.tar'
-        super(Config, self).loadModel()
+        # self.modelLoadPath = '/disk1/model/model_best.pth.tar'
+        # # super(Config, self).loadModel()
         self.dataTrainList = [
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-05-07-38/',
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-03-03-04/',
@@ -119,6 +121,8 @@ class Config(DefaultConfig):
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-02-23-48/',
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-04-57-32/',
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-05-11-30/',
+        # round 1 dagger.
+'/disk1/data/20171118-124720/daggerAgent_EnvironmentTypes.AirSim_18-11-2017-12-47-32/',
         ]
         self.dataValList = [
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-04-48-33/',
@@ -144,4 +148,7 @@ class Config(DefaultConfig):
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-01-30-37/',
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-06-22-36/',
         '/disk1/data/20171111-012402/dumbAgent_EnvironmentTypes.AirSim_11-11-2017-07-00-04/',
+        #round 1 dagger
+
+
         ]
