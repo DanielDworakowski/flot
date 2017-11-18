@@ -52,14 +52,14 @@ class AirSimControl(threading.Thread):
     def executeCommand(self):
         """ Send a single command for path following """
         if self.z is None: #z dne
-            yaw = self.client.getRollPitchYaw()[2]
+            yaw = self.client.getPitchRollYaw()[2]
             v_x = self.v_t * m.cos(yaw)
             v_y = self.v_t * m.sin(yaw)
             success = self.client.moveByVelocity(v_x, v_y, self.v_z, 1, DrivetrainType.ForwardOnly, YawMode(True, self.w))
             if not success:
                 print('Control: velocity command failed.')
         elif self.v_t is not None and self.w is not None: #z exists and v,w exists too
-            yaw = self.client.getRollPitchYaw()[2]
+            yaw = self.client.getPitchRollYaw()[2]
             v_x = self.v_t * m.cos(yaw)
             v_y = self.v_t * m.sin(yaw)
             z = self.z
