@@ -24,7 +24,8 @@ def getInputArgs():
     parser.add_argument('--plotVisited', dest='pltVisited', default=False,  help='Plot what was visited by the blimp', action='store_true')
     parser.add_argument('--plotBatch', dest='pltBatch', default=False, help='Plot and order the responses of a random batch', action='store_true')
     parser.add_argument('--plotMT', dest='pltMeanTraj', default=False, help='Plot the mean trajectories.', action='store_true')
-    parser.add_argument('--watch', dest='watch', default=False,  help='Watch somee of the plots grow up', action='store_true')
+    parser.add_argument('--watch', dest='watch', default=False,  help='Watch some of the plots grow up', action='store_true')
+    parser.add_argument('--useLabels', dest='uselabels', default=False,  help='Use the labels file instead of the observations files for vis', action='store_true')
     args = parser.parse_args()
     return args
 #
@@ -118,12 +119,13 @@ def plotTrajectory(args, conf, dataloader, dataset):
     axScatter.set_ylabel('Y')
     fighist = plt.figure()
     histax = fighist.gca()
-    histax.set_xlabel('Trajectory length (m)')
+    histax.set_xlabel('Label')
     histax.set_ylabel('Frequency')
     numBins = 2
     histData = np.ones(len(dataset))
     #
     # Iteratively create the plots.
+    colour = ['red', 'blue']
     if args.watch:
         plt.ion()
     for idx, data in enumerate(dataloader):
@@ -131,7 +133,7 @@ def plotTrajectory(args, conf, dataloader, dataset):
             plt.pause(0.00001)
         allLabels = data['meta']['allLabels']
         for miniIdx in range(len(allLabels['x[m]'])):
-            axScatter.scatter(allLabels['x[m]'][miniIdx], allLabels['y[m]'][miniIdx])
+            axScatter.scatter(allLabels['x[m]'][miniIdx], allLabels['y[m]'][miniIdx], color=colour[data['labels'][miniIdx][0]])
             histidx = idx * args.bsize + miniIdx
             histData[histidx] = allLabels['collision_free'][miniIdx]
     histax.hist(histData, numBins)
@@ -140,7 +142,7 @@ def plotTrajectory(args, conf, dataloader, dataset):
 def plotMeanTraj(args, conf):
     allTrajs = []
     for dir in conf.dataTrainList:
-        distl = getMeanTrajSingle(conf, dir)
+        distl = getMeanTrajSingle(args, conf, dir)
         allTrajs.extend(distl)
     figHist = plt.figure()
     histax = figHist.gca()
@@ -148,8 +150,11 @@ def plotMeanTraj(args, conf):
     histax.hist(allTrajs, numBins)
 #
 # Get the mean trajectory length in the data.
-def getMeanTrajSingle(conf, dir):
-    observations = pd.read_csv(dir + '/observations.csv')
+def getMeanTrajSingle(args, conf, dir):
+    file = 'observations.csv'
+    if args.uselabels:
+        file = 'labels.csv'
+    observations = pd.read_csv(dir + '/' + file)
     observations = observations.rename(columns=lambda x: x.strip())
     x_idx = observations.columns.get_loc('x[m]')
     y_idx = observations.columns.get_loc('y[m]')
