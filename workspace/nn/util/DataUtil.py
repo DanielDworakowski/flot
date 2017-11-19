@@ -84,6 +84,35 @@ class RandomCrop(object):
 
         return {'img': image, 'labels': labels, 'meta': sample['meta']}
 
+class CenterCrop(object):
+    '''Crop the center of the image for training.
+
+    Args:
+        output_size (tuple or int): Desired output size. If int, square crop
+            is made.
+    '''
+
+    def __init__(self, output_size):
+        if isinstance(output_size, int):
+            self.output_size = (output_size, output_size, 3)
+        else:
+            assert len(output_size) == 3
+            self.output_size = output_size
+
+    def __call__(self, sample):
+        image, labels = sample['img'], sample['labels']
+        img_h, img_w, img_c = image.shape
+        #
+        # check if the image to crop is large enough
+        if self.output_size[0] > img_h or self.output_size[1] > img_w:
+            printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.model_input_img_shape)," Image Given:"+str(npimg.shape))
+            raise RuntimeError
+        #
+        # Crop the image to size.
+        h_0 = int((img_h - self.output_size[0])/2)
+        w_1 = int((img_w - self.output_size[1])/2)
+        image = image[h_0:h_0+self.output_size[0],w_1:w_1+self.output_size[1],:]
+        return {'img': image, 'labels': labels, 'meta': sample['meta']}
 
 class ToTensor(object):
     '''Convert ndarrays in sample to Tensors.

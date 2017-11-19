@@ -65,6 +65,7 @@ class DefaultConfig():
     #
     # Transforms.
     transforms = transforms.Compose([
+        DataUtil.CenterCrop(hyperparam.image_shape),
         DataUtil.ToTensor(),
     ])
     #
