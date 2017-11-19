@@ -16,7 +16,7 @@ class Agent(base.AgentBase):
     SPEED = 1.0
     ROT_SPEED = 20.0
     TOLERANCE = 0.05
-    DEBUG = True
+    DEBUG = False
 
     def __init__(self, conf):
         super(Agent, self).__init__()
@@ -37,9 +37,9 @@ class Agent(base.AgentBase):
             self.dumbAction = Action(v_t=self.SPEED, w=0.0)
             self.mode=1
 
-        elif self.mode==1 and col:
-            self.mode=0
-            quit()
+        # elif self.mode==1 and col:
+        #     self.mode=0
+        #     quit()
             # self.dumbAction = Action(v_t=0.0, w=0.0, isReset=True)
 
     def getActionImpl(self):
@@ -68,10 +68,11 @@ class Agent(base.AgentBase):
 
         if not self.DEBUG:
 
-            if self.still_counter > 15:
-                quit()
-
-            elif self.mode == 0 and self.angle is None:
+            # if self.still_counter > 15:
+            #     quit()
+            #
+            # el
+            if self.mode == 0 and self.angle is None:
                 self.angle = random.uniform(-self.PI,self.PI)
                 self.dumbAction = Action(v_t=0.0, w=0.0)
 
