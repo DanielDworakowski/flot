@@ -1,0 +1,15 @@
+{
+  "SettingsVersion": 1,
+  "CaptureSettings": [
+    {
+      "ImageType": 0,
+      "Width": 640,
+      "Height": 480,
+      "TargetGamma": 1.0,
+      "AutoExposureMaxBrightness": 1.0,
+      "AutoExposureMinBrightness": 0.00,
+      "AutoExposureSpeed": 1000000
+    }
+  ],
+  "SeeDocsAt": "https://github.com/Microsoft/AirSim/blob/master/docs/settings.md"
+}
