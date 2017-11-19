@@ -171,7 +171,7 @@ def getMeanTrajSingle(args, conf, dir):
     #
     # Calculate the lengths of each of the trajectories
     for traj in trajs:
-        if len(traj) < 3:
+        if len(traj) < 40:
             continue
         traj_x = traj[:, x_idx]
         traj_y = traj[:, y_idx]
