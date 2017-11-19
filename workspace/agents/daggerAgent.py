@@ -15,7 +15,6 @@ import time
 
 def angdiff(t,s):
     return math.atan2(math.sin(t-s), math.cos(t-s))
-
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
@@ -23,18 +22,15 @@ class Agent(base.AgentBase):
     SPEED = 1.0
     ROT_SPEED = 20.0
     TOLERANCE = 0.05
-
     #
     # Constructor.
     def __init__(self, conf):
         super(Agent, self).__init__(conf)
         self.conf = conf
         self.toTensor = transforms.ToTensor()
-
         #
         # Check if cuda is available.
         self.usegpu = torch.cuda.is_available() and self.conf.usegpu
-
         #
         # Load the model.
         if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
@@ -54,26 +50,20 @@ class Agent(base.AgentBase):
 
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
-
         #
         # Heuristic Parameters
-
         #
         # action dim for array
         self.action_array_dim = 11
-
         #
         # minimum probability of collision free to go straight
         self.straight_min_prob = 0.80
-
         #
         # minimum probability of collision free to stop
         self.stop_min_prob = 0.0
-
         #
         # min turning probabilty
         self.turn_min_prob = 0.70
-
         #
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
@@ -86,29 +76,24 @@ class Agent(base.AgentBase):
         self.last_time = None
         self.still_counter = 0
         random.seed(time.time())
-
     #
     # Crop image into three sections, left center right.
     def cropImageToThree(self, npimg):
-
         #
         # shape of the image to split
         img_h, img_w, img_c = npimg.shape
         model_img_h, model_img_w, model_img_c = self.model_input_img_shape
-
         #
-        # check if the image to crop is large enough 
+        # check if the image to crop is large enough
         if self.model_input_img_shape[0] > img_h or self.model_input_img_shape[1] > img_w:
             printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.model_input_img_shape)," Image Given:"+str(npimg.shape))
             raise RuntimeError
-
         #
         # calculate the idx to start
         h_0 = int((img_h - model_img_h)/2)
         w_0 = 0
         w_1 = int((img_w - model_img_w)/2)
         w_2 = img_w - model_img_w
-
         #
         # cropping the image
         left_img = npimg[h_0:h_0+model_img_h,w_0:w_0+model_img_w,:]
@@ -129,31 +114,41 @@ class Agent(base.AgentBase):
                 img = Variable(self.toTensor(cropped_img).unsqueeze_(0))
             collision_free_pred = self.model(img).data
             collision_free_prob.append(softmax(collision_free_pred)[0,1].data.cpu().numpy(0))
-
         #
         # collision free probability
         left_prob, center_prob, right_prob = collision_free_prob
         left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
         action_array = np.zeros(self.action_array_dim)
         if center_prob > self.straight_min_prob:
+            printFrame()
             action_array[int(self.action_array_dim/2)] = 1
             action = Action(action_array)
 
         elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
+            printFrame()
             action = Action(action_array)
 
-        elif left_prob > right_prob and left_prob < self.turn_min_prob:
+        elif right_prob < self.turn_min_prob and left_prob < self.turn_min_prob:
+            printFrame()
             action_array[0] = 1
             action = Action(action_array)
 
-        elif right_prob >= left_prob and right_prob < self.turn_min_prob:
-            action_array[-1] = 1
-            action = Action(action_array)
+        # elif left_prob > right_prob and left_prob < self.turn_min_prob:
+        #     printFrame()
+        #     action_array[0] = 1
+        #     action = Action(action_array)
+        #
+        # elif right_prob >= left_prob and right_prob < self.turn_min_prob:
+        #     printFrame()
+        #     action_array[-1] = 1
+        #     action = Action(action_array)
 
         elif left_prob > right_prob:
+            printFrame()
             action = Action(v_t=left_prob*self.max_v_t,w=left_prob*self.max_w)
 
         else:
+            printFrame()
             action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)
         # action = Action(action_array)
 
@@ -163,7 +158,6 @@ class Agent(base.AgentBase):
 
         # Do more stuff.
         return action
-
     #
     # Reference to an observation
     def getActionImpl(self):
@@ -187,11 +181,12 @@ class Agent(base.AgentBase):
         if self.angle:
             diff = angdiff(self.angle, camRot.yaw)
 
-        if self.still_counter > 15:
-            print('quit\n')
-            quit()
-
-        elif self.mode == 0 and self.angle is None:
+        # if self.still_counter > 15:
+        #     print('quit\n')
+        #     quit()
+        #
+        # el
+        if self.mode == 0 and self.angle is None:
             self.angle = random.uniform(-self.PI,self.PI)
             action = Action(v_t=0.0, w=0.0)
 
