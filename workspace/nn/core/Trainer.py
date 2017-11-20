@@ -52,8 +52,8 @@ class Trainer():
         def logEpochTensorboard(self, epochSummary):
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
-            # for i in range(epochSummary['data']['labels'].shape[0]):
-            #     self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i])), epochSummary['data']['img'][i], epochSummary['epoch'])
+            for i in range(epochSummary['data']['labels'].shape[0]):
+                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i])), epochSummary['data']['img'][i], epochSummary['epoch'])
             for name, param in self.model.named_parameters():
                 self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
         #
@@ -98,7 +98,7 @@ class Trainer():
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
         if isBest:
-            shutil.copyfile(savePath, '%s/model_best.pth.tar'%(self.conf.modelSavePath))
+            shutil.move(savePath, '%s/model_best.pth.tar'%(self.conf.modelSavePath))
 
     def __init__(self, conf):
         ''' Set the training criteria.

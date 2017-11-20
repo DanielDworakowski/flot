@@ -19,17 +19,17 @@ def getInputArgs():
 #
 # Get the configuration, override as needed.
 def getConfig(args):
-    cond = args.configStr == 'DefaultConfig' and args.agentStr != None
-    if cond:
-        try:
-            configuration = __import__(args.agentStr+'Config')
-        except:
-            try:
-                configuration = __import__(args.agentStr)
-            except:
-                configuration = __import__(args.configStr)
-    else:
-        configuration = __import__(args.configStr)
+    # cond = args.configStr == 'DefaultConfig' and args.agentStr != None
+    # if cond:
+    #     try:
+    #         configuration = __import__(args.agentStr+'Config')
+    #     except:
+    #         try:
+    #             configuration = __import__(args.agentStr)
+    #         except:
+    #             configuration = __import__(args.configStr)
+    # else:
+    configuration = __import__(args.configStr)
 
     conf = configuration.Config()
     if args.dataColPath != None:

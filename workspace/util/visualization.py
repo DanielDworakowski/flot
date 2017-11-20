@@ -78,23 +78,28 @@ def gatherResponses(conf, dataloader):
     model.train(False)
     sm = torch.nn.Softmax()
     meta = None
+    numCorrect = 0
     #
     # Take a random sample from the dataloader.
     for idx, data in enumerate(dataloader):
         out = None
         labels = None
         if conf.usegpu:
-            labels = Variable(data['labels'].long())
-            labels =  labels.type(torch.LongTensor)[:,-1].cuda(async = True)
+            labels = Variable(data['labels'].squeeze_()).cuda(async = True)
             out = conf.hyperparam.model(Variable(data['img']).cuda(async = True))
         else:
             out = conf.hyperparam.model(Variable(data['img']))
         probStack = sm(out).data
+        _, preds = torch.max(out.data, 1)
         labelsStack = data['labels'].long()
         meta = data['meta']
+        numCorrect += torch.sum(preds == labels.data)
+        epochAcc = numCorrect / (preds.size()[0])
+        print(epochAcc)
         break
 
     labelVec = torch.zeros(probStack.size())
+    labelsStack = torch.unsqueeze(labelsStack, 1)
     labelVec.scatter_(1, labelsStack, 1)
     diff = probStack.cpu() - labelVec
     dist = torch.sum(torch.mul(diff, diff), dim=1)
@@ -166,7 +171,7 @@ def getMeanTrajSingle(args, conf, dir):
     #
     # Calculate the lengths of each of the trajectories
     for traj in trajs:
-        if len(traj) < 3:
+        if len(traj) < 40:
             continue
         traj_x = traj[:, x_idx]
         traj_y = traj[:, y_idx]

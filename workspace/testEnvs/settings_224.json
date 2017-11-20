@@ -4,8 +4,8 @@
   "CaptureSettings": [
     {
       "ImageType": 0,
-      "Width": 640,
-      "Height": 480,
+      "Width": 224,
+      "Height": 224,
       "TargetGamma": 1.0,
       "AutoExposureMaxBrightness": 1.0,
       "AutoExposureMinBrightness": 0.00,

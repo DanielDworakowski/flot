@@ -26,7 +26,7 @@ class Action():
             action_idx = np.argmax(self.array)
             action_sum = np.sum(self.array)
 
-            if action_idx == 0:
+            if action_sum == 0:
                 self.v_t = 0
                 self.w =  0
             else:
