@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # __author__ = 'Kelvin Chan'
 # __version__ = '0.1'
 
