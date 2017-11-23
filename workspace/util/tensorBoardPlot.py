@@ -49,7 +49,7 @@ def doPath(args):
     vallax.set_title('Validation Loss')
     valAax = valA.gca()
     valAax.set_xlabel('Epoch')
-    valAax.set_ylabel('Validation Accuracy')
+    valAax.set_ylabel('Accuracy (%)')
     valAax.set_title('Validation Accuracy')
 
     base = os.path.abspath(args.runs)

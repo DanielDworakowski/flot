@@ -149,6 +149,10 @@ def plotMeanTraj(args, conf):
     for dir in conf.dataTrainList:
         distl = getMeanTrajSingle(args, conf, dir)
         allTrajs.extend(distl)
+    allTrajs = np.array(allTrajs)
+    # allTrajs = allTrajs[allTrajs > 1]
+    print(allTrajs)
+    print(np.mean(allTrajs))
     figHist = plt.figure()
     histax = figHist.gca()
     numBins = int(math.sqrt(len(allTrajs)))
