@@ -1,6 +1,9 @@
 # Ignore simulation enviroments, would be nice to make this a submodule
 workspace/SimulationEnvironments/
 workspace/data/
+rasp/ros_ws/
+rasp/blimp_ws/build/
+rasp/blimp_ws/devel/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
