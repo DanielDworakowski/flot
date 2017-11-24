@@ -40,7 +40,7 @@ def main():
         msg.data = np.array(Image.open(stream)).tostring()
 
         # Publish image
-        image_pub.publish()
+        image_pub.publish(msg)
 
         # Close stream
         stream.close()
