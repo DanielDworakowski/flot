@@ -116,7 +116,9 @@ RUN apt remove -y python3-matplotlib python3-scipy python3-numpy
 RUN pip3 install matplotlib scipy numpy
 RUN pip3 install scikit-image
 RUN mkdir -p /home/user/Documents/AirSim
-RUN sed -i -e '1i10.0.1.39       raspberrypi\' /etc/hosts
+RUN cp /etc/hosts ~/hosts.new
+RUN sed -i -e '1i10.0.1.39       raspberrypi\' ~/hosts.new
+RUN cp -f ~/hosts.new /etc/hosts
 COPY ./workspace/testEnvs/settings.json /home/user/Documents/AirSim/settings.json
 
 # workspace
