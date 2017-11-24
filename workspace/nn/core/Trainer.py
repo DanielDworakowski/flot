@@ -2,6 +2,7 @@
 # Built in.
 import time
 import os
+import shutil
 #
 # Torch.
 import torch
@@ -37,7 +38,7 @@ class Trainer():
         # No validation data, no need to evaluate it.
         if self.conf.dataValList != None and len(self.conf.dataValList) > 0:
             test = FlotDataset.FlotDataset(self.conf, self.conf.dataValList, self.conf.transforms)
-            self.dataloaders['val'] = torch.utils.data.DataLoader(val, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
+            self.dataloaders['val'] = torch.utils.data.DataLoader(test, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
 
     def __setupLogging(self):
         ''' Configuration for logging the training process.
@@ -52,7 +53,7 @@ class Trainer():
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
             for i in range(epochSummary['data']['labels'].shape[0]):
-                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i].numpy()[0])), epochSummary['data']['img'][i], epochSummary['epoch'])
+                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i])), epochSummary['data']['img'][i], epochSummary['epoch'])
             for name, param in self.model.named_parameters():
                 self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
         #
@@ -97,7 +98,7 @@ class Trainer():
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
         if isBest:
-            shutil.copyfile(savePath, '%s/model_best.pth.tar'%(self.conf.modelSavePath))
+            shutil.move(savePath, '%s/model_best.pth.tar'%(self.conf.modelSavePath))
 
     def __init__(self, conf):
         ''' Set the training criteria.
@@ -141,7 +142,7 @@ class Trainer():
                 for data in self.dataloaders[phase]:
                     inputs, labels = data['img'], data['labels']
                     if self.conf.usegpu:
-                        labels =  labels.type(torch.LongTensor)[:,-1] #!!!remove this!!!
+                        labels.squeeze_()
                         inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
@@ -187,7 +188,7 @@ class Trainer():
                 self.logEpoch(self, summary)
                 #
                 # Save model as needed.
-                if (epoch % self.conf.epochSaveInterval) == 0 or isBest:
+                if ((epoch % self.conf.epochSaveInterval) == 0 and phase == 'train') or isBest:
                     self.__saveCheckpoint(epoch, isBest)
         #
         # Copy back the best model.

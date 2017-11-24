@@ -7,7 +7,7 @@ from debug import *
 def getInputArgs():
     parser = argparse.ArgumentParser('General tool to train a NN based on passed configuration.')
     parser.add_argument('--config', dest='configStr', default='DefaultNNConfig', type=str, help='Name of the config file to import.')
-    parser.add_argument('--tensorBoard', dest='useTensorBoard', default=False, type=bool, help='Whether to create a tensorboard visualization.')
+    parser.add_argument('--useTB', dest='useTensorBoard', default=False,  action='store_true', help='Whether to create a tensorboard visualization.')
     args = parser.parse_args()
     return args
 #

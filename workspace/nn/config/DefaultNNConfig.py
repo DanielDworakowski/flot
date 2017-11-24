@@ -66,8 +66,6 @@ class DefaultConfig():
     # Transforms.
     transforms = transforms.Compose([
         DataUtil.ToTensor(),
-        DataUtil.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) # imagenet values
-        # DataUtil.Normalize([0.08086318, 0.09237641,  0.12678191], [ 0.08651822,  0.09291226,  0.10738404])
     ])
     #
     # Transform relative to absolute paths.
@@ -107,11 +105,23 @@ class DefaultConfig():
         networkModification(hyperparam.model, hyperparam)
     #
     # Check if cuda is available.
-    if not torch.cuda.is_available():
-        printError('CUDA is not available!')
+    # if not torch.cuda.is_available():
+        # printError('CUDA is not available!')
     usegpu = (torch.cuda.is_available() and usegpu)
     if usegpu:
         hyperparam.model.cuda()
+    def loadModel(self):
+        ''' Load model from a specified directory.
+        '''
+        if self.modelLoadPath != None and os.path.isfile(self.modelLoadPath):
+            checkpoint = torch.load(self.modelLoadPath)
+            self.hyperparam.odel = checkpoint['model']
+            self.hyperparam.model.load_state_dict(checkpoint['state_dict'])
+            self.hyperparam.optimizer.load_state_dict(checkpoint['optimizer'])
+            printColour('Loaded model from path: %s'%self.modelLoadPath, colours.OKBLUE)
+        elif self.modelLoadPath != None:
+            printError('Unable to load specified model: %s'%(self.modelLoadPath))
+
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):

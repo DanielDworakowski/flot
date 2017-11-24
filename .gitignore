@@ -109,7 +109,10 @@ ENV/
 
 # Test environment directory
 workspace/testEnvs/
+workspace/uesrc/
 
 # tensor board
 runs/
 *EnvironmentTypes*
+[0-9]{8}-[0-9]{6}
+

@@ -11,7 +11,7 @@ class Config(DefaultConfig.DefaultConfig):
     image_shape = (224, 224, 3)
     #
     # Save training data.
-    serialize = False
+    serialize = True
     #
     # Initialize.
     def __init__(self):
