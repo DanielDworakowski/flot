@@ -2,70 +2,81 @@
 
 import smbus
 import math
+import time
+import numpy as np
 
-# Power management registers
-power_mgmt_1 = 0x6b
-power_mgmt_2 = 0x6c
+class MPU6050:
 
-def read_byte(adr):
-    return bus.read_byte_data(address, adr)
+    def __init__(self):
+        # Power management registers
+        self.power_mgmt_1 = 0x6b
+        self.power_mgmt_2 = 0x6c
+        self.bus = smbus.SMBus(1) # or bus = smbus.SMBus(1) for Revision 2 boards
+        self.address = 0x68       # This is the address value read via the i2cdetect command
+        # Now wake the 6050 up as it starts in sleep mode
+        bus.write_byte_data(address, power_mgmt_1, 0)
+        self.angular_velocity = 0.0
+        self.linear_velocity = 0.0
+        self.max_vel = 1.0
+        self.iter = 10
+        self.delay = 0.0001
 
-def read_word(adr):
-    high = bus.read_byte_data(address, adr)
-    low = bus.read_byte_data(address, adr+1)
-    val = (high << 8) + low
-    return val
+    def read_byte(self, adr):
+        return bus.read_byte_data(address, adr)
 
-def read_word_2c(adr):
-    val = read_word(adr)
-    if (val >= 0x8000):
-        return -((65535 - val) + 1)
-    else:
+    def read_word(self, adr):
+        high = bus.read_byte_data(address, adr)
+        low = bus.read_byte_data(address, adr+1)
+        val = (high << 8) + low
         return val
 
-def dist(a,b):
-    return math.sqrt((a*a)+(b*b))
+    def read_word_2c(self, adr):
+        val = read_word(adr)
+        if (val >= 0x8000):
+            return -((65535 - val) + 1)
+        else:
+            return val
 
-def get_y_rotation(x,y,z):
-    radians = math.atan2(x, dist(y,z))
-    return -math.degrees(radians)
+    def dist(self, a,b):
+        return math.sqrt((a*a)+(b*b))
 
-def get_x_rotation(x,y,z):
-    radians = math.atan2(y, dist(x,z))
-    return math.degrees(radians)
+    def get_y_rotation(self, x, y, z):
+        radians = math.atan2(x, dist(y,z))
+        return -math.degrees(radians)
 
-bus = smbus.SMBus(0) # or bus = smbus.SMBus(1) for Revision 2 boards
-address = 0x68       # This is the address value read via the i2cdetect command
+    def get_x_rotation(self, x, y, z):
+        radians = math.atan2(y, dist(x,z))
+        return math.degrees(radians)
 
-# Now wake the 6050 up as it starts in sleep mode
-bus.write_byte_data(address, power_mgmt_1, 0)
+    def get_data(self):
 
-print "gyro data"
-print "---------"
+        gyro_xout = self.read_word_2c(0x43) / 131
+        gyro_yout = self.read_word_2c(0x45) / 131
+        gyro_zout = self.read_word_2c(0x47) / 131
 
-gyro_xout = read_word_2c(0x43)
-gyro_yout = read_word_2c(0x45)
-gyro_zout = read_word_2c(0x47)
+        accel_xout = self.read_word_2c(0x3b) / 16384.0
+        accel_yout = self.read_word_2c(0x3d) / 16384.0
+        accel_zout = self.read_word_2c(0x3f) / 16384.0
 
-print "gyro_xout: ", gyro_xout, " scaled: ", (gyro_xout / 131)
-print "gyro_yout: ", gyro_yout, " scaled: ", (gyro_yout / 131)
-print "gyro_zout: ", gyro_zout, " scaled: ", (gyro_zout / 131)
+        x_rotation = self.get_x_rotation(accel_xout, accel_yout, accel_zout)
+        y_rotation = self.get_y_rotation(accel_xout, accel_yout, accel_zout)
 
-print
-print "accelerometer data"
-print "------------------"
+        return [gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation]
 
-accel_xout = read_word_2c(0x3b)
-accel_yout = read_word_2c(0x3d)
-accel_zout = read_word_2c(0x3f)
+    def get_vels(self):
 
-accel_xout_scaled = accel_xout / 16384.0
-accel_yout_scaled = accel_yout / 16384.0
-accel_zout_scaled = accel_zout / 16384.0
+        last_time = time.time()
+        gyro_arr = np.zeros([self.iter])
+        for i in range(self.iter): 
+            gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation = self.get_data()
+            dt = time.time() - last_time
+            last_time = time.time()
+            self.linear_velocity += dt*accel_xout
+            gyro_arr[i] = gyro_zout
+            time.sleep(self.delay)
 
-print "accel_xout: ", accel_xout, " scaled: ", accel_xout_scaled
-print "accel_yout: ", accel_yout, " scaled: ", accel_yout_scaled
-print "accel_zout: ", accel_zout, " scaled: ", accel_zout_scaled
+        self.angular_velocity = np.mean(gyro_arr)
+        self.linear_velocity = min(max(self.linear_velocity, -self.max_vel ), self.max_vel)
 
-print "x rotation: " , get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
-print "y rotation: " , get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+        return {linear_velocity:self.linear_velocity, angular_velocity:self.angular_velocity}
+
