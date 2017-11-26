@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import argparse
 import os
+import random
+
+balance = False
 
 def labellingParam():
     #
@@ -99,6 +102,18 @@ def labelData(observationsPath):
                 else:
                     col_traj[j] = -1
 
+            if balance:
+                labels_diff = col_traj[col_traj==1].shape[0] - col_traj[col_traj==0].shape[0]
+                if labels_diff > 0:
+                    new_positive_col_traj = np.ones(col_traj[col_traj==1].shape)
+                    new_positive_col_traj[np.random.choice(col_traj[col_traj==1].shape[0],labels_diff,replace=False)]=-1
+                    col_traj[col_traj==1] = new_positive_col_traj
+                elif labels_diff < 0:
+                    labels_diff = -1*labels_diff
+                    new_negative_col_traj = np.ones(col_traj[col_traj==0].shape)
+                    new_negative_col_traj[np.random.choice(col_traj[col_traj==0][0].shape,labels_diff,replace=False)]=-1
+                    col_traj[col_traj==0] = new_negative_col_traj
+
         labels=np.append(labels,col_traj)
     observations.insert(1,'collision_free',labels)
     dataset = observations
@@ -110,6 +125,7 @@ def labelData(observationsPath):
 # Main code.
 if __name__ == "__main__":
     args = getInputArgs()
+    balance = args.balance
     if args.observationsPath == None and args.folderPath == None:
         print('Must specify path to parse.')
     elif args.observationsPath != None:
