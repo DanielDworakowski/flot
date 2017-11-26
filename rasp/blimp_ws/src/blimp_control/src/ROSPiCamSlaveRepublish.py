@@ -14,7 +14,7 @@ from cv_bridge import CvBridge
 image_pub = rospy.Publisher("/pi_image", Image, queue_size=1)
 
 def callback(ros_data):
-    np_arr = np.fromstring(ros_data.data, np.uint8).reshape([480,640,3])
+    np_arr = np.fromstring(ros_data.data, np.uint8).reshape([1080,1920,3])
     image_pub.publish(bridge.cv2_to_imgmsg(np_arr, "bgr8"))
 
 image_sub = rospy.Subscriber("output/image_raw/compressed", CompressedImage, callback)
