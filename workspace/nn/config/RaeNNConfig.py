@@ -17,14 +17,11 @@ class Config(DefaultConfig):
         self.epochSaveInterval = 1
 
         self.modelSavePath = '/home/user/workspace/data/model/'
-        self.modelLoadPath = '/home/user/workspace/data/model/model_best.pth.tar'
-        super(Config, self).loadModel()
+        # self.modelLoadPath = '/home/user/workspace/data/model/model_best.pth.tar'
+        # super(Config, self).loadModel()
         self.dataTrainList = [
         '/home/user/workspace/data/20171119-022806/dumbAgent_EnvironmentTypes.AirSim_19-11-2017-02-28-16/',
         ]
         self.dataValList = [
         '/home/user/workspace/data/20171119-031809/dumbAgent_EnvironmentTypes.AirSim_19-11-2017-03-18-20/'
-        #round 1 dagger
-
-
         ]

@@ -111,9 +111,8 @@ def labelData(observationsPath):
                 elif labels_diff < 0:
                     labels_diff = -1*labels_diff
                     new_negative_col_traj = np.ones(col_traj[col_traj==0].shape)
-                    new_negative_col_traj[np.random.choice(col_traj[col_traj==0][0].shape,labels_diff,replace=False)]=-1
+                    new_negative_col_traj[np.random.choice(col_traj[col_traj==0].shape[0],labels_diff,replace=False)]=-1
                     col_traj[col_traj==0] = new_negative_col_traj
-
         labels=np.append(labels,col_traj)
     observations.insert(1,'collision_free',labels)
     dataset = observations
