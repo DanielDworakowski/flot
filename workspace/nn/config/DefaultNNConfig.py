@@ -116,7 +116,7 @@ class DefaultConfig():
         '''
         if self.modelLoadPath != None and os.path.isfile(self.modelLoadPath):
             checkpoint = torch.load(self.modelLoadPath)
-            self.hyperparam.odel = checkpoint['model']
+            self.hyperparam.model = checkpoint['model']
             self.hyperparam.model.load_state_dict(checkpoint['state_dict'])
             self.hyperparam.optimizer.load_state_dict(checkpoint['optimizer'])
             printColour('Loaded model from path: %s'%self.modelLoadPath, colours.OKBLUE)

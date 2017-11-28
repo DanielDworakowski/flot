@@ -1,6 +1,6 @@
 import rospy
 
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32, Float32MultiArray
 from sensor_msgs.msg import Imu
 from geometry_msgs.msg import TwistWithCovarianceStamped
 
@@ -15,7 +15,7 @@ class ControlLoop():
     # Default topics: sonar = 'hr_sr04', imu = 'bno055'
     # Blimp and controller objects is custom defined and must be passed as constructor argument
     def __init__(self, node_name, blimp, controller, queue_size=1, refresh_rate=10, sonar_topic='hr_sr04', imu_topic='bno055',
-                 nn_topic='nn_output'):
+                 nn_topic='nn_output', output_topic='blimp_test'):
 
         # Initiate controller node
         rospy.init_node(node_name, anonymous=True)
@@ -31,6 +31,9 @@ class ControlLoop():
 
         # Subscribe to Neural Network output
         rospy.Subscriber(nn_topic, TwistWithCovarianceStamped, self.nn_callback, queue_size=queue_size)
+
+        # Subscribe to Neural Network output
+        self.output_pub = rospy.Publisher(output_topic, Float32MultiArray, queue_size=1)
 
         # Current feedback data
         self.sonar = None
@@ -52,21 +55,24 @@ class ControlLoop():
         self.right_cmd = None
         self.down_cmd = None
 
+        # ControlLoop Published Message
+        self.output_msg = Float32MultiArray()
+
         # Flags
         self.isStarted = False
 
-        print('Initialized controller loop')
+        print('Controller loop initialized')
 
     def sonar_callback(self, msg):
-        print('New sonar message')
+        # print('New sonar message')
         self.sonar = msg.data
 
     def imu_callback(self, msg):
-        print('New imu message')
+        # print('New imu message')
         self.imu = msg
 
     def nn_callback(self, msg):
-        print('New nn callback')
+        # print('New nn callback')
         self.ref.x = msg.twist.twist.linear.x
         self.ref.w = msg.twist.twist.angular.z
         self.covariance = msg.twist.covariance
@@ -74,7 +80,7 @@ class ControlLoop():
 
     def start(self):
         self.isStarted = True
-        print('Control loop has started')
+        print('Starting Control Loop...')
 
         # Main controller loop
         while not rospy.is_shutdown():
@@ -85,12 +91,12 @@ class ControlLoop():
                 self.blimp.connect()
 
             # Get latest actuation values from controller
-            print('Updating actuator commands from controller...')
+            # print('Updating actuator commands from controller...')
             [self.left_cmd, self.right_cmd, self.down_cmd] = \
                 self.controller.update(self.ref, self.ref_stamp, self.sonar, self.imu)
 
             # Send new actuation values
-            print('Commanding the blimp...')
+            # print('Commanding the blimp...')
             self.blimp.left(self.denomalize(self.left_cmd)
                             if -32768 < self.denomalize(self.left_cmd) < 32768
                             else 0)
@@ -101,15 +107,23 @@ class ControlLoop():
                             if -32768 < self.denomalize(self.down_cmd) < 32768
                             else 0)
 
-            print('Sleeping to keep with refresh rate')
+            # Assign and publish actuation values
+            # Left is at index 0, right is at index 1, down is at index 2
+            self.output_msg.data = [self.left_cmd, self.right_cmd, self.down_cmd]
+            self.output_pub.publish(self.output_msg)
+
+            # Sleeping to keep with refresh rate
             self.rate.sleep()
 
     def stop(self):
-        print('Stopping control loop...')
+        print('Stopping Control Loop...')
         self.isStarted = False
         if self.blimp.is_connected():
             self.blimp.stop()
 
     # Helper functions
+
+    # Normalized values are from -1 <= x <= 1
+    # Denormalize to actuation value
     def denomalize(self, value):
         return int(round(value*32767))

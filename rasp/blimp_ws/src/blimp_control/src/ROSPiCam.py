@@ -23,24 +23,24 @@ camera = picamera.PiCamera()
 def main():
     image_pub = rospy.Publisher("/output/image_raw/compressed", CompressedImage, queue_size = 1)
     rospy.init_node('ROSPiCam')
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(100) # 10hz
     # Set publisher node to 15 Hz
-    msg = CompressedImage()
-    msg.format = "jpeg"
     # Publisher node loop
     while not rospy.is_shutdown():
+        msg = CompressedImage()
+        msg.format = "jpeg"
+
         # Open new BytesIO stream
         stream = io.BytesIO()
 
         # Capture frame from camera
         camera.capture(stream, format='jpeg')
-        # camera.capture("/home/pi/temp.jpg")
-
+        # camera.capture("/home/pi/temp.jpg
         msg.header.stamp = rospy.Time.now()
         msg.data = np.array(Image.open(stream)).tostring()
 
         # Publish image
-        image_pub.publish()
+        image_pub.publish(msg)
 
         # Close stream
         stream.close()

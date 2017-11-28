@@ -109,10 +109,16 @@ RUN pip3 install tensorboardX
 RUN pip3 install tensorflow-tensorboard
 RUN pip3 install tqdm
 RUN pip3 install pandas
+RUN apt-get update
+RUN apt-get install -y nano
+RUN apt-get install -y ros-kinetic-image-view
 RUN apt remove -y python3-matplotlib python3-scipy python3-numpy
 RUN pip3 install matplotlib scipy numpy
 RUN pip3 install scikit-image
 RUN mkdir -p /home/user/Documents/AirSim
+RUN cp /etc/hosts ~/hosts.new
+RUN sed -i -e '1i10.0.1.39       raspberrypi\' ~/hosts.new
+RUN cp -f ~/hosts.new /etc/hosts
 COPY ./workspace/testEnvs/settings.json /home/user/Documents/AirSim/settings.json
 
 # workspace
@@ -124,3 +130,5 @@ USER user
 RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient' >> ~/.bashrc 
 RUN echo 'export PYTHONPATH=/home/user/AirSim/PythonClient:${PYTHONPATH}' >> ~/.bashrc 
 RUN echo 'export PYTHONPATH=$( find /home/user/workspace/ -type d -printf ":%p" ):${PYTHONPATH}' >> ~/.bashrc
+RUN echo 'export ROS_MASTER_URI=http://10.0.1.39:11311' >> ~/.bashrc
+
