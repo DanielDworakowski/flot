@@ -16,11 +16,9 @@ class Agent(base.AgentBase):
         super(Agent, self).__init__(conf)
         self.conf = conf
         self.toTensor = transforms.ToTensor()
-
         #
         # Check if cuda is available.
         self.usegpu = torch.cuda.is_available() and self.conf.usegpu
-
         #
         # Load the model.
         if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
@@ -40,54 +38,43 @@ class Agent(base.AgentBase):
 
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
-
         #
         # Heuristic Parameters
-
         #
         # action dim for array
         self.action_array_dim = 11
-
         #
         # minimum probability of collision free to go straight
         self.straight_min_prob = 0.80
-
         #
         # minimum probability of collision free to stop
         self.stop_min_prob = 0.0
-
         #
         # min turning probabilty
         self.turn_min_prob = 0.70
-
         #
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
         self.max_v_t = action_.max_v_t
         self.max_w = action_.max_w
-
     #
     # Crop image into three sections, left center right.
     def cropImageToThree(self, npimg):
-
         #
         # shape of the image to split
         img_h, img_w, img_c = npimg.shape
         model_img_h, model_img_w, model_img_c = self.model_input_img_shape
-
         #
-        # check if the image to crop is large enough 
+        # check if the image to crop is large enough
         if self.model_input_img_shape[0] > img_h or self.model_input_img_shape[1] > img_w:
             printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.model_input_img_shape)," Image Given:"+str(npimg.shape))
             raise RuntimeError
-
         #
         # calculate the idx to start
         h_0 = int((img_h - model_img_h)/2)
         w_0 = 0
         w_1 = int((img_w - model_img_w)/2)
         w_2 = img_w - model_img_w
-
         #
         # cropping the image
         left_img = npimg[h_0:h_0+model_img_h,w_0:w_0+model_img_w,:]
@@ -95,7 +82,6 @@ class Agent(base.AgentBase):
         right_img = npimg[h_0:h_0+model_img_h,w_2:w_2+model_img_w,:]
 
         return [left_img, center_img, right_img]
-
     #
     # Reference to an observation
     def getActionImpl(self):
@@ -111,7 +97,6 @@ class Agent(base.AgentBase):
                 img = Variable(self.toTensor(cropped_img).unsqueeze_(0))
             collision_free_pred = self.model(img).data
             collision_free_prob.append(softmax(collision_free_pred)[0,1].data.cpu().numpy(0))
-
         #
         # collision free probability
         left_prob, center_prob, right_prob = collision_free_prob
