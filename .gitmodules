@@ -1,3 +1,7 @@
 [submodule "AirSim"]
 	path = external/AirSim
 	url = https://github.com/Microsoft/AirSim.git
+[submodule "external/pytorch-cnn-visualizations"]
+	path = external/pytorch-cnn-visualizations
+	url = git@github.com:utkuozbulak/pytorch-cnn-visualizations.git
+	branch = master

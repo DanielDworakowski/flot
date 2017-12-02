@@ -4,14 +4,14 @@ import DefaultConfig
 class Config(DefaultConfig.DefaultConfig):
     #
     # Where to load the model from.
-    modelLoadPath = '/home/user/workspace/data/model_best.pth.tar'
+    modelLoadPath = '/home/rae/flot/workspace/data/model/model_best.pth.tar'
     # modelLoadPath = '/home/user/Downloads/model/model_best.pth.tar'
     #
     # Image shape
     image_shape = (224, 224, 3)
     #
     # Save training data.
-    serialize = False
+    serialize = True
     #
     # Initialize.
     def __init__(self):
