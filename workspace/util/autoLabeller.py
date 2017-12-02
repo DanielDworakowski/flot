@@ -6,6 +6,7 @@ import os
 import random
 
 balance = False
+negativeOnly = False
 
 def labellingParam():
     #
@@ -35,6 +36,7 @@ def getInputArgs():
     parser.add_argument('--obs', dest='observationsPath', nargs='+', default=None, type=str, help='Full path to the obervations csv.')
     parser.add_argument('--obsFolders', dest='folderPath', nargs='+', default=None, type=str, help='Folder that contains multiple data folders')
     parser.add_argument('--balance', dest='balance', default=False,  help='Constrain the label to have equal amount of postive labels and negative labels', action='store_true')
+    parser.add_argument('--negativeOnly', dest='negativeOnly', default=False,  help='Constrain the label to have negative labels only', action='store_true')
     args = parser.parse_args()
     return args
 #
@@ -117,6 +119,8 @@ def labelData(observationsPath):
     observations.insert(1,'collision_free',labels)
     dataset = observations
     dataset = dataset[dataset.collision_free!=-1]
+    if negativeOnly:
+        dataset = dataset[dataset.collision_free!=1]
     labels_path = observationsPath.replace("observations.csv","labels.csv")
     dataset.to_csv(labels_path, index=False)
 
@@ -125,6 +129,7 @@ def labelData(observationsPath):
 if __name__ == "__main__":
     args = getInputArgs()
     balance = args.balance
+    negativeOnly = args.negativeOnly
     if args.observationsPath == None and args.folderPath == None:
         print('Must specify path to parse.')
     elif args.observationsPath != None:
