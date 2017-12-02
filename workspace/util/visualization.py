@@ -151,8 +151,10 @@ def plotMeanTraj(args, conf):
         allTrajs.extend(distl)
     allTrajs = np.array(allTrajs)
     # allTrajs = allTrajs[allTrajs > 1]
-    print(allTrajs)
+    print('Mean traj length')
     print(np.mean(allTrajs))
+    print('Std dev traj length')
+    print(np.std(allTrajs))
     figHist = plt.figure()
     histax = figHist.gca()
     numBins = int(math.sqrt(len(allTrajs)))

@@ -133,19 +133,19 @@ class Agent(base.AgentBase):
             action_array[0] = 1
             action = Action(action_array)
 
-        # elif left_prob > right_prob and left_prob < self.turn_min_prob:
-        #     printFrame()
-        #     action_array[0] = 1
-        #     action = Action(action_array)
-        #
-        # elif right_prob >= left_prob and right_prob < self.turn_min_prob:
-        #     printFrame()
-        #     action_array[-1] = 1
-        #     action = Action(action_array)
+        elif left_prob > right_prob and left_prob < self.turn_min_prob:
+            printFrame()
+            action_array[0] = 1
+            action = Action(action_array)
+
+        elif right_prob >= left_prob and right_prob < self.turn_min_prob:
+            printFrame()
+            action_array[-1] = 1
+            action = Action(action_array)
 
         elif left_prob > right_prob:
             printFrame()
-            action = Action(v_t=left_prob*self.max_v_t,w=left_prob*self.max_w)
+            action = Action(v_t=left_prob*self.max_v_t,w=-left_prob*self.max_w)
 
         else:
             printFrame()
