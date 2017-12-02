@@ -6,7 +6,7 @@ import os
 import random
 
 balance = False
-negativeOnly
+negativeOnly = False
 
 def labellingParam():
     #
@@ -36,7 +36,7 @@ def getInputArgs():
     parser.add_argument('--obs', dest='observationsPath', nargs='+', default=None, type=str, help='Full path to the obervations csv.')
     parser.add_argument('--obsFolders', dest='folderPath', nargs='+', default=None, type=str, help='Folder that contains multiple data folders')
     parser.add_argument('--balance', dest='balance', default=False,  help='Constrain the label to have equal amount of postive labels and negative labels', action='store_true')
-    parser.add_argument('--balance', dest='negativeOnly', default=False,  help='Constrain the label to have equal amount of postive labels and negative labels', action='store_true')
+    parser.add_argument('--negativeOnly', dest='negativeOnly', default=False,  help='Constrain the label to have negative labels only', action='store_true')
     args = parser.parse_args()
     return args
 #
