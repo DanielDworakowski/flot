@@ -3,7 +3,7 @@
 # Setup paths.
 export LOCAL_HOME=$PWD
 echo export PYTHONPATH=$PWD/../external/AirSim/PythonClient:"$(find $LOCAL_HOME/ -maxdepth 4 -type d -not -path '*__pycache__*' | sed '/\/\./d' | tr '\n' ':' | sed 's/:$//')" >> $HOME/.bashrc
-echo export PYTHONPATH=\$PYTONPATH:../external/pytorch-cnn-visualizations/src >> $HOME/.bashrc
+echo export PYTHONPATH=\$PYTHONPATH:../external/pytorch-cnn-visualizations/src >> $HOME/.bashrc
 source $HOME/.bashrc
 #
 # Initialize the airsim sub-module.
