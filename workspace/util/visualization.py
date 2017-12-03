@@ -43,20 +43,30 @@ def plotBatch(conf, meta, sorted, batchinfo):
     numImg = len(meta['index'])
     sidel = int(math.ceil(math.sqrt(numImg)))
     testim =  os.path.join(meta['filedir'][0], '%s_%s.png'%(conf.imgName, int(meta['index'][0])))
+    print(testim)
     im = Image.open(testim)
     width, height = im.size
-    grid = Image.new('RGB', (width * sidel, height * sidel))
+    inW, inH, inC = conf.hyperparam.image_shape
+    grid = Image.new('RGB', (inW * sidel, inH * sidel))
     draw = ImageDraw.Draw(grid)
     font = ImageFont.truetype("sans-serif.ttf", 25)
     fillarr = ['red', 'blue']
-    for i, y in enumerate(range(0, width * sidel, width)):
-        for j, x in enumerate(range(0, height * sidel, height)):
+    for i, y in enumerate(range(0, inW * sidel, inW)):
+        for j, x in enumerate(range(0, inH * sidel, inH)):
             infoIdx = i * sidel + j
             if infoIdx >= numImg:
                 break
             idx = sorted[i * sidel + j]
             imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
             im = Image.open(imName)
+            im = im.crop(
+                (
+                    width / 2 - inW / 2,
+                    height / 2 - inH / 2,
+                    width / 2 + inW / 2,
+                    height / 2 + inH / 2
+                )
+            )
             grid.paste(im, (x,y))
             space = 15
             draw.ellipse((x,y, x + space, y + space), fill=fillarr[batchinfo['labels'][idx][0]])
