@@ -10,9 +10,12 @@ project(blimp_control)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   rospy
+  roscpp
   std_msgs
   sensor_msgs
 )
+
+FIND_LIBRARY(WIRINGPI_LIBRARY wiringPi /home/pi/wiringPi)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -198,3 +201,9 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+add_executable(sonar src/hc_sr04_node.cpp)
+target_link_libraries(sonar ${catkin_LIBRARIES} ${WIRINGPI_LIBRARY})
+add_dependencies(sonar beginner_tutorials_generate_messages_cpp wiringPi)
+
+

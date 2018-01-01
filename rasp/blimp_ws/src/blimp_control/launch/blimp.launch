@@ -1,0 +1,21 @@
+<launch>
+  <node name="propeller" pkg="blimp_control" type="propeller_node.py" />
+  <node name="dummy_setpoint" pkg="blimp_control" type="dummy_ref_publisher.py" />
+  <node name="sonar" pkg="blimp_control" type="hc_sr04_node.py" />
+  
+  <node name="altitude_pid" pkg="pid" type="controller" output="screen" >
+    <param name="Kp" value="5.0" />
+    <param name="Ki" value="0.0" />
+    <param name="Kd" value="0.0" />
+    <param name="upper_limit" value="1.0" />
+    <param name="lower_limit" value="-1.0" />
+    <param name="windup_limit" value="1.0" />    
+    <param name="max_loop_frequency" value="105.0" />
+    <param name="min_loop_frequency" value="95.0" />
+    <param name="setpoint_topic" value="alt_setpoint" />
+    <param name="topic_from_plant" value="sonar_meas" />
+    <param name="topic_from_controller" value="prop_down" />
+  </node>
+  
+</launch>
+

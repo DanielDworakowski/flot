@@ -18,7 +18,7 @@ class SimplePlot():
             self.ys.append([0.0]*self.data_length)
             fig, ax = plt.subplots()
             ax.set_xlim([0,self.data_length])
-            ax.set_ylim([-1,1])
+            ax.set_ylim([-100,100])
             line, = ax.plot(np.zeros(self.data_length))
             self.figs.append(fig)
             self.axs.append(ax)
@@ -35,11 +35,3 @@ class SimplePlot():
             self.axs[i].draw_artist(self.lines[i])
             self.figs[i].canvas.update()
             self.figs[i].canvas.flush_events()
-
-# simple_plotter = SimplePlot(3)
-
-# while True:
-#     new_data = []
-#     for i in range(3):
-#         new_data.append(np.random.random())
-#     simple_plotter.update(new_data)
