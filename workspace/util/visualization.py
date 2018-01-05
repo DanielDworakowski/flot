@@ -152,6 +152,8 @@ def plotTrajectory(args, conf, dataloader, dataset):
             histidx = idx * args.bsize + miniIdx
             histData[histidx] = allLabels['collision_free'][miniIdx]
     histax.hist(histData, numBins)
+    histax.set_xticks([0, 0.25, 0.5, 0.75, 1])
+    histax.set_xticklabels(('','Negative', '', 'Positive',''))
 #
 # Gather and plot the trajectory lengths.
 def plotMeanTraj(args, conf):

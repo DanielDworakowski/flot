@@ -2,6 +2,7 @@
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 import os
 import argparse
+import numpy as np
 import matplotlib.pyplot as plt
 
 #
@@ -9,9 +10,27 @@ import matplotlib.pyplot as plt
 def getInputArgs():
     parser = argparse.ArgumentParser('Create visualization based on a network.')
     parser.add_argument('--runs', dest='runs', default='runFolder', type=str, help='Directory to the runs folder.')
+    parser.add_argument('--smooth', dest='alpha', default=0, type=float, help='Exponential moving average smoothing alpha.')
     args = parser.parse_args()
     return args
-def gatherData(path, trainlax, trainAax, vallax, valAax):
+#
+# Exponential moving avg.
+def numpy_ewma_vectorized_v2(data, alpha):
+    alpha_rev = 1-alpha
+    n = data.shape[0]
+    pows = alpha_rev**(np.arange(n+1))
+
+    scale_arr = 1/pows[:-1]
+    offset = data[0]*pows[1:]
+    pw0 = alpha*alpha_rev**(n-1)
+
+    mult = data*pw0*scale_arr
+    cumsums = mult.cumsum()
+    out = offset + cumsums*scale_arr[::-1]
+    return out
+#
+# Plot.
+def gatherData(path, trainlax, trainAax, vallax, valAax, name, alpha):
     event_acc = EventAccumulator(path)
     event_acc.Reload()
     # Show all tags in the log file
@@ -24,10 +43,18 @@ def gatherData(path, trainlax, trainAax, vallax, valAax):
     _, trainvstp, trainAcc = zip(*event_acc.Scalars('train_acc'))
     _, vallstp, valLoss = zip(*event_acc.Scalars('val_loss'))
     _, trainvstp, valAcc = zip(*event_acc.Scalars('val_acc'))
-    trainlax.plot(trainlstp, trainLoss)
-    trainAax.plot(trainvstp, trainAcc)
-    vallax.plot(vallstp, valLoss)
-    valAax.plot(trainvstp, valAcc)
+    trainLoss = np.array(trainLoss)
+    trainAcc = np.array(trainAcc)
+    valAcc = np.array(valAcc)
+    valLoss = np.array(valLoss)
+    trainLoss = numpy_ewma_vectorized_v2(trainLoss, alpha)
+    trainLoss = numpy_ewma_vectorized_v2(trainAcc, alpha)
+    valAcc = numpy_ewma_vectorized_v2(valAcc, alpha)
+    valLoss = numpy_ewma_vectorized_v2(valLoss, alpha)
+    trainlax.plot(trainlstp, trainLoss, label=name)
+    trainAax.plot(trainvstp, trainAcc, label=name)
+    vallax.plot(vallstp, valLoss, label=name)
+    valAax.plot(trainvstp, valAcc, label=name)
 #
 # Iterate over directories.
 def doPath(args):
@@ -51,13 +78,17 @@ def doPath(args):
     valAax.set_xlabel('Epoch')
     valAax.set_ylabel('Accuracy (%)')
     valAax.set_title('Validation Accuracy')
-
     base = os.path.abspath(args.runs)
     for root, dirs, files in os.walk(base):
-        for direc in dirs:
+        dirs.sort()
+        for direc in (dirs):
             print(direc)
-            gatherData(root+'/'+direc, trainlax, trainAax, vallax, valAax)
+            gatherData(root+'/'+direc, trainlax, trainAax, vallax, valAax, direc, args.alpha)
     trainl.savefig('trainl.png')
+    vallax.legend(loc='lower left')
+    valAax.legend(loc='lower left')
+    trainlax.legend(loc='lower left')
+    trainAax.legend(loc='lower left')
     trainA.savefig('trainA.png')
     vall.savefig('vall.png')
     valA.savefig('valA.png')

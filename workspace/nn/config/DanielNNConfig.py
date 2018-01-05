@@ -20,6 +20,11 @@ class Config(DefaultConfig):
         self.modelLoadPath = '/disk1/model/model_best.pth.tar'
         super(Config, self).loadModel()
         self.dataTrainList = [
+
+# '/home/ddworakowski/flot/workspace/rnd0/daggerAgent_EnvironmentTypes.AirSim_03-12-2017-15-13-56/'
+
+# '/home/ddworakowski/flot/workspace/rnd1/daggerAgent_EnvironmentTypes.AirSim_03-12-2017-15-07-25'
+
             '/disk1/data/20171202-011944/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-02-00-38/',
             '/disk1/data/20171202-011944/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-02-41-26/',
             '/disk1/data/20171202-011944/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-01-50-26/',
@@ -34,12 +39,12 @@ class Config(DefaultConfig):
             '/disk1/data/20171202-003453/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-00-55-23/',
             '/disk1/data/20171202-003453/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-01-05-35/',
             '/disk1/data/20171202-003453/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-00-45-11/',
-            # #
+            #
             # # Dagger 1.
-            # '/disk1/data/dagger1/20171202-115839/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-11-58-54/',
-            # '/disk1/data/dagger1/20171202-115410/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-11-54-25/',
-            # '/disk1/data/dagger1/20171202-113449/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-11-35-04/',
-            # '/disk1/data/dagger1/20171202-133243/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-13-32-59/',
+            '/disk1/data/dagger1/20171202-115839/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-11-58-54/',
+            '/disk1/data/dagger1/20171202-115410/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-11-54-25/',
+            '/disk1/data/dagger1/20171202-113449/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-11-35-04/',
+            '/disk1/data/dagger1/20171202-133243/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-13-32-59/',
             # #
             # # Dagger 2.
             # '/disk1/data/dagger2/20171202-140740/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-07-55/',
