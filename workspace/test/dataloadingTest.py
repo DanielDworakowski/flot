@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-import FlotDataset
-import DefaultNNConfig
+from core import FlotDataset
+from config import DefaultNNConfig
 import torch
-from DataUtil import plotSample
+from util import DataUtil
 from tensorboardX import SummaryWriter
+
 
 if __name__ == '__main__':
     #
@@ -16,6 +17,6 @@ if __name__ == '__main__':
     for data in dataset:
         writer.add_image('Image', data['img'].cuda(), 0)
         writer.add_text('Text', 'text logged at step:'+str(1), 1)
-        plotSample(data)
+        DataUtil.plotSample(data)
         break
     writer.close()

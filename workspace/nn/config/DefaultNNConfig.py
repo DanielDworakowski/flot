@@ -3,7 +3,8 @@ from torchvision import transforms, models
 import pathlib
 import torch
 import torch.nn as nn
-from util import DataUtil
+from nn.util import DataUtil
+from nn.util import Perterbations
 import os
 from debug import *
 #
@@ -65,7 +66,7 @@ class DefaultConfig():
     #
     # Transforms.
     transforms = transforms.Compose([
-        DataUtil.CenterCrop(hyperparam.image_shape),
+        Perterbations.CenterCrop(hyperparam.image_shape),
         DataUtil.ToTensor(),
     ])
     #
