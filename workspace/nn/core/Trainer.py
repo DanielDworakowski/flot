@@ -19,7 +19,7 @@ import numpy as np
 import tqdm
 #
 # Flot.
-import FlotDataset
+import core.FlotDataset as FlotDataset
 from debug import *
 
 class Trainer():

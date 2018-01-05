@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
-import Trainer
+import core.Trainer as Trainer
+
 from debug import *
 #
 # Parse the input arguments.
@@ -13,7 +14,8 @@ def getInputArgs():
 #
 # Get the configuration, override as needed.
 def getConfig(args):
-    configuration = __import__(args.configStr)
+    config = __import__('config.' + args.configStr)
+    configuration = getattr(config, args.configStr)
     conf = configuration.Config()
     #
     # Modifications to the configuration happen here.
