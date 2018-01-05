@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-import core.Trainer as Trainer
+from core import Trainer
 
 from debug import *
 #

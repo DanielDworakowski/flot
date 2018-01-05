@@ -3,7 +3,7 @@ from torchvision import transforms, models
 import pathlib
 import torch
 import torch.nn as nn
-import util.DataUtil as DataUtil
+from util import DataUtil
 import os
 from debug import *
 #
