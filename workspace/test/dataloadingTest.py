@@ -2,9 +2,8 @@
 from core import FlotDataset
 from config import DefaultNNConfig
 import torch
-from util import DataUtil
+from nn.util import DataUtil
 from tensorboardX import SummaryWriter
-
 
 if __name__ == '__main__':
     #
