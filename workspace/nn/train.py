@@ -14,8 +14,8 @@ def getInputArgs():
 #
 # Get the configuration, override as needed.
 def getConfig(args):
-    config = __import__('config.' + args.configStr)
-    configuration = getattr(config, args.configStr)
+    config_module = __import__('config.' + args.configStr)
+    configuration = getattr(config_module, args.configStr)
     conf = configuration.Config()
     #
     # Modifications to the configuration happen here.
