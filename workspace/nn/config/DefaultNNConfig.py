@@ -37,6 +37,15 @@ class HyperParam():
     #
     # Network modification fn.
     networkModification = None
+    ############################################################################
+    ############################################################################
+    ############################################################################
+    #
+    # How far to shift the image.
+    shiftBounds = int(224/3)
+    #
+    # The number of shift bins.
+    nSteps = (10, 0)
 #
 # Resize the network.
 def resizeFC(net, param):
