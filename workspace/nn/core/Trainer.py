@@ -84,7 +84,6 @@ class Trainer():
         elif self.conf.modelLoadPath != None:
             printError('Unable to load specified model: %s'%(self.conf.modelLoadPath))
 
-
     def __saveCheckpoint(self, epoch, isBest):
         ''' Save a model.
         '''
@@ -112,6 +111,7 @@ class Trainer():
         self.batchSize = hyperparam.batchSize
         self.criteria = hyperparam.criteria
         self.optimizer = hyperparam.optimizer
+        self.pUpdate = conf.pUpdate
         self.bestModel = self.model.state_dict()
         self.bestAcc = 0
         self.startingEpoch = 0
@@ -146,19 +146,10 @@ class Trainer():
                         inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
-                    ############################################################
                     #
-                    # Backward pass.
-                    self.optimizer.zero_grad()
+                    # Forward through the model and optimize.
                     out = self.model(inputs)
-                    _, preds = torch.max(out.data, 1)
-                    loss = self.criteria(out, labels)
-                    #
-                    #  Backwards pass.
-                    if phase == 'train':
-                        loss.backward()
-                        self.optimizer.step()
-                    ############################################################
+                    preds, loss = self.pUpdate(self.optimizer, self.criteria, out, labels, phase)
                     #
                     #  Stats.
                     runningLoss += loss.data[0]

@@ -52,6 +52,21 @@ def resizeFC(net, param):
     numFeat = net.fc.in_features
     net.fc = nn.Linear(numFeat, len(param.trainSignals) + 1) # need for positive and negative class.
 #
+# Default update function.
+@staticmethod
+def singleTarget(optimizer, criteria, netOut, labels, phase):
+    #
+    # Backward pass.
+    optimizer.zero_grad()
+    _, preds = torch.max(netOut.data, 1)
+    loss = criteria(netOut, labels)
+    #
+    #  Backwards pass.
+    if phase == 'train':
+        loss.backward()
+        optimizer.step()
+    return preds, loss
+#
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():
     #
@@ -110,6 +125,11 @@ class DefaultConfig():
     #
     # Create paths for saving models.
     pathlib.Path(modelSavePath).mkdir(parents=True, exist_ok=True)
+    #
+    # The optimization function.
+    pUpdate = singleTarget
+    if hasattr(hyperparam.model, 'pUpdate'):
+        pUpdate = hyperparam.model.pUpdate
     #
     # Run the resize.
     if networkModification != None:
