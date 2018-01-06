@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import util.DataUtil as DataUtil
 import os
-from DefaultNNConfig import DefaultConfig
+from config.DefaultNNConfig import DefaultConfig
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):
