@@ -97,8 +97,6 @@ class DataFolder(torch.utils.data.Dataset):
             printError('idx error')
             raise ValueError
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
-        print('Dataset image')
-        print(imName)
         #
         # Construct meta data.
         meta = {
