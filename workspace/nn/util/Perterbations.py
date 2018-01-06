@@ -2,7 +2,7 @@ import torch
 from torchvision import transforms, utils
 import random
 import numpy as np
-from util.debug import *
+from debug import *
 
 class CenterCrop(object):
     '''Crop the center of the image for training.
@@ -105,4 +105,4 @@ class RandomShift(object):
         w_1 = int((img_w - self.outputSize[1])/2 + dx)
         image = image[h_0:h_0+self.outputSize[0],w_1:w_1+self.outputSize[1],:]
         sample['meta']['shift'] = (dx,dy)
-        return {'img': image, 'labels': labels, 'meta': sample['meta']}
+        return {'img': image, 'labels': np.array([ix, iy, labels]), 'meta': sample['meta']}
