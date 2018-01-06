@@ -146,6 +146,7 @@ class Trainer():
                         inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
+                    ############################################################
                     #
                     # Backward pass.
                     self.optimizer.zero_grad()
@@ -157,6 +158,7 @@ class Trainer():
                     if phase == 'train':
                         loss.backward()
                         self.optimizer.step()
+                    ############################################################
                     #
                     #  Stats.
                     runningLoss += loss.data[0]
