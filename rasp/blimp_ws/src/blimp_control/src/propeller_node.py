@@ -2,23 +2,21 @@
 
 import rospy
 from std_msgs.msg import Float64
-import Blimp
+import propeller
 
 # Initialize and configure blimp
-blimp = Blimp.Blimp()
-print("Connecting to the propellers")
-blimp.connect()
-print("Propellers Connected!")
+print("Connecting to the propeller")
+prop = propeller.Prop()
 
 u_scale = 32768
 
 def down_callback(data):
-	blimp.down(data.data*u_scale)
+    blimp.down(data.data*u_scale)
 
 def propellers():
-    rospy.init_node('propellers', anonymous=True)
+    rospy.init_node("propellers", anonymous=True)
     rospy.Subscriber("prop_down", Float64, down_callback)
     rospy.spin()
 
 if __name__ == '__main__':
-	propellers()
+    propellers()
