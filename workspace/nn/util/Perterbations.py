@@ -76,8 +76,10 @@ class RandomShift(object):
         #
         # In the case where there is only one step it sticks to the first side
         # of the range, instead we force the middle number to be zero.
-        self.shiftsy[int((2*nSteps[1]+1) / 2)] = 0
-        self.shiftsx[int((2*nSteps[0]+1) / 2)] = 0
+        self.midIdxY = int((2*nSteps[1]+1) / 2)
+        self.midIdxX = int((2*nSteps[0]+1) / 2)
+        self.shiftsx[self.midIdxX] = 0
+        self.shiftsy[self.midIdxY] = 0
 
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
@@ -105,4 +107,4 @@ class RandomShift(object):
         w_1 = int((img_w - self.outputSize[1])/2 + dx)
         image = image[h_0:h_0+self.outputSize[0],w_1:w_1+self.outputSize[1],:]
         sample['meta']['shift'] = (dx,dy)
-        return {'img': image, 'labels': np.array([ix, iy, labels]), 'meta': sample['meta']}
+        return {'img': image, 'labels': np.array([self.midIdxX - ix, self.midIdxY - iy, labels]), 'meta': sample['meta']}
