@@ -111,7 +111,6 @@ class Trainer():
         self.batchSize = hyperparam.batchSize
         self.criteria = hyperparam.criteria
         self.optimizer = hyperparam.optimizer
-        self.pUpdate = conf.pUpdate
         self.bestModel = self.model.state_dict()
         self.bestAcc = 0
         self.startingEpoch = 0
@@ -149,7 +148,7 @@ class Trainer():
                     #
                     # Forward through the model and optimize.
                     out = self.model(inputs)
-                    preds, loss = self.pUpdate(self.optimizer, self.criteria, out, labels, phase)
+                    preds, loss = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
                     #
                     #  Stats.
                     runningLoss += loss.data[0]
