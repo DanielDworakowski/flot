@@ -8,13 +8,18 @@ from nn.util import Perterbations
 import os
 from debug import *
 from config.DefaultNNConfig import DefaultConfig
+from models import MultiTraj_FC
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):
     #
     # Initialize.
     def __init__(self):
-        super(Config, self).__init__()
+        nSteps = (1, 1)
+        super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps))
+        self.hyperparam.nSteps = nSteps
+        self.hyperparam.numEpochs = 32
+        self.epochSaveInterval = 1
         self.modelSavePath = '/disk1/model/'
         # self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
         self.dataTrainList = [

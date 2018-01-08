@@ -7,12 +7,10 @@ from nn.util import DataUtil
 from nn.util import Perterbations
 import os
 from debug import *
+from models import GenericModel
 #
 # The hyper parameters.
 class HyperParam():
-    #
-    # The model being used.
-    model = models.resnet18(pretrained=True)
     #
     # Image shape
     image_shape = (224, 224, 3)
@@ -26,14 +24,8 @@ class HyperParam():
     # Criteria.
     criteria = nn.CrossEntropyLoss()
     #
-    # Optimizer.
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
-    #
     # Scheduler.
     scheduler = None
-    #
-    # The training signals.
-    trainSignals = ['trajectoryIndicator']
     #
     # Network modification fn.
     networkModification = None
@@ -45,33 +37,17 @@ class HyperParam():
     shiftBounds = int(224/3)
     #
     # The number of shift bins.
-    nSteps = (10, 0)
-#
-# Resize the network.
-def resizeFC(net, param):
-    numFeat = net.fc.in_features
-    net.fc = nn.Linear(numFeat, len(param.trainSignals) + 1) # need for positive and negative class.
-#
-# Default update function.
-@staticmethod
-def singleTarget(optimizer, criteria, netOut, labels, phase):
-    #
-    # Backward pass.
-    optimizer.zero_grad()
-    _, preds = torch.max(netOut.data, 1)
-    loss = criteria(netOut, labels)
-    #
-    #  Backwards pass.
-    if phase == 'train':
-        loss.backward()
-        optimizer.step()
-    return preds, loss
+    nSteps = (10, 1)
+    def __init__(self, model):
+        #
+        # The model being used.
+        self.model = model
+        #
+        # Optimizer.
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
 #
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():
-    #
-    # The hyper parameters.
-    hyperparam = HyperParam()
     #
     # The default data path.
     dataTrainList = [
@@ -88,12 +64,6 @@ class DefaultConfig():
     # The image type name.
     imgName = 'front_camera'
     #
-    # Transforms.
-    transforms = transforms.Compose([
-        Perterbations.CenterCrop(hyperparam.image_shape),
-        DataUtil.ToTensor(),
-    ])
-    #
     # Transform relative to absolute paths.
     @staticmethod
     def getAbsPath(path):
@@ -109,7 +79,7 @@ class DefaultConfig():
     numWorkers = 8
     #
     # Resize the network as needed.
-    networkModification = resizeFC
+    networkModification = None
     #
     # Save every x epochs.
     epochSaveInterval = 1
@@ -120,36 +90,41 @@ class DefaultConfig():
     # Load a model.
     modelLoadPath = None
     ###########################################################################
-    # Functions to run config.
+    # Initialization that may be different across configurations.
     ###########################################################################
-    #
-    # Create paths for saving models.
-    pathlib.Path(modelSavePath).mkdir(parents=True, exist_ok=True)
-    #
-    # The optimization function.
-    pUpdate = singleTarget
-    if hasattr(hyperparam.model, 'pUpdate'):
-        pUpdate = hyperparam.model.pUpdate
-    #
-    # Run the resize.
-    if networkModification != None:
-        networkModification(hyperparam.model, hyperparam)
-    #
-    # Check if cuda is available.
-    # if not torch.cuda.is_available():
-        # printError('CUDA is not available!')
-    usegpu = (torch.cuda.is_available() and usegpu)
-    if usegpu:
-        hyperparam.model.cuda()
+    def __init__(self, model = GenericModel.GenericModel(models.resnet18(pretrained=True))):
+        #
+        # The hyper parameters.
+        self.hyperparam = HyperParam(model)
+        #
+        # Create paths for saving models.
+        pathlib.Path(self.modelSavePath).mkdir(parents=True, exist_ok=True)
+        #
+        # Check if cuda is available.
+        # if not torch.cuda.is_available():
+            # printError('CUDA is not available!')
+        self.usegpu = (torch.cuda.is_available() and self.usegpu)
+        if self.usegpu:
+            self.hyperparam.model.cuda()
+        #
+        # Transforms.
+        self.transforms = transforms.Compose([
+            Perterbations.CenterCrop(self.hyperparam.image_shape),
+            DataUtil.ToTensor(),
+        ])
+
     def loadModel(self):
         ''' Load model from a specified directory.
         '''
         if self.modelLoadPath != None and os.path.isfile(self.modelLoadPath):
             checkpoint = torch.load(self.modelLoadPath)
-            self.hyperparam.model = checkpoint['model']
-            self.hyperparam.model.load_state_dict(checkpoint['state_dict'])
-            self.hyperparam.optimizer.load_state_dict(checkpoint['optimizer'])
-            printColour('Loaded model from path: %s'%self.modelLoadPath, colours.OKBLUE)
+            if type(checkpoint['model']) == type(self.hyperparam.model):
+                self.hyperparam.model = checkpoint['model']
+                self.hyperparam.model.load_state_dict(checkpoint['state_dict'])
+                self.hyperparam.optimizer.load_state_dict(checkpoint['optimizer'])
+                printColour('Loaded model from path: %s'%self.modelLoadPath, colours.OKBLUE)
+            else:
+                printError('Loaded model from path: %s is of type: (%s) while the specified model is of type: (%s)'%(self.modelLoadPath, type(checkpoint['model']), type(self.hyperparam.model)))
         elif self.modelLoadPath != None:
             printError('Unable to load specified model: %s'%(self.modelLoadPath))
 
