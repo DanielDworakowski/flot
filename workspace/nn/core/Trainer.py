@@ -21,6 +21,8 @@ import tqdm
 # Flot.
 from core import FlotDataset
 from debug import *
+from itertools import count
+from multiprocessing import Lock
 
 class Trainer():
     ''' Implements training neural networks.
@@ -139,15 +141,15 @@ class Trainer():
                 numMini = len(self.dataloaders[phase])
                 pbar = tqdm.tqdm(total=numMini)
                 for data in self.dataloaders[phase]:
-                    inputs, labels = data['img'], data['labels']
+                    inputs, labels_cpu = data['img'], data['labels']
                     if self.conf.usegpu:
-                        labels.squeeze_()
-                        inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
+                        labels_cpu.squeeze_()
+                        inputs, labels = Variable(inputs).cuda(async = True), Variable(labels_cpu).cuda(async = True)
                     else:
-                        inputs, labels = Variable(inputs), Variable(labels)
+                        inputs, labels = Variable(inputs), Variable(labels_cpu)
                     #
                     # Forward through the model and optimize.
-                    out = self.model(inputs)
+                    out = self.model(inputs, labels_cpu)
                     preds, loss = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
                     #
                     #  Stats.

@@ -32,7 +32,9 @@ class CenterCrop(object):
         h_0 = int((img_h - self.outputSize[0])/2)
         w_1 = int((img_w - self.outputSize[1])/2)
         image = image[h_0:h_0+self.outputSize[0],w_1:w_1+self.outputSize[1],:]
-        return {'img': image, 'labels': labels, 'meta': sample['meta']}
+        return {'img': image,
+                'labels': labels,
+                'meta': sample['meta']}
 
 class RandomShift(object):
     ''' Take a random shift of the ROI of the image.
@@ -71,13 +73,17 @@ class RandomShift(object):
             self.nSteps = nSteps
         #
         # Setup the bounds and shifts.
-        self.shiftsx = np.linspace(-self.bounds[0], self.bounds[0], num = 2*nSteps[0]+1)
-        self.shiftsy = np.linspace(-self.bounds[1], self.bounds[1], num = 2*nSteps[1]+1)
+        self.rangeX = nSteps[0]
+        self.rangeY = nSteps[1]
+        self.nBinsX = 2 * self.rangeX + 1
+        self.nBinsY = 2 * self.rangeY + 1
+        self.shiftsx = np.linspace(-self.bounds[0], self.bounds[0], num = self.nBinsX)
+        self.shiftsy = np.linspace(-self.bounds[1], self.bounds[1], num = self.nBinsY)
         #
         # In the case where there is only one step it sticks to the first side
         # of the range, instead we force the middle number to be zero.
-        self.midIdxY = int((2*nSteps[1]+1) / 2)
-        self.midIdxX = int((2*nSteps[0]+1) / 2)
+        self.midIdxX = int(self.nBinsX / 2)
+        self.midIdxY = int(self.nBinsY / 2)
         self.shiftsx[self.midIdxX] = 0
         self.shiftsy[self.midIdxY] = 0
 
@@ -97,8 +103,8 @@ class RandomShift(object):
             raise RuntimeError
         #
         # Select the shift.
-        ix = random.randint(-self.nSteps[0], self.nSteps[0])
-        iy = random.randint(-self.nSteps[1], self.nSteps[1])
+        ix = random.randint(-self.rangeX, self.rangeX)
+        iy = random.randint(-self.rangeY, self.rangeY)
         dx = round(self.shiftsx[ix])
         dy = round(self.shiftsy[iy]) # Add noise around the bins?
         #
@@ -106,5 +112,19 @@ class RandomShift(object):
         h_0 = int((img_h - self.outputSize[0])/2 + dy)
         w_1 = int((img_w - self.outputSize[1])/2 + dx)
         image = image[h_0:h_0+self.outputSize[0],w_1:w_1+self.outputSize[1],:]
+        #
+        # Create the mask for where the correct values will exist when
+        # flattened. Times 2 to account for there being a binary classification.
+        mask = np.zeros((2 * self.nBinsX * self.nBinsY))
+        locX = self.midIdxX - ix
+        locY = self.midIdxY - iy
+        idx = 2 * (locY * self.nBinsX + locX)
+        mask[idx:idx+2] = 1
+        labels = labels + idx # New labels based on flattened class activiations.
         sample['meta']['shift'] = (dx,dy)
-        return {'img': image, 'labels': np.array([self.midIdxX - ix, self.midIdxY - iy, labels]), 'meta': sample['meta']}
+        #
+        # Create the label dict, placing the mask within the label as the second
+        # half.
+        return {'img': image,
+                'labels': np.append(labels[0], mask),
+                'meta': sample['meta']}

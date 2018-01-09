@@ -15,7 +15,7 @@ class Config(DefaultConfig):
     #
     # Initialize.
     def __init__(self):
-        nSteps = (1, 1)
+        nSteps = (5, 0)
         super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps))
         self.hyperparam.nSteps = nSteps
         self.hyperparam.numEpochs = 32

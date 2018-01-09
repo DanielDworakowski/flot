@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import transforms, models
+import numpy as np
 
 class Resnet_Multifc(nn.Module):
 
@@ -19,45 +20,50 @@ class Resnet_Multifc(nn.Module):
         #
         # FC layers.
         self.fc = []
-        self.nOutsX, self.nOutsY = nOuts
+        self.rangeX = 2 * nOuts[0] + 1
+        self.rangeY = 2 * nOuts[1] + 1
         self.layers = nn.ModuleList()
-        for i in range(self.nOutsY):
-            for j in range(self.nOutsX):
+        for i in range(self.rangeY):
+            for j in range(self.rangeX):
                 fc = nn.Linear(numFeat, 2)
                 self.fc.append(fc) # Binary classifier.
                 self.layers.append(fc)
 
-    def forward(self, x):
+    def forward(self, x, labels):
         feat = self.base(x)
         out = []
+        outTensor = None
+
+        # dx = labels.data[:, 0]
+        # dy = labels.data[:, 1]
+        # idx = dy * self.nOutsX + dx
         #
         # Iterate through each of the outputs and get their energies.
         # It is technically not neccessary to do this given that we can obtain
         # label and just forward the corresponding module.
-        print(self.fc)
-        for row in range(self.nOutsY):
-            for col in range(self.nOutsX):
-                print(feat)
-                idx = row * self.nOutsX + col
-                print(self.fc[idx])
-                out.append(self.fc[idx](feat))
-        return out
+
+        for row in range(self.rangeY):
+            for col in range(self.rangeX):
+                idx = row * self.rangeX + col
+                out.append(self.fc[idx](feat.squeeze()))
+        outTensor = torch.cat(out, dim=1)
+        return outTensor
 
     def pUpdate(self, optimizer, criteria, netOut, labels, meta, phase):
-        dx = labels.data[0][0]
-        dy = labels.data[0][1]
-        nOutsX, nOutsY = meta['nSteps']
-        label = labels.data[0][2]
+        label = labels
+        # print(meta['mask'])
+        print(label)
         #
-        # TODO: clean this up so that the meta is not passed back just to get
-        # the number of outputs. Maybe wrap a generic model class?
-        idx = dy * nOutsX[0] + dx
+        # Translate the relative coordinate to the absolute coordinate.
         #
         # Backward pass.
         optimizer.zero_grad()
-        print(netOut)
-        _, preds = torch.max(netOut[idx].data, 1)
-        loss = criteria(netOut[idx], label)
+        # print(idx)
+        # print(netOut)
+        # _, preds = torch.max(netOut[idx].data, 1)
+
+
+        loss = criteria(netOut, label, weight = None)
         #
         #  Backwards pass.
         if phase == 'train':

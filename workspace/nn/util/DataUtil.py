@@ -47,7 +47,9 @@ class Rescale(object):
         img = transform.resize(image, (new_h, new_w))
         #
         # Can add label transformation here.
-        return {'img': img, 'labels': labels, 'meta': sample['meta']}
+        return {'img': img,
+                'labels': labels,
+                'meta': sample['meta']}
 
 
 class RandomCrop(object):
@@ -82,7 +84,9 @@ class RandomCrop(object):
 
         labels = labels - [left, top]
 
-        return {'img': image, 'labels': labels, 'meta': sample['meta']}
+        return {'img': image,
+                'labels': labels,
+                'meta': sample['meta']}
 
 
 class ToTensor(object):
@@ -99,7 +103,8 @@ class ToTensor(object):
         # torch image: C X H X W
         # image = image[:,:,0:3] # Strip the alpha channel.
         return {'img': self.toTensor(image[:,:,0:3]),
-                'labels': torch.from_numpy(labels).squeeze_(), 'meta': sample['meta']}
+                'labels': torch.from_numpy(labels).squeeze_(),
+                'meta': sample['meta']}
 
 class Normalize(object):
     '''Normalizes an image.
