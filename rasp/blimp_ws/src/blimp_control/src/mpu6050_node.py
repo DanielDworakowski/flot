@@ -6,8 +6,7 @@ import time
 import mpu6050
 from sensor_msgs.msg import Imu
 import math
-from tf.transformations import quarternion_from_euler
-
+import tf.transformations
 
 imu = mpu6050.MPU6050()
 imu_data = Imu()
@@ -24,7 +23,7 @@ def imu():
             roll = 180 * math.atan(data[3] / math.sqrt(data[4]**2 + data[5]**2)) / math.pi
             pitch = 180 * math.atan(data[4] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
             yaw = 180 * math.atan(data[5] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
-            quaternion = quarternion_from_euler(roll,pitch,yaw)
+            quaternion = tf.transformations.quaternion_from_euler(roll,pitch,yaw)
             imu_data.orientation.w = quaternion[0]
             imu_data.orientation.x = quaternion[1]
             imu_data.orientation.y = quaternion[2]
