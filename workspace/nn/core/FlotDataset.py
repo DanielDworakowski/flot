@@ -11,6 +11,7 @@ from interval_tree import IntervalTree
 
 import functools
 import time
+
 def timeit(func):
     @functools.wraps(func)
     def newfunc(*args, **kwargs):
@@ -25,10 +26,6 @@ class FlotDataset(torch.utils.data.Dataset):
     '''Read from a list all of the data files.'''
 
     def __init__(self, conf, pathList, transform):
-        '''
-        Args:
-
-        '''
         self.conf = conf
         self.dataList = []
         self.offsets = []
@@ -47,10 +44,6 @@ class FlotDataset(torch.utils.data.Dataset):
 
 
     def __len__(self):
-        '''
-        Args:
-
-        '''
         return self.len
 
     def __getitem__(self, idx):
@@ -64,10 +57,6 @@ class DataFolder(torch.utils.data.Dataset):
     '''Read from a data folder.'''
 
     def __init__(self, conf, dataPath, transform = None):
-        '''
-        Args:
-
-        '''
         self.csvFileName = conf.csvFileName
         self.rootDir = dataPath
         self.transform = transform
@@ -80,17 +69,9 @@ class DataFolder(torch.utils.data.Dataset):
             raise ValueError
 
     def __len__(self):
-        '''
-        Args:
-
-        '''
         return len(self.csvFrame)
 
     def __getitem__(self, idx):
-        '''
-        Args:
-
-        '''
         try:
             labels = self.csvFrame.ix[idx]
         except:
