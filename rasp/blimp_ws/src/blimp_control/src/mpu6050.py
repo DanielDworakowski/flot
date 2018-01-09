@@ -67,7 +67,7 @@ class MPU6050:
 
         last_time = time.time()
         gyro_arr = np.zeros([self.iter])
-        for i in range(self.iter): 
+        for i in range(self.iter):
             gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation = self.get_data()
 	    dt = time.time() - last_time
             last_time = time.time()
@@ -81,4 +81,3 @@ class MPU6050:
         self.linear_velocity = min(max(self.linear_velocity, -self.max_vel ), self.max_vel)
 
         return {'linear_velocity':self.linear_velocity, 'angular_velocity':self.angular_velocity}
-
