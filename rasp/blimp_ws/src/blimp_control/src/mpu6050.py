@@ -35,7 +35,7 @@ class MPU6050:
         if (val >= 0x8000):
             return -((65535 - val) + 1)
         else:
-            return quaternion[1]
+            return val
 
     def dist(self, a,b):
         return math.sqrt((a*a)+(b*b))
