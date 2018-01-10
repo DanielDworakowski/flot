@@ -50,23 +50,28 @@ class Resnet_Multifc(nn.Module):
         return outTensor
 
     def pUpdate(self, optimizer, criteria, netOut, labels, meta, phase):
-        label = labels
+        label = labels[:,0]
+        mask = labels[:,1:]
         # print(meta['mask'])
-        print(label)
-        #
-        # Translate the relative coordinate to the absolute coordinate.
+
+        # print(label)
+        # print(mask)
+        # print(mask.nonzero().squeeze())
+        # print(netOut)
+        x = label.size()[0]
+        y = 2
+        classActivation = torch.masked_select(netOut, mask.byte()).view(x,y)
         #
         # Backward pass.
         optimizer.zero_grad()
         # print(idx)
         # print(netOut)
-        # _, preds = torch.max(netOut[idx].data, 1)
-
-
-        loss = criteria(netOut, label, weight = None)
+        _, preds = torch.max(classActivation.data, 1)
+        loss = criteria(classActivation, label)
         #
         #  Backwards pass.
         if phase == 'train':
             loss.backward()
             optimizer.step()
-        return preds, loss
+        dCorrect = torch.sum(preds == label.data)
+        return preds, loss, dCorrect

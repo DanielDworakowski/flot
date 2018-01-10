@@ -115,12 +115,11 @@ class RandomShift(object):
         #
         # Create the mask for where the correct values will exist when
         # flattened. Times 2 to account for there being a binary classification.
-        mask = np.zeros((2 * self.nBinsX * self.nBinsY))
+        mask = np.zeros((2 * self.nBinsX * self.nBinsY), dtype='long')
         locX = self.midIdxX - ix
         locY = self.midIdxY - iy
         idx = 2 * (locY * self.nBinsX + locX)
         mask[idx:idx+2] = 1
-        labels = labels + idx # New labels based on flattened class activiations.
         sample['meta']['shift'] = (dx,dy)
         #
         # Create the label dict, placing the mask within the label as the second

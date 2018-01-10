@@ -31,4 +31,5 @@ class GenericModel(nn.Module):
         if phase == 'train':
             loss.backward()
             optimizer.step()
-        return preds, loss
+        dCorrect = torch.sum(preds == labels.data)
+        return preds, loss, dCorrect

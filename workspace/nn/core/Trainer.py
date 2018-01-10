@@ -54,8 +54,13 @@ class Trainer():
         def logEpochTensorboard(self, epochSummary):
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
+            labels = None
+            if epochSummary['data']['labels'].shape[1] > 1:
+                labels = epochSummary['data']['labels'][:, 0]
+            else:
+                labels = epochSummary['data']['labels']
             for i in range(epochSummary['data']['labels'].shape[0]):
-                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i])), epochSummary['data']['img'][i], epochSummary['epoch'])
+                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'], i, epochSummary['epoch'], epochSummary['pred'][i], int(labels[i])), epochSummary['data']['img'][i], epochSummary['epoch'])
             for name, param in self.model.named_parameters():
                 self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
         #
@@ -150,11 +155,11 @@ class Trainer():
                     #
                     # Forward through the model and optimize.
                     out = self.model(inputs, labels_cpu)
-                    preds, loss = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
+                    preds, loss, dCorrect = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
                     #
                     #  Stats.
                     runningLoss += loss.data[0]
-                    runningCorrect += torch.sum(preds == labels.data)
+                    runningCorrect += dCorrect
                     pbar.update(1)
                 pbar.close()
                 #
