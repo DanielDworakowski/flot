@@ -13,7 +13,7 @@ class GenericModel(nn.Module):
         if isinstance(model, type(models.resnet18)):
             self.resizeFC()
 
-    def forward(self, x, y):
+    def forward(self, x):
         return self.model(x)
 
     def resizeFC(self):

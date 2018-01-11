@@ -95,12 +95,12 @@ class Trainer():
         ''' Save a model.
         '''
         state = {
-                'epoch': epoch + 1,
-                'state_dict': self.model.state_dict(),
-                'optimizer' : self.optimizer.state_dict(),
-                'model': self.model,
-                'conf': self.conf
-            }
+                    'epoch': epoch + 1,
+                    'state_dict': self.model.state_dict(),
+                    'optimizer' : self.optimizer.state_dict(),
+                    'model': self.model,
+                    'conf': self.conf
+                }
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
         if isBest:
@@ -154,7 +154,7 @@ class Trainer():
                         inputs, labels = Variable(inputs), Variable(labels_cpu)
                     #
                     # Forward through the model and optimize.
-                    out = self.model(inputs, labels_cpu)
+                    out = self.model(inputs)
                     preds, loss, dCorrect = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
                     #
                     #  Stats.

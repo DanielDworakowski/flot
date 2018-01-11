@@ -27,21 +27,16 @@ class Resnet_Multifc(nn.Module):
             for j in range(self.rangeX):
                 fc = nn.Linear(numFeat, 2)
                 self.fc.append(fc) # Binary classifier.
-                self.layers.append(fc)
+                self.add_module('fc%s'%len(self.fc), fc)
 
-    def forward(self, x, labels):
+    def forward(self, x):
         feat = self.base(x)
         out = []
         outTensor = None
-
-        # dx = labels.data[:, 0]
-        # dy = labels.data[:, 1]
-        # idx = dy * self.nOutsX + dx
         #
         # Iterate through each of the outputs and get their energies.
         # It is technically not neccessary to do this given that we can obtain
         # label and just forward the corresponding module.
-
         for row in range(self.rangeY):
             for col in range(self.rangeX):
                 idx = row * self.rangeX + col
@@ -49,23 +44,23 @@ class Resnet_Multifc(nn.Module):
         outTensor = torch.cat(out, dim=1)
         return outTensor
 
-    def pUpdate(self, optimizer, criteria, netOut, labels, meta, phase):
+    def getActivations(self, netOut, labels):
         label = labels[:,0]
         mask = labels[:,1:]
-        # print(meta['mask'])
-
-        # print(label)
-        # print(mask)
-        # print(mask.nonzero().squeeze())
-        # print(netOut)
+        #
+        # The dimensions disred for the tensor.
         x = label.size()[0]
         y = 2
         classActivation = torch.masked_select(netOut, mask.byte()).view(x,y)
+        return classActivation, label
+
+    def pUpdate(self, optimizer, criteria, netOut, labels, meta, phase):
+        #
+        # Get the activations.
+        classActivation, label = self.getActivations(netOut, labels)
         #
         # Backward pass.
         optimizer.zero_grad()
-        # print(idx)
-        # print(netOut)
         _, preds = torch.max(classActivation.data, 1)
         loss = criteria(classActivation, label)
         #
