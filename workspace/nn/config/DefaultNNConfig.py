@@ -37,7 +37,7 @@ class HyperParam():
     shiftBounds = int(224/3)
     #
     # The number of shift bins.
-    nSteps = (10, 1)
+    nSteps = (0, 0)
     def __init__(self, model):
         #
         # The model being used.
