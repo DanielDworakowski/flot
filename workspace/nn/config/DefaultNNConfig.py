@@ -92,7 +92,7 @@ class DefaultConfig():
     ###########################################################################
     # Initialization that may be different across configurations.
     ###########################################################################
-    def __init__(self, model = GenericModel.GenericModel(models.resnet18(pretrained=True))):
+    def __init__(self, model = GenericModel.GenericModel(models.resnet18(pretrained=True)), loadPath = None):
         #
         # The hyper parameters.
         self.hyperparam = HyperParam(model)
@@ -112,21 +112,25 @@ class DefaultConfig():
             Perterbations.CenterCrop(self.hyperparam.image_shape),
             DataUtil.ToTensor(),
         ])
+        #
+        # Load the model.
+        self.loadModel(loadPath)
 
-    def loadModel(self):
+    def loadModel(self, loadPath):
         ''' Load model from a specified directory.
         '''
-        if self.modelLoadPath != None and os.path.isfile(self.modelLoadPath):
-            checkpoint = torch.load(self.modelLoadPath)
+        if loadPath != None and os.path.isfile(loadPath):
+            checkpoint = torch.load(loadPath)
             if type(checkpoint['model']) == type(self.hyperparam.model):
+                self.modelLoadPath = loadPath
                 self.hyperparam.model = checkpoint['model']
                 self.hyperparam.model.load_state_dict(checkpoint['state_dict'])
                 self.hyperparam.optimizer.load_state_dict(checkpoint['optimizer'])
-                printColour('Loaded model from path: %s'%self.modelLoadPath, colours.OKBLUE)
+                printColour('Loaded model from path: %s'%loadPath, colours.OKBLUE)
             else:
-                printError('Loaded model from path: %s is of type: (%s) while the specified model is of type: (%s)'%(self.modelLoadPath, type(checkpoint['model']), type(self.hyperparam.model)))
-        elif self.modelLoadPath != None:
-            printError('Unable to load specified model: %s'%(self.modelLoadPath))
+                printError('Loaded model from path: %s is of type: (%s) while the specified model is of type: (%s)'%(loadPath, type(checkpoint['model']), type(self.hyperparam.model)))
+        elif loadPath != None:
+            printError('Unable to load specified model: %s'%(loadPath))
 
 #
 # Class to use the default configuration.
