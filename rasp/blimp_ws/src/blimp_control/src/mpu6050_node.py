@@ -8,7 +8,7 @@ from sensor_msgs.msg import Imu
 import math
 import tf.transformations
 
-imu = mpu6050.MPU6050()
+imu_t = mpu6050.MPU6050()
 imu_data = Imu()
 
 def imu():
@@ -18,7 +18,7 @@ def imu():
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
             # [gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation]
-            data  = imu.get_data()
+            data  = imu_t.get_data()
             # imu_data.header.stamp = rospy.Time.now()
             roll = 180 * math.atan(data[3] / math.sqrt(data[4]**2 + data[5]**2)) / math.pi
             pitch = 180 * math.atan(data[4] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
