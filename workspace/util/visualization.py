@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import FlotDataset
-import DefaultNNConfig
+from nn.core import FlotDataset
+from nn.config import DefaultNNConfig
 import argparse
 import os
 import math
@@ -20,9 +20,10 @@ from tensorboardX import SummaryWriter
 def getInputArgs():
     parser = argparse.ArgumentParser('Create visualization based on a network.')
     parser.add_argument('--config', dest='configStr', default='DefaultNNConfig', type=str, help='Name of the config file to import.')
-    parser.add_argument('--batchSize', dest='bsize', default=32, type=int, help='How many images to put in a batch')
+    parser.add_argument('--batchSize', dest='bsize', default=25, type=int, help='How many images to put in a batch')
     parser.add_argument('--plotVisited', dest='pltVisited', default=False,  help='Plot what was visited by the blimp', action='store_true')
     parser.add_argument('--plotBatch', dest='pltBatch', default=False, help='Plot and order the responses of a random batch', action='store_true')
+    parser.add_argument('--plotBatchMulti', dest='plotBatchMulti', default=False, help='Plot and order the responses of a random batch', action='store_true')
     parser.add_argument('--plotMT', dest='pltMeanTraj', default=False, help='Plot the mean trajectories.', action='store_true')
     parser.add_argument('--watch', dest='watch', default=False,  help='Watch some of the plots grow up', action='store_true')
     parser.add_argument('--useLabels', dest='uselabels', default=False,  help='Use the labels file instead of the observations files for vis', action='store_true')
@@ -31,11 +32,9 @@ def getInputArgs():
 #
 # Get the configuration, override as needed.
 def getConfig(args):
-    configuration = __import__(args.configStr)
+    config_module = __import__('config.' + args.configStr)
+    configuration = getattr(config_module, args.configStr)
     conf = configuration.Config()
-    #
-    # Modifications to the configuration happen here.
-    # conf.useTensorBoard = args.useTensorBoard
     return conf
 #
 # Plot the image results from best to worst.
@@ -204,6 +203,99 @@ def getMeanTrajSingle(args, conf, dir):
         distList.append(dist)
     return distList
 #
+# Plot the image results from best to worst.
+def plotBatchMulti(conf, meta, sorted, batchinfo):
+    numImg = len(meta['index'])
+    sidel = int(math.ceil(math.sqrt(numImg)))
+    testim =  os.path.join(meta['filedir'][0], '%s_%s.png'%(conf.imgName, int(meta['index'][0])))
+    print(testim)
+    im = Image.open(testim)
+    width, height = im.size
+    inW, inH, inC = conf.hyperparam.image_shape
+    grid = Image.new('RGB', (inW * sidel, inH * sidel))
+    draw = ImageDraw.Draw(grid)
+    font = ImageFont.truetype("sans-serif.ttf", 25)
+    fillarr = ['red', 'blue']
+    for i, y in enumerate(range(0, inW * sidel, inW)):
+        for j, x in enumerate(range(0, inH * sidel, inH)):
+            infoIdx = i * sidel + j
+            if infoIdx >= numImg:
+                break
+            idx = sorted[i * sidel + j]
+            imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
+            im = Image.open(imName)
+            im = im.crop(
+                (
+                    width / 2 - inW / 2,
+                    height / 2 - inH / 2,
+                    width / 2 + inW / 2,
+                    height / 2 + inH / 2
+                )
+            )
+            grid.paste(im, (x,y))
+            space = 15
+            draw.ellipse((x,y, x + space, y + space), fill=fillarr[batchinfo['labels'][idx][0]])
+            _, predicted = torch.max(batchinfo['probs'][idx], 0)
+            draw.ellipse((x + space, y, x + 2 * space, y + space), fill=fillarr[predicted[0]])
+            draw.text((x + 3 * space,y),'%s'%(i*sidel + j),(255,255,255),font=font)
+            draw.text((x,y + space),'%1.2f'%batchinfo['probs'][idx][1],(255,255,255),font=font)
+    implt = plt.figure()
+    impltax = implt.gca()
+    impltax.imshow(grid)
+    impltax.axis('off')
+#
+# Gather data.
+def gatherResponsesMulti(conf, dataloader):
+    loss = None
+    probStack = None
+    labelsStack = None
+    model = conf.hyperparam.model
+    model.train(False)
+    sm = torch.nn.Softmax(dim = 1)
+    meta = None
+    numCorrect = 0
+    #
+    # Take a random sample from the dataloader.
+    for idx, data in enumerate(dataloader):
+        out = None
+        labels = None
+        if conf.usegpu:
+            labels = Variable(data['labels'].squeeze_()).cuda(async = True)
+            out = conf.hyperparam.model(Variable(data['img']).cuda(async = True))
+        else:
+            out = conf.hyperparam.model(Variable(data['img']))
+        #
+        # Check if we need to use the class to get gather activations.
+        if hasattr(conf.hyperparam.model, 'getActivations'):
+            out, labels = conf.hyperparam.model.getActivations(out, labels)
+            labels = labels.data
+        else:
+            labels = data['labels']
+        probStack = sm(out).data
+        _, preds = torch.max(out.data, 1)
+        labelsStack = labels.long()
+        meta = data['meta']
+        numCorrect += torch.sum(preds == labels)
+        epochAcc = numCorrect / (preds.size()[0])
+        print(epochAcc)
+        break
+
+    labelVec = torch.zeros(probStack.size())
+    labelsStack = torch.unsqueeze(labelsStack, 1)
+    labelVec.scatter_(1, labelsStack.cpu(), 1)
+    diff = probStack.cpu() - labelVec
+    dist = torch.sum(torch.mul(diff, diff), dim=1)
+    #
+    # Get the sorted version of the batch.
+    sortedList, idx = torch.sort(dist)
+    figHist = plt.figure()
+    histax = figHist.gca()
+    histax.set_xlabel('Score (Lower is better)')
+    histax.set_ylabel('Frequency')
+    histax.hist(dist.numpy(), int(math.ceil(math.sqrt(dist.size()[0])))) # Dont do sqrt so up to 2.
+    return {'probs': probStack, 'meta': meta, 'sorted': idx, 'metric': dist, 'labels': labelsStack}
+
+#
 # Visualize.
 def visualize(conf, args):
     dataset = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
@@ -211,6 +303,9 @@ def visualize(conf, args):
                                           shuffle = True, pin_memory = False)
     if args.pltBatch:
         batchinfo = gatherResponses(conf, dataloader)
+        plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
+    if args.plotBatchMulti:
+        batchinfo = gatherResponsesMulti(conf, dataloader)
         plotBatch(conf, batchinfo['meta'], batchinfo['sorted'], batchinfo)
     if args.pltVisited:
         plotTrajectory(args, conf, dataloader, dataset)
