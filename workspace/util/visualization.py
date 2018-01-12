@@ -34,7 +34,7 @@ def getInputArgs():
 def getConfig(args):
     config_module = __import__('config.' + args.configStr)
     configuration = getattr(config_module, args.configStr)
-    conf = configuration.Config()
+    conf = configuration.Config('test')
     return conf
 #
 # Generate a lookup table for a colour gradient from r -> b gradients
@@ -273,5 +273,8 @@ def visualize(conf, args):
 if __name__ == '__main__':
     args = getInputArgs()
     conf = getConfig(args)
+    if conf.modelLoadPath == None or conf.modelLoadPath == '':
+        print('No model was loaded cannot perform visualization!')
+        exit
     visualize(conf, args)
     plt.show()

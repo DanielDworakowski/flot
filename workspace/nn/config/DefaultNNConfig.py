@@ -44,7 +44,7 @@ class HyperParam():
         self.model = model
         #
         # Optimizer.
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-3)
 #
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():

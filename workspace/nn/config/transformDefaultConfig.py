@@ -14,11 +14,15 @@ from models import MultiTraj_FC
 class Config(DefaultConfig):
     #
     # Initialize.
-    def __init__(self):
-        nSteps = (5, 0)
-        loadpath = '/disk1/model/10-01-2018-23-49-56_epoch_27.pth.tar'
-        # loadpath = None
+    def __init__(self, type = 'train'):
+        nSteps = (3, 0)
+        loadpath = '/disk1/model/model_best.pth.tar'
+        if type == 'train':
+            loadpath = None
         super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps), loadPath = loadpath)
+        #
+        # How far to shift the image.
+        shiftBounds = int(224/2.01)
         self.hyperparam.nSteps = nSteps
         self.hyperparam.numEpochs = 32
         self.epochSaveInterval = 1
