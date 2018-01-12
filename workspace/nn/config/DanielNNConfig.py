@@ -3,7 +3,7 @@ from torchvision import transforms, models
 import pathlib
 import torch
 import torch.nn as nn
-import util.DataUtil as DataUtil
+import nn.util.DataUtil as DataUtil
 import os
 from config.DefaultNNConfig import DefaultConfig
 #
@@ -12,13 +12,13 @@ class Config(DefaultConfig):
     #
     # Initialize.
     def __init__(self):
-        super(Config, self).__init__()
+        modelLoadPath = '/disk1/model/model_best.pth.tar'
+        super(Config, self).__init__(loadPath = modelLoadPath)
         self.hyperparam.numEpochs = 32
         self.epochSaveInterval = 1
 
         self.modelSavePath = '/disk1/model/'
-        self.modelLoadPath = '/disk1/model/model_best.pth.tar'
-        super(Config, self).loadModel()
+        # super(Config, self).loadModel()
         self.dataTrainList = [
 
 # '/home/ddworakowski/flot/workspace/rnd0/daggerAgent_EnvironmentTypes.AirSim_03-12-2017-15-13-56/'
