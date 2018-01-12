@@ -87,6 +87,9 @@ class RandomShift(object):
         self.shiftsx[self.midIdxX] = 0
         self.shiftsy[self.midIdxY] = 0
 
+    def getShiftBounds(self):
+        return self.shiftsx, self.shiftsy
+
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
         img_h, img_w, img_c = image.shape

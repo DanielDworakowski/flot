@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from nn.core import FlotDataset
 from nn.config import DefaultNNConfig
+from nn.util import Perterbations
 import argparse
 import os
 import math
@@ -36,6 +37,39 @@ def getConfig(args):
     conf = configuration.Config()
     return conf
 #
+# Generate a lookup table for a colour gradient from r -> b gradients
+def rtobTable():
+    rng = 255
+    r,g,b = 255, 20, 0
+    dr = -1.
+    dg = 0.
+    db = 1.
+    rgb = []
+    for i in range(500):
+        r,g,b = r+dr, g+dg, b+db
+        rgb.append((int(r), int(g), int(b)))
+    return rgb
+#
+# Draw trajectory dots on the image.
+def drawTrajectoryDots(x, y, space, sidel, rgbTable, draw, conf, posClassProb):
+    #
+    # TODO: 2-dimensional iteration since the trejectories can move up and down.
+    nBin = posClassProb.shape[0]
+    #
+    # Super lazy way to not have to repeat calculations.
+    shiftBoundsx, shiftBoundsy = Perterbations.RandomShift(conf.hyperparam.image_shape, conf.hyperparam.shiftBounds, conf.hyperparam.nSteps).getShiftBounds()
+    lenX = len(shiftBoundsx)
+    for idx in range(nBin):
+        yIdx = int(idx / lenX)
+        xIdx = idx - yIdx * lenX
+        dx = shiftBoundsx[xIdx]
+        dy = shiftBoundsy[yIdx]
+        x_dot = round(x + sidel[0] / 2 + dx)
+        y_dot = round(y + sidel[1] / 2 + dy)
+        prob = posClassProb[idx]
+        colour = rgbTable[int(255 * prob)]
+        draw.ellipse((x_dot - space / 2 , y_dot - space / 2, x_dot + space / 2, y_dot + space / 2), fill = colour)
+#
 # Plot the image results from best to worst.
 def plotBatch(conf, meta, sorted, batchinfo):
     numImg = len(meta['index'])
@@ -49,6 +83,8 @@ def plotBatch(conf, meta, sorted, batchinfo):
     draw = ImageDraw.Draw(grid)
     font = ImageFont.truetype("sans-serif.ttf", 25)
     fillarr = ['red', 'blue']
+    dx, dy = 0, 0
+    rgbTable = rtobTable()
     for i, y in enumerate(range(0, inW * sidel, inW)):
         for j, x in enumerate(range(0, inH * sidel, inH)):
             infoIdx = i * sidel + j
@@ -56,20 +92,26 @@ def plotBatch(conf, meta, sorted, batchinfo):
                 break
             idx = sorted[i * sidel + j]
             imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
+            #
+            # TODO: Check if this actually shifts the visualization image properly.
+            if 'shift' in meta:
+                dx, dy = meta['shift'][0][idx], meta['shift'][1][idx]
             im = Image.open(imName)
             im = im.crop(
                 (
-                    width / 2 - inW / 2,
-                    height / 2 - inH / 2,
-                    width / 2 + inW / 2,
-                    height / 2 + inH / 2
+                    width  / 2  - inW / 2 + dx,
+                    height / 2  - inH / 2 + dy,
+                    width  / 2  + inW / 2 + dx,
+                    height / 2  + inH / 2 + dy
                 )
             )
             grid.paste(im, (x,y))
             space = 15
-            draw.ellipse((x,y, x + space, y + space), fill=fillarr[batchinfo['labels'][idx][0]])
+            draw.ellipse((x, y, x + space, y + space), fill=fillarr[batchinfo['labels'][idx][0]])
             _, predicted = torch.max(batchinfo['probs'][idx], 0)
             draw.ellipse((x + space, y, x + 2 * space, y + space), fill=fillarr[predicted[0]])
+            if type(batchinfo['posClasses']) != type(None):
+                drawTrajectoryDots(x, y, space / 2, im.size, rgbTable, draw, conf, batchinfo['posClasses'][idx, :])
             draw.text((x + 3 * space,y),'%s'%(i*sidel + j),(255,255,255),font=font)
             draw.text((x,y + space),'%1.2f'%batchinfo['probs'][idx][1],(255,255,255),font=font)
     implt = plt.figure()
@@ -168,6 +210,7 @@ def gatherResponses(conf, dataloader):
     sm = torch.nn.Softmax(dim = 1)
     meta = None
     numCorrect = 0
+    posClasses = None
     #
     # Take a random sample from the dataloader.
     for idx, data in enumerate(dataloader):
@@ -178,6 +221,10 @@ def gatherResponses(conf, dataloader):
             out = conf.hyperparam.model(Variable(data['img']).cuda(async = True))
         else:
             out = conf.hyperparam.model(Variable(data['img']))
+        #
+        # Check if the model can return the postive class probability.
+        if hasattr(conf.hyperparam.model, 'getClassifications'):
+            posClasses = conf.hyperparam.model.getClassifications(out, sm)
         #
         # Check if we need to use the class to get gather activations.
         if hasattr(conf.hyperparam.model, 'getActivations'):
@@ -207,8 +254,7 @@ def gatherResponses(conf, dataloader):
     histax.set_xlabel('Score (Lower is better)')
     histax.set_ylabel('Frequency')
     histax.hist(dist.numpy(), int(math.ceil(math.sqrt(dist.size()[0])))) # Dont do sqrt so up to 2.
-    return {'probs': probStack, 'meta': meta, 'sorted': idx, 'metric': dist, 'labels': labelsStack}
-
+    return {'probs': probStack, 'meta': meta, 'sorted': idx, 'metric': dist, 'labels': labelsStack, 'posClasses': posClasses}
 #
 # Visualize.
 def visualize(conf, args):
