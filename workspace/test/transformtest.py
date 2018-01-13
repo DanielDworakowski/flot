@@ -18,9 +18,9 @@ if __name__ == '__main__':
     for data in dataset:
         writer.add_image('Image', data['img'].cuda(), 0)
         writer.add_text('Text', 'text logged at step:'+str(1), 1)
-        print(data['meta']['filedir'])
         print(data['meta']['index'])
         print(data['meta']['shift'])
+        print(data['labels'])
         name = '%sfront_camera_%d.png'%(data['meta']['filedir'][0],data['meta']['index'])
         print('consturcted name')
         print(name)
