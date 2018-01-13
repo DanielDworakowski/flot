@@ -4,6 +4,7 @@ from nn.config import DefaultNNConfig
 from nn.util import Perterbations
 import argparse
 import os
+import sys
 import math
 import numpy as np
 import pandas as pd
@@ -275,6 +276,6 @@ if __name__ == '__main__':
     conf = getConfig(args)
     if conf.modelLoadPath == None or conf.modelLoadPath == '':
         print('No model was loaded cannot perform visualization!')
-        exit
+        sys.exit()
     visualize(conf, args)
     plt.show()
