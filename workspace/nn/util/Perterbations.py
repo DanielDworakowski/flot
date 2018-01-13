@@ -87,6 +87,9 @@ class RandomShift(object):
         self.shiftsx[self.midIdxX] = 0
         self.shiftsy[self.midIdxY] = 0
 
+    def getShiftBounds(self):
+        return self.shiftsx, self.shiftsy
+
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
         img_h, img_w, img_c = image.shape
@@ -105,13 +108,13 @@ class RandomShift(object):
         # Select the shift.
         ix = random.randint(-self.rangeX, self.rangeX)
         iy = random.randint(-self.rangeY, self.rangeY)
-        dx = round(self.shiftsx[ix])
-        dy = round(self.shiftsy[iy]) # Add noise around the bins?
+        dx = round(self.shiftsx[self.midIdxX + ix])
+        dy = round(self.shiftsy[self.midIdxY + iy]) # Add noise around the bins?
         #
         # Crop the image to size.
         h_0 = int((img_h - self.outputSize[0])/2 + dy)
         w_1 = int((img_w - self.outputSize[1])/2 + dx)
-        image = image[h_0:h_0+self.outputSize[0],w_1:w_1+self.outputSize[1],:]
+        image = image[h_0:h_0 + self.outputSize[0], w_1:w_1 + self.outputSize[1], :]
         #
         # Create the mask for where the correct values will exist when
         # flattened. Times 2 to account for there being a binary classification.

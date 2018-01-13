@@ -55,7 +55,7 @@ class Trainer():
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
             labels = None
-            if epochSummary['data']['labels'].shape[1] > 1:
+            if len(epochSummary['data']['labels'].shape) > 1:
                 labels = epochSummary['data']['labels'][:, 0]
             else:
                 labels = epochSummary['data']['labels']

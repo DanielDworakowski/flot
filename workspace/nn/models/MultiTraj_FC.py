@@ -54,6 +54,16 @@ class Resnet_Multifc(nn.Module):
         classActivation = torch.masked_select(netOut, mask.byte()).view(x,y)
         return classActivation, label
 
+    def getClassifications(self, netOut, metric):
+        #
+        # Iterate over the columns and build probabilities.
+        nCols = int(netOut.shape[1] / 2)
+        out = torch.zeros((netOut.shape[0], nCols))
+        for idx in range(nCols):
+            activations = netOut[:, 2 * idx : 2 * idx + 2]
+            out[:, idx] = metric(activations).data[:, 1] # Get the probaility of the positive class.
+        return out
+
     def pUpdate(self, optimizer, criteria, netOut, labels, meta, phase):
         #
         # Get the activations.
