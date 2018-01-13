@@ -3,7 +3,8 @@ from debug import *
 import os
 import torch
 import pandas as pd
-from skimage import io, transform, img_as_float
+# from skimage import io, transform, img_as_float
+from PIL import Image
 import numpy as np
 import torch.utils.data
 from torchvision import transforms, utils
@@ -85,7 +86,7 @@ class DataFolder(torch.utils.data.Dataset):
             'index': int(labels[self.imgColIdx]),
             'allLabels':  labels.to_dict()
         }
-        img = io.imread(imName)
+        img = Image.open(imName).convert('RGB')
         #
         # Remove the column index.
         # labels = np.delete(labels.as_matrix(), self.imgColIdx)

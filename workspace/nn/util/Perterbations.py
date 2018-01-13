@@ -92,17 +92,17 @@ class RandomShift(object):
 
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
-        img_h, img_w, img_c = image.shape
+        img_w, img_h = image.size
         bnd_x, bnd_y = self.bounds
         #
         # Check if the image to crop is large enough
         if self.outputSize[0] > img_h or self.outputSize[1] > img_w:
-            printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.outputSize)+" Image Given:"+str(image.shape))
+            printError("The image cannot be cropped because the image is too small. Model Image Shape:" + str(self.outputSize) + " Image Given:" + str(image.size))
             raise RuntimeError
         #
         # Check if we shifted outside of the bounds.
         if img_w < (2 * bnd_x + self.outputSize[0]) or img_h < (2 * bnd_y + self.outputSize[1]):
-            printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.outputSize)+ "Bounds:"+str(self.bounds)+ " Image Given:"+str(image.shape))
+            printError("The image cannot be cropped because the image is too small. Model Image Shape:" + str(self.outputSize) + "Bounds:" + str(self.bounds)+ " Image Given:"+str(image.shape))
             raise RuntimeError
         #
         # Select the shift.
@@ -113,8 +113,9 @@ class RandomShift(object):
         #
         # Crop the image to size.
         h_0 = int((img_h - self.outputSize[0])/2 + dy)
-        w_1 = int((img_w - self.outputSize[1])/2 + dx)
-        image = image[h_0:h_0 + self.outputSize[0], w_1:w_1 + self.outputSize[1], :]
+        w_0 = int((img_w - self.outputSize[1])/2 + dx)
+        # image = image[h_0:h_0 + self.outputSize[0], w_0:w_0 + self.outputSize[1], :]
+        image = image.crop((w_0, h_0, w_0 + self.outputSize[0], h_0 + self.outputSize[1]))
         #
         # Create the mask for where the correct values will exist when
         # flattened. Times 2 to account for there being a binary classification.

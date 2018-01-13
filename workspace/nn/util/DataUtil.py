@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 from torchvision import transforms, utils
+from torchvision.transforms import functional
 from skimage import io, transform
 from PIL import Image
 
@@ -33,7 +34,8 @@ class Rescale(object):
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
 
-        h, w = image.shape[:2]
+        w, h = image.size
+
         if isinstance(self.output_size, int):
             if h > w:
                 new_h, new_w = self.output_size * h / w, self.output_size
@@ -45,12 +47,8 @@ class Rescale(object):
         # New height and width
         new_h, new_w = int(new_h), int(new_w)
         #
-        # Resize the image.
-        # img = transform.resize(image, (new_h, new_w), Image.BILINEAR)
-        img = transform.resize(image, (new_h, new_w), order=0, mode='constant')
-        #
         # Can add label transformation here.
-        return {'img': img,
+        return {'img': image.resize((new_w, new_h), Image.BILINEAR),
                 'labels': labels,
                 'meta': sample['meta']}
 
@@ -93,19 +91,11 @@ class RandomCrop(object):
 
 
 class ToTensor(object):
-    '''Convert ndarrays in sample to Tensors.
-    http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
-    '''
-    toTensor = transforms.ToTensor()
 
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
-        #
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-        # image = image[:,:,0:3] # Strip the alpha channel.
-        return {'img': self.toTensor(image[:,:,0:3]),
+
+        return {'img': functional.to_tensor(image),
                 'labels': torch.from_numpy(labels).squeeze_(),
                 'meta': sample['meta']}
 
