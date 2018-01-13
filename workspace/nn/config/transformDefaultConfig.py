@@ -22,19 +22,20 @@ class Config(DefaultConfig):
         super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps), loadPath = loadpath)
         #
         # How far to shift the image.
-        shiftBounds = int(224/2.01)
+        self.hyperparam.shiftBounds = (90, 0)
         self.hyperparam.nSteps = nSteps
         self.hyperparam.numEpochs = 32
         self.epochSaveInterval = 1
         self.modelSavePath = '/disk1/model/'
-        # self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
-        # self.dataTrainList = [
-        #     '/disk1/data/20171202-011944/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-02-00-38/',
-        # ]
+        #
+        # The intermadiate shape of the data, in order to gain more information,
+        # within a single image we downscale.
+        cropShape = (448, 448, 3)
         #
         # Transforms.
         self.transforms = transforms.Compose([
-            Perterbations.RandomShift(self.hyperparam.image_shape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
+            Perterbations.RandomShift(cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
+            DataUtil.Rescale(self.hyperparam.image_shape),
             DataUtil.ToTensor(),
         ])
         self.dataTrainList = [

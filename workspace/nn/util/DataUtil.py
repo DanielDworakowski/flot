@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import torch
 from torchvision import transforms, utils
+from skimage import io, transform
+from PIL import Image
 
 def plotSample(sample):
     ''' Plot an image batch.
@@ -38,13 +40,14 @@ class Rescale(object):
             else:
                 new_h, new_w = self.output_size, self.output_size * w / h
         else:
-            new_h, new_w = self.output_size
+            new_h, new_w, c = self.output_size
         #
         # New height and width
         new_h, new_w = int(new_h), int(new_w)
         #
         # Resize the image.
-        img = transform.resize(image, (new_h, new_w))
+        # img = transform.resize(image, (new_h, new_w), Image.BILINEAR)
+        img = transform.resize(image, (new_h, new_w), order=0, mode='constant')
         #
         # Can add label transformation here.
         return {'img': img,
