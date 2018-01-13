@@ -4,6 +4,9 @@
 
 Receives TCP stream from Raspberry Pi Camera
 Publishes image as CompressedImage under /PI_CAM/image_raw/compressed topic
+Images are published under .jpeg format
+To view the published images, use the following command:
+rosrun image_view image_view _image_transport:=compressed image:=/PI_CAM/image_raw/
 
 Written by: Kelvin Chan
 """
@@ -11,7 +14,8 @@ Written by: Kelvin Chan
 import sys, time
 import numpy as np
 import cv2
-import subprocess as sp
+from subprocess import Popen, PIPE
+from shlex import split
 
 # ROS Libraries
 import rospy
@@ -19,16 +23,12 @@ import roslib
 
 from sensor_msgs.msg import CompressedImage
 
-VERBOSE=False
+VERBOSE=True
 
 # Shell commands
-NETCAT_BIN = "nc"
-FFMPEG_BIN = "ffmpeg"
-
-command = [NETCAT_BIN,
-        '-l', '2224', '|'         # Listen at port for TCP stream and pipe to next
-        FFMPEG_BIN,
-        '-i', 'pipe:0',           # use stdin pipe
+command1 = split("nc -l 2222")
+command2 = [ 'ffmpeg',
+        '-i', 'pipe:0',             # fifo is the named pipe
         '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.
         '-vcodec', 'rawvideo',
         '-an','-sn',              # we want to disable audio processing (there is no audio)
@@ -51,9 +51,13 @@ def image_pub():
     if VERBOSE:
         print('Listening for TCP video stream and converting to images...')
 
-    pipe = sp.Popen(command, stdout = sp.PIPE, bufsize=bufsize)
+    nc_pipe = Popen(command1, stdout=PIPE)
+    pipe = Popen(command2, stdin=nc_pipe.stdout, stdout=PIPE, bufsize=bufsize)
 
     # ROS Node setup
+    if VERBOSE:
+        print('Starting image_pub node...')
+
     pub = rospy.Publisher('/PI_CAM/image_raw/compressed', CompressedImage)
     rospy.init_node('image_pub', anonymous=True)
     rate = rospy.Rate(100)   # 100 Hz to prevent aliasing of 40 FPS feed
@@ -67,29 +71,32 @@ def image_pub():
         image =  np.fromstring(raw_image, dtype='uint8')
         image = image.reshape((height, width, depth))
 
-        if image is not None:
-            cv2.imshow('Video', image)
+        if VERBOSE:
+            if image is not None:
+                cv2.imshow('Video', image)
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
 
         # Flush pipe for new messages
         pipe.stdout.flush()
 
         # Publish compressed image with new timestamp
         msg.header.stamp = rospy.Time.now()
-        msg.data = np.array(cv2.imencode('.jpg', image_np)[1]).tostring()
+        msg.data = np.array(cv2.imencode('.jpg', image)[1]).tostring()
         pub.publish(msg)
 
         rate.sleep()    # Maintain loop rate
 
 if __name__ == '__main__':
-	try:
+    try:
         image_pub()
-    	except rospy.ROSInterruptException:
-            if VERBOSE:
-                print('Node was interrupted; shutting down node...')
-        	pass
+
+    except rospy.ROSInterruptException:
+        if VERBOSE:
+            print('Node was interrupted; shutting down node...')
+        pass
+
     finally:
         if VERBOSE:
             print('Closing windows...')
