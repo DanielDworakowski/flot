@@ -3,7 +3,8 @@ from debug import *
 import os
 import torch
 import pandas as pd
-from skimage import io, transform, img_as_float
+# from skimage import io, transform, img_as_float
+from PIL import Image
 import numpy as np
 import torch.utils.data
 from torchvision import transforms, utils
@@ -11,6 +12,7 @@ from interval_tree import IntervalTree
 
 import functools
 import time
+
 def timeit(func):
     @functools.wraps(func)
     def newfunc(*args, **kwargs):
@@ -25,10 +27,6 @@ class FlotDataset(torch.utils.data.Dataset):
     '''Read from a list all of the data files.'''
 
     def __init__(self, conf, pathList, transform):
-        '''
-        Args:
-
-        '''
         self.conf = conf
         self.dataList = []
         self.offsets = []
@@ -47,10 +45,6 @@ class FlotDataset(torch.utils.data.Dataset):
 
 
     def __len__(self):
-        '''
-        Args:
-
-        '''
         return self.len
 
     def __getitem__(self, idx):
@@ -64,10 +58,6 @@ class DataFolder(torch.utils.data.Dataset):
     '''Read from a data folder.'''
 
     def __init__(self, conf, dataPath, transform = None):
-        '''
-        Args:
-
-        '''
         self.csvFileName = conf.csvFileName
         self.rootDir = dataPath
         self.transform = transform
@@ -80,17 +70,9 @@ class DataFolder(torch.utils.data.Dataset):
             raise ValueError
 
     def __len__(self):
-        '''
-        Args:
-
-        '''
         return len(self.csvFrame)
 
     def __getitem__(self, idx):
-        '''
-        Args:
-
-        '''
         try:
             labels = self.csvFrame.ix[idx]
         except:
@@ -104,7 +86,7 @@ class DataFolder(torch.utils.data.Dataset):
             'index': int(labels[self.imgColIdx]),
             'allLabels':  labels.to_dict()
         }
-        img = io.imread(imName)
+        img = Image.open(imName).convert('RGB')
         #
         # Remove the column index.
         # labels = np.delete(labels.as_matrix(), self.imgColIdx)

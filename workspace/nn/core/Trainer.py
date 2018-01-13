@@ -21,6 +21,8 @@ import tqdm
 # Flot.
 from core import FlotDataset
 from debug import *
+from itertools import count
+from multiprocessing import Lock
 
 class Trainer():
     ''' Implements training neural networks.
@@ -52,8 +54,13 @@ class Trainer():
         def logEpochTensorboard(self, epochSummary):
             self.logger.add_scalar('%s_loss'%epochSummary['phase'], epochSummary['loss'], epochSummary['epoch'])
             self.logger.add_scalar('%s_acc'%epochSummary['phase'], epochSummary['acc'], epochSummary['epoch'])
+            labels = None
+            if len(epochSummary['data']['labels'].shape) > 1:
+                labels = epochSummary['data']['labels'][:, 0]
+            else:
+                labels = epochSummary['data']['labels']
             for i in range(epochSummary['data']['labels'].shape[0]):
-                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'],i,epochSummary['epoch'],epochSummary['pred'][i],int(epochSummary['data']['labels'][i])), epochSummary['data']['img'][i], epochSummary['epoch'])
+                self.logger.add_image('{}_image_i-{}_epoch-{}_pre-:{}_label-{}'.format(epochSummary['phase'], i, epochSummary['epoch'], epochSummary['pred'][i], int(labels[i])), epochSummary['data']['img'][i], epochSummary['epoch'])
             for name, param in self.model.named_parameters():
                 self.logger.add_histogram(name, param.clone().cpu().data.numpy(), epochSummary['epoch'])
         #
@@ -88,12 +95,12 @@ class Trainer():
         ''' Save a model.
         '''
         state = {
-                'epoch': epoch + 1,
-                'state_dict': self.model.state_dict(),
-                'optimizer' : self.optimizer.state_dict(),
-                'model': self.model,
-                'conf': self.conf
-            }
+                    'epoch': epoch + 1,
+                    'state_dict': self.model.state_dict(),
+                    'optimizer' : self.optimizer.state_dict(),
+                    'model': self.model,
+                    'conf': self.conf
+                }
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
         if isBest:
@@ -139,20 +146,20 @@ class Trainer():
                 numMini = len(self.dataloaders[phase])
                 pbar = tqdm.tqdm(total=numMini)
                 for data in self.dataloaders[phase]:
-                    inputs, labels = data['img'], data['labels']
+                    inputs, labels_cpu = data['img'], data['labels']
                     if self.conf.usegpu:
-                        labels.squeeze_()
-                        inputs, labels = Variable(inputs).cuda(async = True), Variable(labels).cuda(async = True)
+                        labels_cpu.squeeze_()
+                        inputs, labels = Variable(inputs).cuda(async = True), Variable(labels_cpu).cuda(async = True)
                     else:
-                        inputs, labels = Variable(inputs), Variable(labels)
+                        inputs, labels = Variable(inputs), Variable(labels_cpu)
                     #
                     # Forward through the model and optimize.
                     out = self.model(inputs)
-                    preds, loss = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
+                    preds, loss, dCorrect = self.model.pUpdate(self.optimizer, self.criteria, out, labels, data['meta'], phase)
                     #
                     #  Stats.
                     runningLoss += loss.data[0]
-                    runningCorrect += torch.sum(preds == labels.data)
+                    runningCorrect += dCorrect
                     pbar.update(1)
                 pbar.close()
                 #

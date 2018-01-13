@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 import torch
 from torchvision import transforms, utils
+from torchvision.transforms import functional
+from skimage import io, transform
+from PIL import Image
 
 def plotSample(sample):
     ''' Plot an image batch.
@@ -31,23 +34,23 @@ class Rescale(object):
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
 
-        h, w = image.shape[:2]
+        w, h = image.size
+
         if isinstance(self.output_size, int):
             if h > w:
                 new_h, new_w = self.output_size * h / w, self.output_size
             else:
                 new_h, new_w = self.output_size, self.output_size * w / h
         else:
-            new_h, new_w = self.output_size
+            new_h, new_w, c = self.output_size
         #
         # New height and width
         new_h, new_w = int(new_h), int(new_w)
         #
-        # Resize the image.
-        img = transform.resize(image, (new_h, new_w))
-        #
         # Can add label transformation here.
-        return {'img': img, 'labels': labels, 'meta': sample['meta']}
+        return {'img': image.resize((new_w, new_h), Image.BILINEAR),
+                'labels': labels,
+                'meta': sample['meta']}
 
 
 class RandomCrop(object):
@@ -82,24 +85,19 @@ class RandomCrop(object):
 
         labels = labels - [left, top]
 
-        return {'img': image, 'labels': labels, 'meta': sample['meta']}
+        return {'img': image,
+                'labels': labels,
+                'meta': sample['meta']}
 
 
 class ToTensor(object):
-    '''Convert ndarrays in sample to Tensors.
-    http://pytorch.org/tutorials/beginner/data_loading_tutorial.html
-    '''
-    toTensor = transforms.ToTensor()
 
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
-        #
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-        # image = image[:,:,0:3] # Strip the alpha channel.
-        return {'img': self.toTensor(image[:,:,0:3]),
-                'labels': torch.from_numpy(labels).squeeze_(), 'meta': sample['meta']}
+
+        return {'img': functional.to_tensor(image),
+                'labels': torch.from_numpy(labels).squeeze_(),
+                'meta': sample['meta']}
 
 class Normalize(object):
     '''Normalizes an image.
