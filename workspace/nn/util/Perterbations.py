@@ -77,8 +77,14 @@ class RandomShift(object):
         self.rangeY = nSteps[1]
         self.nBinsX = 2 * self.rangeX + 1
         self.nBinsY = 2 * self.rangeY + 1
-        self.shiftsx = np.linspace(-self.bounds[0], self.bounds[0], num = self.nBinsX)
-        self.shiftsy = np.linspace(-self.bounds[1], self.bounds[1], num = self.nBinsY)
+        self.shiftsx, self.stepx = np.linspace(-self.bounds[0], self.bounds[0], num = self.nBinsX, retstep=True)
+        self.shiftsy, self.stepy = np.linspace(-self.bounds[1], self.bounds[1], num = self.nBinsY, retstep=True)
+        #
+        # If there is no delta, numpy returns NaN.
+        if np.isnan(self.stepx):
+            self.stepx = 0
+        if np.isnan(self.stepy):
+            self.stepy = 0
         #
         # In the case where there is only one step it sticks to the first side
         # of the range, instead we force the middle number to be zero.
@@ -108,8 +114,12 @@ class RandomShift(object):
         # Select the shift.
         ix = random.randint(-self.rangeX, self.rangeX)
         iy = random.randint(-self.rangeY, self.rangeY)
-        dx = round(self.shiftsx[self.midIdxX + ix])
-        dy = round(self.shiftsy[self.midIdxY + iy]) # Add noise around the bins?
+        #
+        # Randomly select a bin to shift the image based on the label, then add
+        # additional noise to the shift. The additional variance is to help to
+        # better generialize shifts within a single bin.
+        dx = round(self.shiftsx[self.midIdxX + ix]) + random.randint(-self.stepx / 2, self.stepx / 2)
+        dy = round(self.shiftsy[self.midIdxY + iy]) + random.randint(-self.stepy / 2, self.stepy / 2)
         #
         # Crop the image to size.
         h_0 = int((img_h - self.outputSize[0])/2 + dy)
