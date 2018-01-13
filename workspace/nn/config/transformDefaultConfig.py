@@ -9,6 +9,7 @@ import os
 from debug import *
 from config.DefaultNNConfig import DefaultConfig
 from models import MultiTraj_FC
+from models import MultiTraj_conv
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):
@@ -19,7 +20,8 @@ class Config(DefaultConfig):
         loadpath = '/disk1/model/model_best.pth.tar'
         if type == 'train':
             loadpath = None
-        super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps), loadPath = loadpath)
+        # super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps), loadPath = loadpath)
+        super(Config, self).__init__(MultiTraj_conv.Resnet_MultiConv(nSteps), loadPath = loadpath)
         #
         # How far to shift the image.
         self.hyperparam.shiftBounds = (90, 0)
