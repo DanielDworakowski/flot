@@ -112,6 +112,8 @@ RUN pip3 install pandas
 RUN apt-get update
 RUN apt-get install -y nano
 RUN apt-get install -y ros-kinetic-image-view
+RUN apt-get install -y net-tools netcat
+RUN pip3 install ai2thor
 RUN apt remove -y python3-matplotlib python3-scipy python3-numpy
 RUN pip3 install matplotlib scipy numpy
 RUN pip3 install scikit-image
@@ -120,6 +122,7 @@ RUN cp /etc/hosts ~/hosts.new
 RUN sed -i -e '1i10.0.1.39       raspberrypi\' ~/hosts.new
 RUN cp -f ~/hosts.new /etc/hosts
 COPY ./workspace/testEnvs/settings.json /home/user/Documents/AirSim/settings.json
+COPY ./workspace/ai2thor/.ai2thor /home/user/.ai2thor
 
 # workspace
 RUN mkdir /home/user/workspace
