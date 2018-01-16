@@ -32,7 +32,7 @@ from sensor_msgs.msg import CompressedImage
 VERBOSE=True
 
 # Shell commands
-command1 = split("nc -l 2222")
+command1 = split("nc -l 2224")
 command2 = [ 'ffmpeg',
         '-i', 'pipe:0',             # fifo is the named pipe
         '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.

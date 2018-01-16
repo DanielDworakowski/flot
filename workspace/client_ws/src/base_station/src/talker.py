@@ -33,36 +33,51 @@
 #
 # Revision $Id$
 
-## Simple talker demo that listens to std_msgs/Strings published 
+## Simple talker demo that published std_msgs/Strings messages
 ## to the 'chatter' topic
 
+# raw_collision, x[m], y[m], z[m], idx, roll[deg], pitch[deg], yaw[deg], timestamp_ns
+
 import rospy
+import random
+import time
 from std_msgs.msg import String
-import os
-OBS = 'observation.csv'
-if os.path.isfile(OBS): os.remove(OBS)
-f = open(OBS, 'a')
-import os
 
-def callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard {}'.format(data.data))
-    f.write(data.data+'\n')
-    cwd = os.getcwd()
-    rospy.loginfo(cwd)
+def output(l):
+    s = ''
+    sep = ', '
+    for x in l:
+        s+=str(x)+sep
+    return s[:-len(sep)]
 
-def listener():
+def talker():
+    time.sleep(2)
+    pub = rospy.Publisher('obs_col', String, queue_size=10)
+    rospy.init_node('talker', anonymous=True)
+    rate = rospy.Rate(10) # 10hz
 
-    # In ROS, nodes are uniquely named. If two nodes with the same
-    # name are launched, the previous one is kicked off. The
-    # anonymous=True flag means that rospy will choose a unique
-    # name for our 'listener' node so that multiple listeners can
-    # run simultaneously.
+    idx = 0
+    names = ['raw_collision', 'x[m]', 'y[m]', 'z[m]', 'idx', 'roll[deg]', 'pitch[deg]', 'yaw[deg]', 'timestamp_ns']
+    out = output(names)
+    rospy.loginfo(out)
+    pub.publish(out)
 
-    rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber('obs_col', String, callback)
+    while not rospy.is_shutdown():
+        raw_collision = random.randint(0,1)
+        x,y,z = ran_floats = [random.uniform(-1,2) for _ in xrange(3)]
+        r,p,yaw = ran_floats = [random.uniform(-1,2) for _ in xrange(3)]
+        timestamp = rospy.get_time()
 
-    # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+        values = [raw_collision,x,y,z,idx,r,p,yaw,timestamp]
+        idx+=1
+
+        out = output(values)
+        rospy.loginfo(out)
+        pub.publish(out)
+        rate.sleep()
 
 if __name__ == '__main__':
-    listener()
+    try:
+        talker()
+    except rospy.ROSInterruptException:
+        pass
