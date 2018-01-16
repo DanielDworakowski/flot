@@ -13,7 +13,8 @@ imu_data = Imu()
 
 def imu():
         #define publisher
-        pub = rospy.Publisher('imu_data', Imu, queue_size=10) #how do you set the q size
+        pub0 = rospy.Publisher('imu_data', Imu, queue_size=10)
+        pub1 = rospy.Publisher('yaw_rate', Float64, queue_size=10)
         rospy.init_node('imu', anonymous=True)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
@@ -36,9 +37,9 @@ def imu():
             imu_data.angular_velocity.y = data[1]
             imu_data.angular_velocity.z = data[2]
             imu_data.angular_velocity_covariance[0] = -1
-            imu_data.orientation.w = quaternion[0]
             rospy.loginfo(imu_data)
-            pub.publish(imu_data)
+            pub0.publish(imu_data)
+            pub1.publish(data[1])
             rate.sleep()
 
 if __name__ == '__main__':
