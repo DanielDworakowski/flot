@@ -60,7 +60,7 @@ class VideoStreamClient(threading.Thread):
     frame = None
 
     # Class constructor
-    def __init__(self, port='2222', width=640, height=480, depth=3, num=2, VERBOSE=False):
+    def __init__(self, port='2224', width=640, height=480, depth=3, num=2, VERBOSE=False):
 
         threading.Thread.__init__(self)
 

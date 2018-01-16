@@ -90,7 +90,7 @@ class DataFolder(torch.utils.data.Dataset):
         #
         # Remove the column index.
         # labels = np.delete(labels.as_matrix(), self.imgColIdx)
-        labels = np.full((1,1),labels.as_matrix()[self.labelIdx], dtype='long')
+        labels = np.full((1,1),labels.as_matrix()[self.labelIdx], dtype='int_')
         sample = {'img': img, 'labels': labels, 'meta': meta}
         #
         # Transform as needed.

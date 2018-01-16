@@ -25,7 +25,7 @@ class CenterCrop(object):
         #
         # check if the image to crop is large enough
         if self.outputSize[0] > img_h or self.outputSize[1] > img_w:
-            printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.outputSize)+" Image Given:"+str(image.shape))
+            printError("The image cannot be cropped because the image is too small. Model Image Shape:"+str(self.outputSize)+" Image Given:"+str(image.size))
             raise RuntimeError
         #
         # Crop the image to size.
@@ -108,7 +108,7 @@ class RandomShift(object):
         #
         # Check if we shifted outside of the bounds.
         if img_w < (2 * bnd_x + self.outputSize[0]) or img_h < (2 * bnd_y + self.outputSize[1]):
-            printError("The image cannot be cropped because the image is too small. Model Image Shape:" + str(self.outputSize) + "Bounds:" + str(self.bounds)+ " Image Given:"+str(image.shape))
+            printError("The image cannot be cropped because the image is too small. Model Image Shape:" + str(self.outputSize) + "Bounds:" + str(self.bounds)+ " Image Given:"+str(image.size))
             raise RuntimeError
         #
         # Select the shift.
@@ -118,8 +118,8 @@ class RandomShift(object):
         # Randomly select a bin to shift the image based on the label, then add
         # additional noise to the shift. The additional variance is to help to
         # better generialize shifts within a single bin.
-        dx = round(self.shiftsx[self.midIdxX + ix]) + random.randint(-self.stepx / 2, self.stepx / 2)
-        dy = round(self.shiftsy[self.midIdxY + iy]) + random.randint(-self.stepy / 2, self.stepy / 2)
+        dx = round(self.shiftsx[self.midIdxX + ix]) + random.randint(-round(self.stepx / 2), round(self.stepx / 2))
+        dy = round(self.shiftsy[self.midIdxY + iy]) + random.randint(-round(self.stepy / 2), round(self.stepy / 2))
         #
         # Crop the image to size.
         h_0 = int((img_h - self.outputSize[0])/2 + dy)
@@ -129,7 +129,7 @@ class RandomShift(object):
         #
         # Create the mask for where the correct values will exist when
         # flattened. Times 2 to account for there being a binary classification.
-        mask = np.zeros((2 * self.nBinsX * self.nBinsY), dtype='long')
+        mask = np.zeros((2 * self.nBinsX * self.nBinsY), dtype='int_')
         locX = self.midIdxX - ix
         locY = self.midIdxY - iy
         idx = 2 * (locY * self.nBinsX + locX)

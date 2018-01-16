@@ -1,6 +1,5 @@
-from enum import Enum
 from torchvision import transforms, models
-import pathlib
+import pathlib2 as pathlib
 import torch
 import torch.nn as nn
 from nn.util import DataUtil
@@ -47,7 +46,7 @@ class HyperParam():
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=1e-3)
 #
 # Default configuration that is overriden by subsequent configurations.
-class DefaultConfig():
+class DefaultConfig(object):
     #
     # The default data path.
     dataTrainList = [
