@@ -1,10 +1,7 @@
-from enum import Enum
 from torchvision import transforms, models
-import pathlib
 import torch
 import torch.nn as nn
-from nn.util import DataUtil
-from nn.util import Perterbations
+from nn.util import DataUtil, Perterbations
 import os
 from debug import *
 from config.DefaultNNConfig import DefaultConfig
@@ -16,7 +13,7 @@ class Config(DefaultConfig):
     #
     # Initialize.
     def __init__(self, type = 'train'):
-        nSteps = (3, 0)
+        nSteps = (2, 0)
         loadpath = '/disk1/model/model_best.pth.tar'
         if type == 'train':
             loadpath = None
