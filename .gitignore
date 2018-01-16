@@ -116,3 +116,6 @@ runs*/
 *EnvironmentTypes*
 [0-9]{8}-[0-9]{6}
 
+*.cmake
+_setup_util.py
+
