@@ -16,7 +16,11 @@ class EnvironmentOptions():
     #
     # Blimp configuration options.
     def getBlimpConfig():
-        raise NotImplementedError
+        import RobotObservation as obs
+        import RobotActions as act
+        observer = obs.RobotObserver
+        actionClient = act.RobotActionEngine
+        return [observer, actionClient]
     #
     # Drone configuration options.
     def getDroneConfig():

@@ -39,18 +39,22 @@ def getInputArgs():
     parser.add_argument('--negativeOnly', dest='negativeOnly', default=False,  help='Constrain the label to have negative labels only', action='store_true')
     args = parser.parse_args()
     return args
+
 #
 # Auto label data from collision information
 def labelData(observationsPath):
-    start_throwaway_buffer, end_throwaway_buffer, good_buffer, bad_buffer, middle_throwaway_buffer, min_traj_dist, min_dist_between= labellingParam()
+    start_throwaway_buffer, end_throwaway_buffer, good_buffer, bad_buffer, middle_throwaway_buffer, min_traj_dist, min_dist_between = labellingParam()
+
     try:
         observations = pd.read_csv(observationsPath)
     except:
         print('Unable to open %s'%observationsPath)
         return
+
     observations = observations.rename(columns=lambda x: x.strip())
     collision_data = observations["raw_collision"].values
     col_idx = np.squeeze(np.argwhere(collision_data==1))
+
     x_idx = observations.columns.get_loc('x[m]')
     y_idx = observations.columns.get_loc('y[m]')
     z_idx = observations.columns.get_loc('z[m]')
@@ -65,12 +69,16 @@ def labelData(observationsPath):
         traj = trajs[i]
         col_traj = col_trajs[i]
         traj_len = col_traj.shape[0]
+
         percentage = start_throwaway_buffer
         start_throwaway_idx = int(traj_len*percentage)
+
         percentage += good_buffer
         good_idx = int(traj_len*percentage)
+
         percentage += middle_throwaway_buffer
         middle_throwaway_idx = int(traj_len*percentage)
+
         percentage += bad_buffer
         bad_idx = int(traj_len*percentage)
 
@@ -78,9 +86,11 @@ def labelData(observationsPath):
         traj_x = traj[:, x_idx]
         traj_y = traj[:, y_idx]
         traj_z = traj[:, z_idx]
+
         traj_x_shift = np.delete(np.roll(np.copy(traj_x), -1), -1)
         traj_y_shift = np.delete(np.roll(np.copy(traj_y), -1), -1)
         traj_z_shift = np.delete(np.roll(np.copy(traj_z), -1), -1)
+
         traj_x = np.delete(traj_x,-1)
         traj_y = np.delete(traj_y,-1)
         traj_z = np.delete(traj_z,-1)
@@ -95,7 +105,7 @@ def labelData(observationsPath):
             col_traj[good_idx:middle_throwaway_idx] = -1
             col_traj[middle_throwaway_idx:bad_idx] = 0
             col_traj[bad_idx:] = -1
-            
+
             current_dist = 0
             for j in range(len(col_traj)-1):
                 current_dist += dists[j]
