@@ -5,6 +5,10 @@ rasp/ros_ws/
 rasp/blimp_ws/build/
 rasp/blimp_ws/devel/
 
+# Ignore client workspace
+workspace/client_ws/build/
+workspace/client_ws/devel/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
