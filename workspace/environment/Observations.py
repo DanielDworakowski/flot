@@ -115,11 +115,12 @@ class Observation():
         self.valid = False
         self.serializable = {
             'idx': GenericObservation('idx'),
+            'timestamp': GenericObservation('timestamp'),
             'timestamp_ns': GenericObservation('timestamp_ns'),
             'cameraPosition': Vec3(),
             'cameraRotation': RotationEuler(),
             'hasCollided': GenericObservation('raw_collision'),
-            'img': CompressedImage(path = path),
+            'img': CompressedImage(path = path)
         }
         #
         # Keep track of how many lines have been saved.

@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
   // Start ROS node.
   ROS_INFO("Starting node");
-  ros::init(argc, argv, "hc_sr04s");
+  ros::init(argc, argv, "sonar");
   ros::NodeHandle node;
   ros::Rate rate(10);  // 10 hz
 
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
   wiringPiSetupSys();  // uses gpio pin numbering
   // config th
   vector<hc_sr04_node::Sonar> sonars;
-  sonars.push_back(hc_sr04_node::Sonar(24, 25));
+  sonars.push_back(hc_sr04_node::Sonar(16, 18));
   //sonars.push_back(hc_sr04_node::Sonar(22, 23));
   //sonars.push_back(hc_sr04_node::Sonar(18, 27));
 

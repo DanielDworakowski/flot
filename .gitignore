@@ -1,6 +1,7 @@
 # Ignore simulation enviroments, would be nice to make this a submodule
 workspace/SimulationEnvironments/
 workspace/data/
+workspace/ai2thor/
 rasp/ros_ws/
 rasp/blimp_ws/build/
 rasp/blimp_ws/devel/
@@ -115,4 +116,7 @@ workspace/uesrc/
 runs*/
 *EnvironmentTypes*
 [0-9]{8}-[0-9]{6}
+
+*.cmake
+_setup_util.py
 

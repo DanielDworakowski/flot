@@ -8,6 +8,12 @@ Images are published under .jpeg format
 To view the published images, use the following command:
 rosrun image_view image_view _image_transport:=compressed image:=/PI_CAM/image_raw/
 
+Ensure that the machine executing this program has access to roscore, as either
+the host or client to the network
+
+Ensure that this is running before streaming camera feed from Raspberry Pi
+Video stream, and that the correct IP and port is given for the stream
+
 Written by: Kelvin Chan
 """
 
@@ -43,7 +49,7 @@ bufsize = width*height*depth*num
 
 # CompressedImage Message Setup
 msg = CompressedImage()
-msg.format = 'jpeg'
+msg.format = 'png'
 
 def image_pub():
 
@@ -83,7 +89,7 @@ def image_pub():
 
         # Publish compressed image with new timestamp
         msg.header.stamp = rospy.Time.now()
-        msg.data = np.array(cv2.imencode('.jpg', image)[1]).tostring()
+        msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
         pub.publish(msg)
 
         rate.sleep()    # Maintain loop rate
