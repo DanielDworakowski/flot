@@ -6,6 +6,7 @@ from subprocess import Popen
 import threading
 import traceback
 import SigHandler
+import atexit
 
 import Pyro4
 #
@@ -74,6 +75,9 @@ class RobotControl(threading.Thread):
 # Communication class to send command to Python2 ROS Publisher script
 # Ensure that a Pyro4 nameserver is running by calling: pyro4-ns
 # pyro4-ns uses the default port 9090 on localhost
+# Connect on a seperate python shell with the folllowing lines
+""" >>> import Pyro4
+    >>> cmd = Pyro4.Proxy("PYRONAME:RobotControl.commands")"""
 @Pyro4.expose
 class RobotCommands(object):
     ns_process = None
@@ -90,26 +94,34 @@ class RobotCommands(object):
 
     # Start up daemon server for this object
     def startup(self):
-        if not self.__hasStarted:
-            # Start up pyro4-ns in a new thread
-            self.ns_process = Popen(split('pyro4-ns'))
+        if not self.hasStarted:
+            try:
+                # Start up pyro4-ns in a new thread
+                self.ns_process = Popen(['pyro4-ns'])
 
-            # Hacky way to wait for start-up; should use STDOUT pipe to confirm
-            print('Wait 5 seconds for pyro4-ns to start up...')
-            time.sleep(5)
+                # Hacky way to wait for start-up; should use STDOUT pipe to confirm
+                print('Wait 5 seconds for pyro4-ns to start up...')
+                time.sleep(5)
 
-            # Setup and register self
-            self.daemon = Pyro4.Daemon()
-            self.ns = Pyro4.locateNS()
-            self.uri = self.daemon.register(self)
-            self.ns.register('RobotControl.commands', self.uri)
+                # Setup and register self
+                self.daemon = Pyro4.Daemon()
+                self.ns = Pyro4.locateNS()
+                self.uri = self.daemon.register(self)
+                self.ns.register('RobotControl.commands', self.uri)
 
-            self.hasStarted = False
+                # Create new thread for daemon request loop
+                self.dThread = DaemonThread(self.daemon)
+                self.dThread.start()
 
-            # Create new thread for daemon request loop
-            self.dThread = daemonThread(self.daemon)
-            self.dThread.start()
+                # Register cleanup on exiting
+                atexit.register(self.cleanup)
 
+                self.hasStarted = True
+            except:
+                print('RobotCommands failed to start!')
+                print('Check if another pyro4-ns instance is running, or if '+
+                    'another daemon thread is running')
+                self.hasStarted = False
         else:
             print('This Pyro4 class has already been started')
 
@@ -131,10 +143,20 @@ class RobotCommands(object):
     def setVz(self, w):
         self.w = w
 
-    class daemonThread(threading.Thread):
-        daemon = None
-        def __init__(self, daemon):
-            threading.Thread.__init__(self)
-            self.daemon = daemon
-        def run(self):
-            self.daemon.requestLoop()
+    def cleanup(self):
+        if self.ns_process is not None:
+            self.ns_process.kill()
+
+        # Need better way to kill this thread properly...
+        # if self.dThread is not None:
+        #     self.dThread.join()
+
+class DaemonThread(threading.Thread):
+    daemon = None
+
+    def __init__(self, daemon):
+        threading.Thread.__init__(self)
+        self.daemon = daemon
+
+    def run(self):
+        self.daemon.requestLoop()
