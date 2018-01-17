@@ -1,7 +1,7 @@
 from __future__ import print_function
 from twitchstream.outputvideo import TwitchBufferedOutputStream
 
-from RobotObservation import VideoStreamClient
+from util import RobotUtil
 
 import argparse
 import time
@@ -11,7 +11,7 @@ import numpy as np
 streamkey = 'live_145306514_ZmQ4sIt4ZAwxNPeLLRpU4YfCdIIHu1'
 oauthkey = 'oauth:z1g9zxjfkd0bfb4z8gzdf2y3y7ejmi'
 
-LIVE = False
+LIVE = True
 
 # Load stream to send the video
 with TwitchBufferedOutputStream(
@@ -23,7 +23,7 @@ with TwitchBufferedOutputStream(
     verbose=True) as videostream:
 
     if LIVE:
-        client = VideoStreamClient()
+        client = RobotUtil.VideoStreamClient(VERBOSE=True)
         client.start()
     else:
         frame = np.zeros((480, 640, 3))
@@ -35,7 +35,7 @@ with TwitchBufferedOutputStream(
         if LIVE:
             frame = client.frame
 
-        if (videostream.get_video_frame_buffer_state() < 40) and frame is not None:
+        if (videostream.get_video_frame_buffer_state() < 30) and frame is not None:
             videostream.send_video_frame(frame)
         else:
             time.sleep(0.001)

@@ -23,29 +23,15 @@ import cv2
 from subprocess import Popen, PIPE
 from shlex import split
 
+from util import RobotUtil
+
 # ROS Libraries
 import rospy
 import roslib
 
 from sensor_msgs.msg import CompressedImage
 
-VERBOSE=True
-
-# Shell commands
-command1 = split("nc -l 2224")
-command2 = [ 'ffmpeg',
-        '-i', 'pipe:0',             # fifo is the named pipe
-        '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.
-        '-vcodec', 'rawvideo',
-        '-an','-sn',              # we want to disable audio processing (there is no audio)
-        '-f', 'image2pipe', '-']
-
-# Pipe buffer size calculation for image size
-width = 640
-height = 480
-depth = 3
-num = 2
-bufsize = width*height*depth*num
+VERBOSE = True
 
 # CompressedImage Message Setup
 msg = CompressedImage()
@@ -53,16 +39,12 @@ msg.format = 'png'
 
 def image_pub():
 
-    # Listen for TCP stream and feed into FFMPEG for converting into image
-    if VERBOSE:
-        print('Listening for TCP video stream and converting to images...')
-
-    nc_pipe = Popen(command1, stdout=PIPE)
-    pipe = Popen(command2, stdin=nc_pipe.stdout, stdout=PIPE, bufsize=bufsize)
-
     # ROS Node setup
     if VERBOSE:
         print('Starting image_pub node...')
+
+    client = RobotUtil.VideoStreamClient(VERBOSE=VERBOSE, BGR2RGB=True)
+    client.start()
 
     pub = rospy.Publisher('/PI_CAM/image_raw/compressed', CompressedImage)
     rospy.init_node('image_pub', anonymous=True)
@@ -70,27 +52,13 @@ def image_pub():
 
     # ROS loop
     while not rospy.is_shutdown():
-        # Capture frame bytes from pipe
-        raw_image = pipe.stdout.read(width*height*depth)
-
-        # Transform bytes to numpy array
-        image =  np.fromstring(raw_image, dtype='uint8')
-        image = image.reshape((height, width, depth))
-
-        if VERBOSE:
-            if image is not None:
-                cv2.imshow('Video', image)
-
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        # Flush pipe for new messages
-        pipe.stdout.flush()
-
         # Publish compressed image with new timestamp
-        msg.header.stamp = rospy.Time.now()
-        msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
-        pub.publish(msg)
+        image = client.frame
+
+        if image is not None:
+            msg.header.stamp = rospy.Time.now()
+            msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
+            pub.publish(msg)
 
         rate.sleep()    # Maintain loop rate
 
