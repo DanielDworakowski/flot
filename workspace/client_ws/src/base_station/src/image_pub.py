@@ -31,16 +31,37 @@ import roslib
 
 from sensor_msgs.msg import CompressedImage
 
-VERBOSE = True
+# Shell commands
+command1 = split("nc -l 2222")
+command2 = [ 'ffmpeg',
+        '-i', 'pipe:0',             # fifo is the named pipe
+        '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.
+        '-vcodec', 'rawvideo',
+        '-an','-sn',              # we want to disable audio processing (there is no audio)
+        '-f', 'image2pipe', '-']
+
+# Pipe buffer size calculation for image size
+width = 640
+height = 480
+depth = 3
+num = 2
+bufsize = width*height*depth*num
 
 # CompressedImage Message Setup
 msg = CompressedImage()
 msg.format = 'png'
 
-def image_pub():
+def image_pub(v=True):
+
+    # Listen for TCP stream and feed into FFMPEG for converting into image
+    if v:
+        print('Listening for TCP video stream and converting to images...')
+
+    nc_pipe = Popen(command1, stdout=PIPE)
+    pipe = Popen(command2, stdin=nc_pipe.stdout, stdout=PIPE, bufsize=bufsize)
 
     # ROS Node setup
-    if VERBOSE:
+    if v:
         print('Starting image_pub node...')
 
     client = RobotUtil.VideoStreamClient(VERBOSE=VERBOSE, BGR2RGB=True)
@@ -52,6 +73,23 @@ def image_pub():
 
     # ROS loop
     while not rospy.is_shutdown():
+        # Capture frame bytes from pipe
+        raw_image = pipe.stdout.read(width*height*depth)
+
+        # Transform bytes to numpy array
+        image =  np.fromstring(raw_image, dtype='uint8')
+        image = image.reshape((height, width, depth))
+
+        if v:
+            if image is not None:
+                cv2.imshow('Video', image)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        # Flush pipe for new messages
+        pipe.stdout.flush()
+
         # Publish compressed image with new timestamp
         image = client.frame
 
@@ -63,8 +101,9 @@ def image_pub():
         rate.sleep()    # Maintain loop rate
 
 if __name__ == '__main__':
+    VERBOSE = True
     try:
-        image_pub()
+        image_pub(VERBOSE)
 
     except rospy.ROSInterruptException:
         if VERBOSE:

@@ -69,9 +69,15 @@ def imu_callback(data):
     # cwd = os.getcwd()
     # rospy.loginfo(cwd)
 
-    # pub = rospy.Publisher('/PI_CAM/image_raw/compressed', CompressedImage)
+def yaw_callback(data):
+    rospy.loginfo(rospy.get_caller_id() + 'I heard yaw {}'.format(data.data))
+    # f.write(data.data+'\n')
+    # cwd = os.getcwd()
+    # rospy.loginfo(cwd)
+
 def cam_callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard cam {}'.format(data.data))
+    pass
+    # rospy.loginfo(rospy.get_caller_id() + 'I heard cam')
     # f.write(data.data+'\n')
     # cwd = os.getcwd()
     # rospy.loginfo(cwd)
@@ -87,6 +93,7 @@ def listener():
     rospy.init_node('listener', anonymous=True)
     rospy.Subscriber('sonar_meas', Float64, sonar_callback)
     rospy.Subscriber('imu_data', Imu, imu_callback)
+    rospy.Subscriber('yaw_rate', Float64, yaw_callback)
     rospy.Subscriber('/PI_CAM/image_raw/compressed', CompressedImage, cam_callback)
 
     # spin() simply keeps python from exiting until this node is stopped
