@@ -72,8 +72,8 @@ def talker():
         idx+=1
 
         out = output(values)
-        rospy.loginfo(out)
-        pub.publish(out)
+        # rospy.loginfo(out)
+        # pub.publish(out)
         rate.sleep()
 
 if __name__ == '__main__':

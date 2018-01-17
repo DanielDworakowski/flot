@@ -29,10 +29,8 @@ import roslib
 
 from sensor_msgs.msg import CompressedImage
 
-VERBOSE=True
-
 # Shell commands
-command1 = split("nc -l 2224")
+command1 = split("nc -l 2222")
 command2 = [ 'ffmpeg',
         '-i', 'pipe:0',             # fifo is the named pipe
         '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.
@@ -51,17 +49,17 @@ bufsize = width*height*depth*num
 msg = CompressedImage()
 msg.format = 'png'
 
-def image_pub():
+def image_pub(v=True):
 
     # Listen for TCP stream and feed into FFMPEG for converting into image
-    if VERBOSE:
+    if v:
         print('Listening for TCP video stream and converting to images...')
 
     nc_pipe = Popen(command1, stdout=PIPE)
     pipe = Popen(command2, stdin=nc_pipe.stdout, stdout=PIPE, bufsize=bufsize)
 
     # ROS Node setup
-    if VERBOSE:
+    if v:
         print('Starting image_pub node...')
 
     pub = rospy.Publisher('/PI_CAM/image_raw/compressed', CompressedImage)
@@ -77,7 +75,7 @@ def image_pub():
         image =  np.fromstring(raw_image, dtype='uint8')
         image = image.reshape((height, width, depth))
 
-        if VERBOSE:
+        if v:
             if image is not None:
                 cv2.imshow('Video', image)
 
@@ -95,8 +93,9 @@ def image_pub():
         rate.sleep()    # Maintain loop rate
 
 if __name__ == '__main__':
+    VERBOSE = True
     try:
-        image_pub()
+        image_pub(VERBOSE)
 
     except rospy.ROSInterruptException:
         if VERBOSE:
