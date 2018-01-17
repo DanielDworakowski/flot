@@ -23,6 +23,8 @@ import cv2
 from subprocess import Popen, PIPE
 from shlex import split
 
+from util import RobotUtil
+
 # ROS Libraries
 import rospy
 import roslib
@@ -62,6 +64,9 @@ def image_pub(v=True):
     if v:
         print('Starting image_pub node...')
 
+    client = RobotUtil.VideoStreamClient(VERBOSE=VERBOSE, BGR2RGB=True)
+    client.start()
+
     pub = rospy.Publisher('/PI_CAM/image_raw/compressed', CompressedImage)
     rospy.init_node('image_pub', anonymous=True)
     rate = rospy.Rate(100)   # 100 Hz to prevent aliasing of 40 FPS feed
@@ -86,9 +91,12 @@ def image_pub(v=True):
         pipe.stdout.flush()
 
         # Publish compressed image with new timestamp
-        msg.header.stamp = rospy.Time.now()
-        msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
-        pub.publish(msg)
+        image = client.frame
+
+        if image is not None:
+            msg.header.stamp = rospy.Time.now()
+            msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
+            pub.publish(msg)
 
         rate.sleep()    # Maintain loop rate
 
