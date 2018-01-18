@@ -22,6 +22,7 @@ def imu():
             # [gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation]
             data  = imu_t.get_data()
             # imu_data.header.stamp = rospy.Time.now()
+            imu_data.header.stamp = rospy.get_rostime()
             roll = 180 * math.atan(data[3] / math.sqrt(data[4]**2 + data[5]**2)) / math.pi
             pitch = 180 * math.atan(data[4] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
             yaw = 180 * math.atan(data[5] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
@@ -41,15 +42,15 @@ def imu():
             rospy.loginfo(imu_data)
             pub0.publish(imu_data)
 
-            Float64WithHeader yaw_rate
+            yaw_rate = Float64WithHeader()
             yaw_rate.header.stamp = rospy.get_rostime()
-            yaw_rate.data = data[1]
+            yaw_rate.float.data = data[1]
             rospy.loginfo(yaw_rate)
             pub1.publish(yaw_rate)
             rate.sleep()
 
 if __name__ == '__main__':
-	try:
-		imu()
-    	except rospy.ROSInterruptException:
-        	pass
+    try:
+        imu()
+    except rospy.ROSInterruptException:
+        pass

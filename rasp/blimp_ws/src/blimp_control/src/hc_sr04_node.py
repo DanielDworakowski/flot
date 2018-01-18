@@ -17,7 +17,7 @@ GPIO.output(TRIG, False)
 time.sleep(2)
 
 def sonar():
-    pub = rospy.Publisher('sonar_meas', Float64, queue_size=10)
+    pub = rospy.Publisher('sonar_meas', Float64WithHeader, queue_size=10)
     rospy.init_node('sonar', anonymous=True)
     rate = rospy.Rate(20) # 10hz
     while not rospy.is_shutdown():
@@ -43,10 +43,13 @@ def sonar():
         distance = pulse_duration*17150
         distance = distance/100.0
 
+        sonar_data = Float64WithHeader()
+        sonar_data.header.stamp = rospy.get_rostime()
         if abs(distance) < 2.0:
-            pub.publish(distance)
+            sonar_data.float.data = distance
         else:
-            pub.publish(0.0)
+            sonar_data.float.data = 0.0
+        pub.publish(sonar_data)
         rate.sleep()
 
 
