@@ -1,5 +1,4 @@
 <launch>
 <node pkg="base_station" name="listener" type="listener.py" output="screen"></node>
 <node pkg="base_station" name="image_pub" type="image_pub.py" output="screen"></node>
-<node pkg="base_station" name="talker" type="talker.py" output="screen"></node>
 </launch>
