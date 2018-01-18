@@ -38,6 +38,7 @@
 
 import os
 import rospy
+import datetime
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 from sensor_msgs.msg import Imu
@@ -47,6 +48,8 @@ import numpy as np
 from subprocess import Popen, PIPE
 from shlex import split
 from base_station.msg import Float64WithHeader
+import tf.transformations
+from scipy.misc import imsave
 
 # Removes conflict regarding CV2 if ROS Kinetic has been sourced
 del os.environ['PYTHONPATH']
@@ -54,34 +57,79 @@ import cv2
 
 from sensor_msgs.msg import CompressedImage
 
-OBS = 'observation.csv'
-if os.path.isfile(OBS): os.remove(OBS)
-f = open(OBS, 'a')
+timestr = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+if not os.path.exists(timestr):
+    os.makedirs(timestr)
+
+sfile = '{}/sonar-observation.csv'.format(timestr)
+ifile = '{}/imu-observation.csv'.format(timestr)
+yfile = '{}/yawrate-observation.csv'.format(timestr)
+
+if os.path.isfile(sfile): os.remove(sfile)
+if os.path.isfile(ifile): os.remove(ifile)
+if os.path.isfile(yfile): os.remove(yfile)
+
+fs = open(sfile, 'a')
+fi = open(ifile, 'a')
+fy = open(yfile, 'a')
+
+fs.write('Value, Timestamp\n')
+fi.write('AngVel(x), AngVel(y), AngVel(z), LinAcc(x), LinAcc(y), LinAcc(z), Roll, Pitch, Yaw, Timestamp\n')
+fy.write('Value, Timestamp\n')
+
+def store(data, datatype):
+    ts = data.header.stamp.secs
+    tn = data.header.stamp.nsecs/float(1e9)
+    stamp = "{:.10f}".format(ts+tn)
+    if datatype=='sonar':
+        print('sonar:{}\n'.format(data.header))
+        val = data.float.data
+        fs.write('{},{}\n'.format(val, stamp))
+
+    elif datatype=='imu':
+        print('imu:{}\n'.format(data))
+        quat = data.orientation
+        angvel = data.angular_velocity
+        linacc = data.linear_acceleration
+        roll, pitch, yaw = tf.transformations.euler_from_quaternion([quat.w,quat.x,quat.y,quat.z])
+        st = '{},{},{},{},{},{},{},{},{}'.format(
+                angvel.x,
+                angvel.y,
+                angvel.z,
+                linacc.x,
+                linacc.y,
+                linacc.z,
+                roll,
+                pitch,
+                yaw
+                )
+        fi.write('{},{}\n'.format(st,stamp))
+
+    elif datatype=='yaw':
+        print('yaw:{}\n'.format(data.header))
+        val = data.float.data
+        fy.write('{},{}\n'.format(val, stamp))
+
+    elif datatype=='cam':
+        print('cam:{}\n'.format(data.header))
+        np_arr = np.fromstring(data.data, np.uint8)
+        np_img = cv2.imdecode(np_arr, cv2.IMREAD_UNCHANGED)
+        np_img = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
+        imsave('{}/{}.png'.format(timestr, stamp), np_img)
+    cwd = os.getcwd()
+    rospy.loginfo('{}/{}'.format(cwd, timestr))
 
 def sonar_callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard sonar {}'.format(data.data))
-    # f.write(data.data+'\n')
-    # cwd = os.getcwd()
-    # rospy.loginfo(cwd)
+    store(data, 'sonar')
 
 def imu_callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard imu {}'.format(data))
-    # f.write(data.data+'\n')
-    # cwd = os.getcwd()
-    # rospy.loginfo(cwd)
+    store(data, 'imu')
 
 def yaw_callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard yaw {}'.format(data.data))
-    # f.write(data.data+'\n')
-    # cwd = os.getcwd()
-    # rospy.loginfo(cwd)
+    store(data, 'yaw')
 
 def cam_callback(data):
-    pass
-    # rospy.loginfo(rospy.get_caller_id() + 'I heard cam')
-    # f.write(data.data+'\n')
-    # cwd = os.getcwd()
-    # rospy.loginfo(cwd)
+    store(data, 'cam')
 
 def listener():
 
@@ -92,10 +140,11 @@ def listener():
     # run simultaneously.
 
     rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber('sonar_meas', Float64, sonar_callback)
+    rospy.Subscriber('sonar_meas', Float64WithHeader, sonar_callback)
     rospy.Subscriber('imu_data', Imu, imu_callback)
-    rospy.Subscriber('yaw_rate', Float64, yaw_callback)
-    rospy.Subscriber('/PI_CAM/image_raw/compressed', CompressedImage, cam_callback)
+    rospy.Subscriber('yaw_rate', Float64WithHeader, yaw_callback)
+    rospy.Subscriber('/PI_CAM/image_raw/compressed', CompressedImage, cam_callback, queue_size=1)
+    rate = rospy.Rate(100)   # 100 Hz to prevent aliasing of 40 FPS feed
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()
