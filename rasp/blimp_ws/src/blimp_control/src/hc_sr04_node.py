@@ -3,6 +3,7 @@ import rospy
 from std_msgs.msg import Float64
 import RPi.GPIO as GPIO
 import time
+from blimp_control.msg import Float64WithHeader
 GPIO.setmode(GPIO.BCM)
 
 TRIG = 23
@@ -16,7 +17,7 @@ GPIO.output(TRIG, False)
 time.sleep(2)
 
 def sonar():
-        pub = rospy.Publisher('sonar_meas', Float64, queue_size=10)
+        pub = rospy.Publisher('sonar_meas', Float64WithHeader, queue_size=10)
         rospy.init_node('sonar', anonymous=True)
         rate = rospy.Rate(20) # 10hz
         while not rospy.is_shutdown():
@@ -46,6 +47,8 @@ def sonar():
                 	pub.publish(distance)
 		else:
 			pub.publish(0.0)
+		rospy.loginfo(distance)
+
                 rate.sleep()
 
 

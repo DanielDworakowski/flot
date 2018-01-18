@@ -1,7 +1,7 @@
 #!/bin/bash
 
 host_ip=10.0.1.37
-port=2224
+port=2222
 
 echo Starting raspivid camera stream
 echo Streaming to $host_ip:$port

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import Float64
+from blimp_control.msg import Float64WithHeader
 import RPi.GPIO as GPIO
 import time
 import mpu6050
@@ -14,7 +15,7 @@ imu_data = Imu()
 def imu():
         #define publisher
         pub0 = rospy.Publisher('imu_data', Imu, queue_size=10)
-        pub1 = rospy.Publisher('yaw_rate', Float64, queue_size=10)
+        pub1 = rospy.Publisher('yaw_rate', Float64WithHeader, queue_size=10)
         rospy.init_node('imu', anonymous=True)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
@@ -39,7 +40,12 @@ def imu():
             imu_data.angular_velocity_covariance[0] = -1
             rospy.loginfo(imu_data)
             pub0.publish(imu_data)
-            pub1.publish(data[1])
+
+            Float64WithHeader yaw_rate
+            yaw_rate.header.stamp = rospy.get_rostime()
+            yaw_rate.data = data[1]
+            rospy.loginfo(yaw_rate)
+            pub1.publish(yaw_rate)
             rate.sleep()
 
 if __name__ == '__main__':
