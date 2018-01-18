@@ -46,6 +46,7 @@ import sys, time, threading
 import numpy as np
 from subprocess import Popen, PIPE
 from shlex import split
+from base_station.msg import Float64WithHeader
 
 # Removes conflict regarding CV2 if ROS Kinetic has been sourced
 del os.environ['PYTHONPATH']
@@ -64,7 +65,7 @@ def sonar_callback(data):
     # rospy.loginfo(cwd)
 
 def imu_callback(data):
-    rospy.loginfo(rospy.get_caller_id() + 'I heard imu {}'.format(data.data))
+    rospy.loginfo(rospy.get_caller_id() + 'I heard imu {}'.format(data))
     # f.write(data.data+'\n')
     # cwd = os.getcwd()
     # rospy.loginfo(cwd)
