@@ -9,7 +9,7 @@ import rospy
 import roslib
 from sensor_msgs.msg import CompressedImage
 
-VERBOSE = False
+VERBOSE = True
 
 videostream = None
 

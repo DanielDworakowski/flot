@@ -64,7 +64,7 @@ def image_pub(v=True):
     if v:
         print('Starting image_pub node...')
 
-    client = RobotUtil.VideoStreamClient(VERBOSE=VERBOSE, BGR2RGB=True)
+    client = RobotUtil.VideoStreamClient(VERBOSE=False, BGR2RGB=True)
     client.start()
 
     pub = rospy.Publisher('/PI_CAM/image_raw/compressed', CompressedImage)
@@ -91,7 +91,7 @@ def image_pub(v=True):
         pipe.stdout.flush()
 
         # Publish compressed image with new timestamp
-        image = client.frame
+        # image = client.frame
 
         if image is not None:
             msg.header.stamp = rospy.Time.now()
