@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import Float64
 
 def talker():
-    pub = rospy.Publisher('alt_setpoint', Float64, queue_size=10)
+    pub0 = rospy.Publisher('alt_setpoint', Float64, queue_size=10)
     pub1 = rospy.Publisher('v_setpoint', Float64, queue_size=10)
     pub2 = rospy.Publisher('w_setpoint', Float64, queue_size=10)
     rospy.init_node('dummy_setpoint', anonymous=True)
