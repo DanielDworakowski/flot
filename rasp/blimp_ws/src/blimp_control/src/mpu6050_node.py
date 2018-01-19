@@ -16,6 +16,7 @@ def imu():
         #define publisher
         pub0 = rospy.Publisher('imu_data', Imu, queue_size=10)
         pub1 = rospy.Publisher('yaw_rate', Float64WithHeader, queue_size=10)
+        pub2 = rospy.Publisher('yaw_rate_control', Float64, queue_size=10)
         rospy.init_node('imu', anonymous=True)
         rate = rospy.Rate(10) # 10hz
         while not rospy.is_shutdown():
@@ -47,6 +48,7 @@ def imu():
             yaw_rate.float.data = data[1]
             rospy.loginfo(yaw_rate)
             pub1.publish(yaw_rate)
+            pub2.publish(data[1])
             rate.sleep()
 
 if __name__ == '__main__':

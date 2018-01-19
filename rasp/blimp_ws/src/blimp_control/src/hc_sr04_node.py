@@ -18,6 +18,7 @@ time.sleep(2)
 
 def sonar():
     pub = rospy.Publisher('sonar_meas', Float64WithHeader, queue_size=10)
+    pub1 = rospy.Publisher('sonar_meas_control', Float64, queue_size=10)
     rospy.init_node('sonar', anonymous=True)
     rate = rospy.Rate(20) # 10hz
     while not rospy.is_shutdown():
@@ -47,8 +48,10 @@ def sonar():
         sonar_data.header.stamp = rospy.get_rostime()
         if abs(distance) < 2.0:
             sonar_data.float.data = distance
+            pub1.publish(distance)
         else:
             sonar_data.float.data = 0.0
+            pub1.publish(0.0)
         pub.publish(sonar_data)
         rate.sleep()
 
