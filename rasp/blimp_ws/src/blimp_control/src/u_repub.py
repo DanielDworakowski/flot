@@ -20,7 +20,7 @@ def callback1(data):
     u = data.data
     count += 1
     if count > 15:
-        pub0.publish(u)
+        pub1.publish(u)
         count = 0
 
 def u_repub():
