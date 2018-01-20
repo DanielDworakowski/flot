@@ -48,7 +48,7 @@ def imu():
             yaw_rate.float.data = data[2]
             rospy.loginfo(yaw_rate)
             pub1.publish(yaw_rate)
-            pub2.publish(data[2]) #data2 is yaw rate, 1 is pitch rate, 0 roll, have to fix the imudata
+            pub2.publish(data[2]/250.0) #data2 is yaw rate, 1 is pitch rate, 0 roll, have to fix the imudata
             rate.sleep()
 
 if __name__ == '__main__':

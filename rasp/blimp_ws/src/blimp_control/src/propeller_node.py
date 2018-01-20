@@ -22,17 +22,12 @@ def down_callback(data):
 def v_callback(data):
     global u0
     u0 = data.data
-    if u0>1:
-        u0=1
-    elif u0<-1:
-        u0=-1
-
+    
 def delta_callback(data):
     global u0
-    # u_delta = data.data
-    u_delta = 0.0
-    prop.left(int(-u0 + u_delta)*u_scale)
-    prop.right(int(-u0 - u_delta)*u_scale)
+    u_delta = data.data
+    prop.left(int((-u0 - u_delta)*u_scale))#its the right prop in the test setup
+    prop.right(int((-u0+ u_delta)*u_scale))# its the left set up in the test set up
 
 def propellers():
     rospy.init_node("propellers", anonymous=True)
