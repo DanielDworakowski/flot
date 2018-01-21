@@ -35,6 +35,7 @@ class Config(DefaultConfig):
         self.transforms = transforms.Compose([
             Perterbations.RandomShift(cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
             DataUtil.Rescale(self.hyperparam.image_shape),
+            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned. 
             DataUtil.ToTensor(),
         ])
         self.dataTrainList = [

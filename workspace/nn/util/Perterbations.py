@@ -141,3 +141,32 @@ class RandomShift(object):
         return {'img': image,
                 'labels': np.append(labels[0], mask),
                 'meta': sample['meta']}
+
+class ColourJitter(object):
+    """Randomly change the brightness, contrast and saturation of an image.
+
+    Taken from:
+    https://github.com/pytorch/vision/blob/master/torchvision/transforms/transforms.py
+
+    Args:
+        brightness (float): How much to jitter brightness. brightness_factor
+            is chosen uniformly from [max(0, 1 - brightness), 1 + brightness].
+        contrast (float): How much to jitter contrast. contrast_factor
+            is chosen uniformly from [max(0, 1 - contrast), 1 + contrast].
+        saturation (float): How much to jitter saturation. saturation_factor
+            is chosen uniformly from [max(0, 1 - saturation), 1 + saturation].
+        hue(float): How much to jitter hue. hue_factor is chosen uniformly from
+            [-hue, hue]. Should be >=0 and <= 0.5.
+    """
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.hue = hue
+
+    def __call__(self, sample):
+        t = transforms.ColorJitter.get_params(self.brightness, self.contrast,
+                                              self.saturation, self.hue)
+        return {'img': t(sample['img']),
+                'labels': sample['labels'],
+                'meta': sample['meta']}
