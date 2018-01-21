@@ -46,15 +46,13 @@ def rtobTable():
     dg = 0.
     db = 1.
     rgb = []
-    for i in range(500):
+    for i in range(rng):
         r,g,b = r+dr, g+dg, b+db
         rgb.append((int(r), int(g), int(b)))
     return rgb
 #
 # Draw trajectory dots on the image.
 def drawTrajectoryDots(x, y, space, sidel, rgbTable, draw, conf, posClassProb):
-    #
-    # TODO: 2-dimensional iteration since the trejectories can move up and down.
     nBin = posClassProb.shape[0]
     #
     # Super lazy way to not have to repeat calculations.
