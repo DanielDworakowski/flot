@@ -12,5 +12,12 @@
       "AutoExposureSpeed": 1000000
     }
   ],
+  "SimpleFlight": {
+      "RC": {
+      "RemoteControlID": 1,
+      "AllowAPIWhenDisconnected": false,
+      "AllowAPIAlways": true
+    }
+  },
   "SeeDocsAt": "https://github.com/Microsoft/AirSim/blob/master/docs/settings.md"
 }
