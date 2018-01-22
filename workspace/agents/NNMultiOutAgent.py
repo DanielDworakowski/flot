@@ -56,5 +56,6 @@ class Agent(base.AgentBase):
             img = Variable(inputImg.unsqueeze_(0))
         classActivation = self.model(img).data
         probs = self.model.getClassifications(Variable(classActivation), sm)
-        action = Action(probs.cpu().numpy())
+        # action = Action(probs.cpu().numpy())
+        action = Action(np.zeros(3))
         return action

@@ -4,7 +4,10 @@ import Observations
 import argparse
 import SigHandler
 import ratelimiter
+import sys
 from debug import *
+import util.AgentVisualization as visual
+from PyQt5.QtWidgets import QApplication
 #
 # Parse the input arguments.
 def getInputArgs():
@@ -30,22 +33,26 @@ def getConfig(args):
 #
 # Rate limited stepping code limit to 30hz.
 @ratelimiter.RateLimiter(max_calls=30, period=1)
-def step(agent, env):
+def step(agent, env, vis):
     obs = env.observe()
     agent.giveObservation(obs)
     action = agent.getAction()
     env.runAction(action, obs)
+    vis.visualize(obs, action, agent)
 #
 # Main loop for running the agent.
 def loop(conf):
     agent = conf.agentConstructor(conf)
+    # vis = visual.Visualizer()
     exitNow = SigHandler.SigHandler()
     with Environment.Environment(conf.envType, conf.getFullSavePath(), conf.serialize) as env:
         while not exitNow.exit:
-            step(agent, env)
+            step(agent, env, vis)
 #
 # Main code.
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
     args = getInputArgs()
     conf = getConfig(args)
+    vis = visual.Visualizer()
     loop(conf)
