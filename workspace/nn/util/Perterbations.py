@@ -14,9 +14,9 @@ class CenterCrop(object):
 
     def __init__(self, outputSize):
         if isinstance(outputSize, int):
-            self.outputSize = (outputSize, outputSize, 3)
+            self.outputSize = (outputSize, outputSize)
         else:
-            assert len(outputSize) == 3
+            assert len(outputSize) == 2
             self.outputSize = outputSize
 
     def __call__(self, sample):
@@ -53,9 +53,9 @@ class RandomShift(object):
         #
         # Output size.
         if isinstance(outputSize, int):
-            self.outputSize = (outputSize, outputSize, 3)
+            self.outputSize = (outputSize, outputSize)
         else:
-            assert len(outputSize) == 3
+            assert len(outputSize) == 2
             self.outputSize = outputSize
         #
         # Bounds for the shifting

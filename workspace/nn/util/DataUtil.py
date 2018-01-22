@@ -42,7 +42,7 @@ class Rescale(object):
             else:
                 new_h, new_w = self.output_size, self.output_size * w / h
         else:
-            new_h, new_w, c = self.output_size
+            new_h, new_w = self.output_size
         #
         # New height and width
         new_h, new_w = int(new_h), int(new_w)

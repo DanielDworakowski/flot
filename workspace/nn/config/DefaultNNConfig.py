@@ -12,7 +12,7 @@ from models import GenericModel
 class HyperParam():
     #
     # Image shape
-    image_shape = (224, 224, 3)
+    image_shape = (224, 224)
     #
     # Number of images in a batch.
     batchSize = 32
