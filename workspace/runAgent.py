@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import Environment
 import Observations
 import argparse
@@ -19,9 +18,7 @@ def getInputArgs():
 #
 # Get the configuration, override as needed.
 def getConfig(args):
-    configuration = __import__(args.configStr)
-
-    conf = configuration.Config()
+    conf = __import__(args.configStr).Config()
     if args.dataColPath != None:
         conf.savePath = args.dataColPath
     if args.agentStr != None:
