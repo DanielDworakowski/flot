@@ -7,6 +7,7 @@ import torch
 from torchvision import transforms
 from torch.autograd import Variable
 from Actions import Action
+from PIL import Image
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
@@ -35,55 +36,25 @@ class Agent(base.AgentBase):
         if self.usegpu:
             self.model.cuda()
         self.model.eval()
-        intermediateShape = self.nnconf.cropShape
-        inputImgShape = self.nnconf.hyperparam.image_shape
         self.transform = transforms.Compose([
-            transforms.CenterCrop(self.intermediateShape)
-            transforms.Resize(self.inputImgShape)
+            transforms.CenterCrop(self.nnconf.cropShape),
+            transforms.Resize(self.nnconf.hyperparam.image_shape),
             transforms.ToTensor()
         ])
     #
     # Reference to an observation
     def getActionImpl(self):
         obs = self.obs
-        npimg = obs['img'].decompressPNG()[:,:,0:3]
+        npimg = Image.fromarray(obs['img'].decompressPNG()[:,:,0:3])
+        # npimg.show()
+        # print(npimg.size)
         inputImg = self.transform(npimg)
-        softmax = torch.nn.Softmax()
+        sm = torch.nn.Softmax()
         if self.usegpu:
             img = Variable(inputImg.unsqueeze_(0).cuda())
         else:
             img = Variable(inputImg.unsqueeze_(0))
-        collision_free_pred = self.model(img).data
-        # collision_free_prob.append(softmax(collision_free_pred)[0,1].data.cpu().numpy(0))
-        #
-        # collision free probability
-        # left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
-        # action_array = np.zeros(self.action_array_dim)
-        # if center_prob > self.straight_min_prob:
-        #     action_array[int(self.action_array_dim/2)] = 1
-        #     action = Action(action_array)
-        #
-        # elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
-        #     action = Action(action_array)
-        #
-        # elif left_prob > right_prob and left_prob < self.turn_min_prob:
-        #     action_array[0] = 1
-        #     action = Action(action_array)
-        #
-        # elif right_prob >= left_prob and right_prob < self.turn_min_prob:
-        #     action_array[-1] = 1
-        #     action = Action(action_array)
-        #
-        # elif left_prob > right_prob:
-        #     action = Action(v_t=left_prob*self.max_v_t,w=left_prob*self.max_w)
-        #
-        # else:
-        #     action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)
-        # # action = Action(action_array)
-        # print('_____________________________________________________________________________________________________________________________________')
-        # print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
-        # print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
-
-        # Do more stuff.
-        action = Action(np.array(3))
+        classActivation = self.model(img).data
+        probs = self.model.getClassifications(Variable(classActivation), sm)
+        action = Action(probs.cpu().numpy())
         return action
