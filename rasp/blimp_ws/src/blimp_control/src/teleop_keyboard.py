@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #TO USE: rosrun teleop_keyboard teleop_keyboard.py
-import roslib; roslib.load_manifest('teleop_keyboard')
+import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
 
 from geometry_msgs.msg import Float64
@@ -46,12 +46,12 @@ moveBindings = {
 		'm':(-.7,-.7),
 	       }
 
-altitudeBindings={}
+altitudeBindings={
 		't':(0.01),
         'b':(-.01),
 	      }
 
-speedBindings={}
+speedBindings={
 		'q':(1.1,1.1),
 		'z':(.9,.9),
 		'w':(1.1,1),
