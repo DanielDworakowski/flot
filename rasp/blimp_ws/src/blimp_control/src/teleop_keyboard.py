@@ -82,7 +82,7 @@ if __name__=="__main__":
 
 	teleop_talker()
 
-	linear = rospy.get_param("~linear", 1.0)
+	linear = rospy.get_param("~linear", 0.0)
 	angular = rospy.get_param("~angular", 0.0)
     altitude = rospy.get_param("~altitude", 1.0)
 
