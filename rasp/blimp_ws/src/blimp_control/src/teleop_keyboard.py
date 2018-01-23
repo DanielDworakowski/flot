@@ -35,19 +35,19 @@ CTRL-C to quit
 """
 
 moveBindings = {
-		'i':(1,0),
+		'i':(1.0,0.0),
 		'o':(.7,-.7),
-		'j':(0,1),
-		'l':(0,-1),
-        'k':(0,0),
+		'j':(0.0,1.0),
+		'l':(0.0,-1.0),
+        'k':(0.0,0.0),
 		'u':(.7,.7),
-		',':(-1,0),
+		',':(-1.0,0.0),
 		'.':(-.7,.7),
-		'm':(-7,-.7),
+		'm':(-.7,-.7),
 	       }
 
 altitudeBindings={}
-		't':(.01),
+		't':(0.01),
         'b':(-.01),
 	      }
 
@@ -66,12 +66,6 @@ def getKey():
 	key = sys.stdin.read(1)
 	termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 	return key
-
-def teleop():
-    pub0 = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
-    pub1 = rospy.Publisher('cmd_v', Float64, queue_size = 10)
-    pub2 = rospy.Publisher('cmd_w', Float64, queue_size = 10)
-	rospy.init_node('teleop_keyboard')
 
 def vels(linear, angular, altitude):
 	return "currently:\tlinear %s\tangular %s\taltitude %s " % (linear,angular, altitude)
