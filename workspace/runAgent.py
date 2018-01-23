@@ -45,7 +45,7 @@ def loop(conf):
     agent = conf.agentConstructor(conf)
     # vis = visual.Visualizer()
     exitNow = SigHandler.SigHandler()
-    with Environment.Environment(conf.envType, conf.getFullSavePath(), conf.serialize) as env:
+    with Environment.Environment(conf.envType, conf.getFullSavePath(conf.serialize), conf.serialize) as env:
         while not exitNow.exit:
             step(agent, env, vis)
 #
