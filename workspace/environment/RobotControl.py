@@ -31,9 +31,10 @@ class RobotControl(threading.Thread):
         self.w = 0. # target angular velocity m/s
         self.z = None
 
-        # Create Pyro4 object and start up daemon
-        self.RC = RobotCommands()
-        self.RC.startup()
+        # Connect to Pyro4 object to start writing to...
+        # Keep trying until it is successful
+        while self.RC is not None:
+            self.RC = RobotCommands().connect()
 
     def __enter__(self):
         """ Start the thread """
@@ -86,14 +87,15 @@ class RobotCommands(object):
     uri = None
     dThread = None
 
-    v_t = None
-    v_z = None
-    w = None
+    # Initialize v_t, v_z, w to floats
+    v_t = 0.0
+    v_z = 0.0
+    w = 0.0
 
     hasStarted = False
 
     # Start up daemon server for this object
-    def startup(self):
+    def startup(self, ns_reg = 'RobotControl.commands'):
         if not self.hasStarted:
             try:
                 # Start up pyro4-ns in a new thread
@@ -107,7 +109,7 @@ class RobotCommands(object):
                 self.daemon = Pyro4.Daemon()
                 self.ns = Pyro4.locateNS()
                 self.uri = self.daemon.register(self)
-                self.ns.register('RobotControl.commands', self.uri)
+                self.ns.register(ns_reg, self.uri)
 
                 # Create new thread for daemon request loop
                 self.dThread = DaemonThread(self.daemon)
@@ -125,6 +127,22 @@ class RobotCommands(object):
         else:
             print('This Pyro4 class has already been started')
 
+    # Connect to a nameserver and return the object
+    def connect(self, ns_reg = 'RobotControl.commands'):
+        try:
+            print('Connecting to nameserver for ' + ns_reg + '...')
+            obj = Pyro4.Proxy('PYRONAME:' + ns_reg)
+
+            if obj is not None:
+                print('Object found; returning Pyro4 Proxy object...')
+                hasStarted = True
+                return obj
+            else:
+                print('Failed to find ' + ns_reg)
+        except:
+            print('Failed to connect to nameserver! Check if it is running.')
+
+    # Getter/Setter Function
     def getVT(self):
         return self.v_t
 
@@ -143,6 +161,7 @@ class RobotCommands(object):
     def setVz(self, w):
         self.w = w
 
+    # Proper cleanup when exiting
     def cleanup(self):
         if self.ns_process is not None:
             self.ns_process.kill()
