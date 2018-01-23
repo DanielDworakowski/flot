@@ -73,9 +73,12 @@ fs = open(sfile, 'a')
 fi = open(ifile, 'a')
 fy = open(yfile, 'a')
 
-fs.write('Value, Timestamp\n')
-fi.write('AngVel(x), AngVel(y), AngVel(z), LinAcc(x), LinAcc(y), LinAcc(z), Roll, Pitch, Yaw, Timestamp\n')
-fy.write('Value, Timestamp\n')
+with open(sfile,'a') as f:
+    f.write('Value, Timestamp\n')
+with open(ifile,'a') as f:
+    f.write('AngVel(x), AngVel(y), AngVel(z), LinAcc(x), LinAcc(y), LinAcc(z), Roll, Pitch, Yaw, Timestamp\n')
+with open(yfile,'a') as f:
+    f.write('Value, Timestamp\n')
 
 def store(data, datatype):
     ts = data.header.stamp.secs
@@ -84,7 +87,8 @@ def store(data, datatype):
     if datatype=='sonar':
         print('sonar:{}\n'.format(data.header))
         val = data.float.data
-        fs.write('{},{}\n'.format(val, stamp))
+        with open(sfile,'a') as f:
+            f.write('{},{}\n'.format(val, stamp))
 
     elif datatype=='imu':
         print('imu:{}\n'.format(data))
@@ -103,12 +107,14 @@ def store(data, datatype):
                 pitch,
                 yaw
                 )
-        fi.write('{},{}\n'.format(st,stamp))
+        with open(ifile,'a') as f:
+            f.write('{},{}\n'.format(st,stamp))
 
     elif datatype=='yaw':
         print('yaw:{}\n'.format(data.header))
         val = data.float.data
-        fy.write('{},{}\n'.format(val, stamp))
+        with open(yfile,'a') as f:
+            f.write('{},{}\n'.format(val, stamp))
 
     elif datatype=='cam':
         print('cam:{}\n'.format(data.header))
