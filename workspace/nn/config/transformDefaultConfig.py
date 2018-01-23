@@ -29,13 +29,13 @@ class Config(DefaultConfig):
         #
         # The intermadiate shape of the data, in order to gain more information,
         # within a single image we downscale.
-        cropShape = (448, 448, 3)
+        self.cropShape = (448, 448)
         #
         # Transforms.
         self.transforms = transforms.Compose([
-            Perterbations.RandomShift(cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
+            Perterbations.RandomShift(self.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
             DataUtil.Rescale(self.hyperparam.image_shape),
-            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned. 
+            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
         self.dataTrainList = [

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #TO USE: rosrun teleop_keyboard teleop_keyboard.py
-import roslib; roslib.load_manifest('teleop_keyboard')
+import roslib; roslib.load_manifest('teleop_twist_keyboard')
 import rospy
 
 from geometry_msgs.msg import Float64
@@ -35,23 +35,23 @@ CTRL-C to quit
 """
 
 moveBindings = {
-		'i':(1,0),
+		'i':(1.0,0.0),
 		'o':(.7,-.7),
-		'j':(0,1),
-		'l':(0,-1),
-        'k':(0,0),
+		'j':(0.0,1.0),
+		'l':(0.0,-1.0),
+        'k':(0.0,0.0),
 		'u':(.7,.7),
-		',':(-1,0),
+		',':(-1.0,0.0),
 		'.':(-.7,.7),
-		'm':(-7,-.7),
+		'm':(-.7,-.7),
 	       }
 
-altitudeBindings={}
-		't':(.01),
+altitudeBindings={
+		't':(0.01),
         'b':(-.01),
 	      }
 
-speedBindings={}
+speedBindings={
 		'q':(1.1,1.1),
 		'z':(.9,.9),
 		'w':(1.1,1),
@@ -66,12 +66,6 @@ def getKey():
 	key = sys.stdin.read(1)
 	termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 	return key
-
-def teleop():
-    pub0 = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
-    pub1 = rospy.Publisher('cmd_v', Float64, queue_size = 10)
-    pub2 = rospy.Publisher('cmd_w', Float64, queue_size = 10)
-	rospy.init_node('teleop_keyboard')
 
 def vels(linear, angular, altitude):
 	return "currently:\tlinear %s\tangular %s\taltitude %s " % (linear,angular, altitude)
@@ -88,7 +82,7 @@ if __name__=="__main__":
 
 	teleop_talker()
 
-	linear = rospy.get_param("~linear", 1.0)
+	linear = rospy.get_param("~linear", 0.0)
 	angular = rospy.get_param("~angular", 0.0)
     altitude = rospy.get_param("~altitude", 1.0)
 

@@ -44,12 +44,13 @@ class DefaultConfig():
         return os.path.abspath(path)
     #
     # Get the full save path.
-    def getFullSavePath(self):
+    def getFullSavePath(self, serialize):
         if self.saveFolder == None:
             self.saveFolder = '/%s_%s_%s/'%(self.agentType, self.envType, time.strftime('%d-%m-%Y-%H-%M-%S'))
             self.savePath = self.savePath + self.saveFolder
         path = Path(self.savePath)
-        path.mkdir(parents=True, exist_ok=True)
+        if serialize:
+            path.mkdir(parents=True, exist_ok=True)
         return self.getAbsPath(self.savePath)
 #
 # Class to use the default configuration.
