@@ -58,4 +58,6 @@ class Agent(base.AgentBase):
         probs = self.model.getClassifications(Variable(classActivation), sm)
         # action = Action(probs.cpu().numpy())
         action = Action(np.zeros(3))
+        action.meta['activations'] = probs.cpu().numpy()[0]
+
         return action

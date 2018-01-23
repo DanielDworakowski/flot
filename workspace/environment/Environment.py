@@ -51,7 +51,7 @@ class Environment():
             # Check init.
             if obs == None or act == None:
                 printError('Could not initialize environment.')
-            self.observer = obs(saveDirectory)
+            self.observer = obs(saveDirectory, self.serialize)
             self.actionEngine = act()
         except KeyError:
             printError('Passed type does not have a configuration.')

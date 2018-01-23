@@ -8,8 +8,8 @@ import cv2
 class AirSimObserver(observations.Observer):
     #
     # Constructor.
-    def __init__(self, obsDir):
-        observations.Observer.__init__(self, obsDir)
+    def __init__(self, obsDir, serialize):
+        observations.Observer.__init__(self, obsDir, serialize)
         #
         # Member variables.
         self.client = MultirotorClient()

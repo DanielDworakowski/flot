@@ -14,6 +14,7 @@ class Action():
 
         self.z = z
         self.isReset = isReset
+        self.meta = {}
 
         #
         # Error checking: Too many inputs

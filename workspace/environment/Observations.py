@@ -170,15 +170,17 @@ class Observation():
 class Observer():
     #
     # Initialization.
-    def __init__(self, obsDir = ''):
+    def __init__(self, obsDir = '', serialize = True):
         self.obsDir = obsDir
         self.obsCsv = None
         self.obs = Observation(obsDir)
+        self.serialize = serialize
     #
     # Open observation file.
     def __enter__(self):
-        self.obsCsv = open(self.obsDir + '/observations.csv', 'w')
-        self.obsCsv.write(self.obs.getFormat() + '\n')
+        if self.serialize:
+            self.obsCsv = open(self.obsDir + '/observations.csv', 'w')
+            self.obsCsv.write(self.obs.getFormat() + '\n')
         return self
     #
     # Close the observation file.
