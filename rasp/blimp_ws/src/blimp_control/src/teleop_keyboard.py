@@ -46,12 +46,12 @@ moveBindings = {
 		'm':(-.7,-.7),
 	       }
 
-altitudeBindings={}
+altitudeBindings={
 		't':(0.01),
         'b':(-.01),
 	      }
 
-speedBindings={}
+speedBindings={
 		'q':(1.1,1.1),
 		'z':(.9,.9),
 		'w':(1.1,1),
@@ -82,7 +82,7 @@ if __name__=="__main__":
 
 	teleop_talker()
 
-	linear = rospy.get_param("~linear", 1.0)
+	linear = rospy.get_param("~linear", 0.0)
 	angular = rospy.get_param("~angular", 0.0)
     altitude = rospy.get_param("~altitude", 1.0)
 
