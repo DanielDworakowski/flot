@@ -23,18 +23,20 @@ class RobotControl(threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
-        # self.client = MultirotorClient()
+
         self.f = 30.
         self.running = False
-        self.v_t = 0. # target tangential velocity m/s
-        self.v_z = 0. # target velocity in z m/s
-        self.w = 0. # target angular velocity m/s
+        self.v_t = 0.   # target tangential velocity m/s
+        self.v_z = 0.   # target velocity in z m/s
+        self.w = 0.     # target angular velocity m/s
         self.z = None
 
-        # Connect to Pyro4 object to start writing to...
-        # Keep trying until it is successful
-        while self.RC is not None:
-            self.RC = RobotCommands().connect()
+        self.isConnected = False
+
+        # Connect to Pyro4 proxy object to start writing to...
+        # Returned proxy object is attached to RobotCommands class
+        self.RC = RobotCommands()
+        self.RC.connect()
 
     def __enter__(self):
         """ Start the thread """
@@ -51,9 +53,15 @@ class RobotControl(threading.Thread):
         """ Send command to publisher """
         """ Use RobotCommands as intermediatary between Python3 and ROS
         Publisher """
-        self.RC.setVT(self.v_t)
-        self.RC.setVZ(self.v_z)
-        self.RC.setW(self.w)
+        try:
+            self.RC.proxy.setVT(self.v_t)
+            self.RC.proxy.setVZ(self.v_z)
+            self.RC.proxy.setW(self.w)
+
+            if self.RC.proxy._pyroConnection is not None:
+                self.isConnected = True
+        except:
+            self.isConnected = False
         return
 
 
@@ -86,11 +94,12 @@ class RobotCommands(object):
     ns = None
     uri = None
     dThread = None
+    proxy = None
 
     # Initialize v_t, v_z, w to floats
-    v_t = 0.0
-    v_z = 0.0
-    w = 0.0
+    v_t = None
+    v_z = None
+    w = None
 
     hasStarted = False
 
@@ -131,14 +140,14 @@ class RobotCommands(object):
     def connect(self, ns_reg = 'RobotControl.commands'):
         try:
             print('Connecting to nameserver for ' + ns_reg + '...')
-            obj = Pyro4.Proxy('PYRONAME:' + ns_reg)
+            self.proxy = Pyro4.Proxy('PYRONAME:' + ns_reg)
 
-            if obj is not None:
-                print('Object found; returning Pyro4 Proxy object...')
-                hasStarted = True
-                return obj
-            else:
-                print('Failed to find ' + ns_reg)
+            # if obj is not None:
+            #     print('Object found; returning Pyro4 Proxy object...')
+            #     hasStarted = True
+            #     return obj
+            # else:
+            #     print('Failed to find ' + ns_reg)
         except:
             print('Failed to connect to nameserver! Check if it is running.')
 
@@ -158,7 +167,7 @@ class RobotCommands(object):
     def getW(self):
         return self.w
 
-    def setVz(self, w):
+    def setW(self, w):
         self.w = w
 
     # Proper cleanup when exiting
