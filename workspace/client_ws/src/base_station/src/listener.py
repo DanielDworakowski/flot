@@ -120,7 +120,6 @@ def store(data, datatype):
         print('cam:{}\n'.format(data.header))
         np_arr = np.fromstring(data.data, np.uint8)
         np_img = cv2.imdecode(np_arr, cv2.IMREAD_UNCHANGED)
-        np_img = cv2.cvtColor(np_img, cv2.COLOR_BGR2RGB)
         imsave('{}/{}.png'.format(timestr, stamp), np_img)
     cwd = os.getcwd()
     rospy.loginfo('{}/{}'.format(cwd, timestr))
