@@ -46,8 +46,7 @@ docker save -o <save image to path> <image name>
 
 docker load -i <path to image tar file>
 
-
-```Data collection on the rasp pi```
+# Data collection on the rasp pi
 1. Run roscore on pi
 2. Run roslaunch base_station data.launch on local computer
 3. Run roslaunch blimp_control datacollect.launch on pi (check if camera_stream.sh script's IP is your ip)
