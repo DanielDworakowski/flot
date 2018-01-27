@@ -45,3 +45,17 @@ docker system prune --all -f
 docker save -o <save image to path> <image name>
 
 docker load -i <path to image tar file>
+
+
+```Data collection on the rasp pi```
+1. Run roscore on pi
+2. Run roslaunch base_station data.launch on local computer
+3. Run roslaunch blimp_control datacollect.launch on pi (check if camera_stream.sh script's IP is your ip)
+
+The data from step 2 will be saved in ~/.ros in a folder
+
+The data here needs to be postprocessed:
+Run blimp_data_postprocessing.py --files=<name of folder in .ros e.g. 20180201_0203020>
+The out.csv will be outputted to the folder in .ros
+
+Further postprocessing may be required
