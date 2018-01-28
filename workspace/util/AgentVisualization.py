@@ -23,11 +23,11 @@ class Visualizer(QMainWindow):
         self.rgbTable = visutil.rtobTable()
         #
         # Rest of the GUI.
-        self.lab = QLabel('Image', self)
-        self.image = QLabel('', self)
-        self.image.setAlignment(QtCore.Qt.AlignCenter)
-        gridLayout.addWidget(self.lab, 0, 0)
-        gridLayout.addWidget(self.image, 1, 0)
+        self.imLab = QLabel('Image', self)
+        self.dispImg = QLabel('', self)
+        self.dispImg.setAlignment(QtCore.Qt.AlignCenter)
+        gridLayout.addWidget(self.imLab, 0, 0)
+        gridLayout.addWidget(self.dispImg, 1, 0)
         self.show()
 
     def visualize(self, obs, action, agent):
@@ -41,6 +41,6 @@ class Visualizer(QMainWindow):
         # Convert to Qt for presentation.
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
-        self.image.setPixmap(pix)
+        self.dispImg.setPixmap(pix)
         # self.title.setText('index: %s'%idx.val)
         QApplication.processEvents()
