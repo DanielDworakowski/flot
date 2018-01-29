@@ -5,14 +5,23 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PIL.ImageQt import ImageQt
+import numpy as np
 
 class LedIndicator(QAbstractButton):
     scaledSize = 1000.0
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, initialColour = 0):
         QAbstractButton.__init__(self, parent)
         self.setMinimumSize(24, 24)
         self.setCheckable(True)
+        self.colourPicker = {
+            0: QColor(127, 127, 127),
+            1: QColor(20, 200, 60)
+        }
+        self.colour = self.colourPicker[initialColour]
+
+    def setColour(self, colCode):
+        self.colour = self.colourPicker[colCode]
 
     def resizeEvent(self, QResizeEvent):
         self.update()
@@ -25,8 +34,31 @@ class LedIndicator(QAbstractButton):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.translate(self.width() / 2, self.height() / 2)
         painter.scale(realSize / self.scaledSize, realSize / self.scaledSize)
-        painter.setBrush(QBrush(QColor(127, 127, 127)))
+        painter.setBrush(QBrush(self.colour))
         painter.drawEllipse(QPointF(0, 0), 400, 400)
+
+class PicButton(QAbstractButton):
+
+    def __init__(self, parent=None, width = 700, height = 20, ):
+        super(PicButton, self).__init__(parent)
+        self.parent = parent
+        self.data = np.zeros((height, width, 3), dtype=np.uint8)
+        self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.data)))
+        self.width = width
+
+    def paintEvent(self, event):
+        # 
+        # TODO: Fix this to be wider.
+        painter = QPainter(self)
+        self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(np.expand_dims(self.parent.data.df['usable'].as_matrix().astype(np.uint8), axis = 1))))
+        painter.drawPixmap(event.rect(), self.pix)
+
+    def sizeHint(self):
+        return self.pix.size()
+
+    def mousePressEvent(self, e):
+        relLoc = e.x() / (self.width + 1)
+        self.parent.setIdx(relLoc)
 
 class CuratorGui(QMainWindow):
 
@@ -37,14 +69,14 @@ class CuratorGui(QMainWindow):
         self.setWindowTitle('Curator')
         self.data = data
         self.dIdx = 0
-        self.usableFlag = True
-        self.labelFlag = False
+        self.usableImageFlag = True
+        self.labelOnOffFlag = False
         #
         # Create central widget + layout.
         centralWidget = QWidget()
+        hlayout = QHBoxLayout()
         self.setCentralWidget(centralWidget)
         gridLayout = QGridLayout(centralWidget)
-        hlayout = QHBoxLayout()
         centralWidget.setLayout(gridLayout)
         #
         # Rest of the GUI.
@@ -56,17 +88,21 @@ class CuratorGui(QMainWindow):
         # Set the indicator.
         self.labOnOff = QLabel('Status', self)
         self.curLab = QLabel('Current Label', self)
-        self.labelOnOffIndicator = LedIndicator(self)
-        self.curLabelIndicator = LedIndicator(self)
+        self.labelOnOffIndicator = LedIndicator(self, self.labelOnOffFlag)
+        self.curLabelIndicator = LedIndicator(self, self.usableImageFlag)
+        # 
+        # Create the data scroller.
+        self.pixButton = PicButton(self, 700, 20)
         # 
         # Setup the top bar.
         hlayout.addWidget(self.labOnOff)
         hlayout.addWidget(self.labelOnOffIndicator)
         hlayout.addWidget(self.curLab)
         hlayout.addWidget(self.curLabelIndicator)
-        self.labelBox.setLayout(hlayout)
         gridLayout.addWidget(self.labelBox, 0, 0)
         gridLayout.addWidget(self.dispImg, 1, 0)
+        gridLayout.addWidget(self.pixButton, 2, 0)
+        self.labelBox.setLayout(hlayout)
         # 
         # Keyboard shortcuts.
         self.rArrow = QShortcut(QKeySequence("right"), self)
@@ -110,6 +146,11 @@ class CuratorGui(QMainWindow):
         # painter.drawEllipse(20, 20, 20, 20)
         # print(self.imLab.frameGeometry())
 
+    def setIdx(self, relIdx):
+        old = self.dIdx
+        self.dIdx = int(self.data.getSize() * relIdx)
+        self.data.setUsable(self.flag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
+
     def upArrowCB(self):
         oldVal = self.dIdx
         self.dIdx += self.jumpSize
@@ -119,7 +160,7 @@ class CuratorGui(QMainWindow):
             self.dIdx = self.data.getSize - 1
         # 
         # Label data as requested. 
-        if self.labelFlag:
+        if self.labelOnOffFlag:
             self.data.setUsable(self.flag, oldVal, self.dIdx)
 
     def downArrowCB(self):
@@ -131,7 +172,7 @@ class CuratorGui(QMainWindow):
             self.dIdx = 0
         # 
         # Label data as requested. 
-        if self.labelFlag:
+        if self.labelOnOffFlag:
             self.data.setUsable(self.flag, self.dIdx, oldVal)
 
     def rightArrowCB(self):
@@ -143,7 +184,7 @@ class CuratorGui(QMainWindow):
             self.dIdx -= 1
         # 
         # Label data as requested. 
-        if self.labelFlag:
+        if self.labelOnOffFlag:
             self.data.setUsable(self.flag, oldVal, self.dIdx)
 
     def leftArrowCB(self):
@@ -155,11 +196,14 @@ class CuratorGui(QMainWindow):
             self.dIdx += 1
         # 
         # Label data as requested. 
-        if self.labelFlag:
+        if self.labelOnOffFlag:
             self.data.setUsable(self.flag, self.dIdx, oldVal)
 
     def spaceCB(self):
-        self.usableFlag = not self.usableFlag
+        self.usableImageFlag = not self.usableImageFlag
+        print(self.usableImageFlag)
+        self.curLabelIndicator.setColour(int(self.usableImageFlag))
 
     def enterCB(self):
-        self.labelFlag = not self.labelFlag
+        self.labelOnOffFlag = not self.labelOnOffFlag
+        self.labelOnOffIndicator.setColour(int(self.labelOnOffFlag))

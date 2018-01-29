@@ -1,6 +1,8 @@
 import pandas as pd
 import pathlib2 as pathlib
 from PIL import Image
+import os.path
+
 
 class CuratorData(object):
 
@@ -9,6 +11,7 @@ class CuratorData(object):
         dataFile = self.folder + '/out.csv'
         self.df = pd.read_csv(dataFile)
         self.df['usable'] = 1
+        self.df['labelled'] = 0 
         self.png = self.df['PNG']
         self.size = len(self.png)
 
@@ -31,3 +34,4 @@ class CuratorData(object):
         # 
         # Write the data.
         self.df.loc[startRange:endRange, ('usable')] = flag
+        self.df.loc[startRange:endRange, ('labelled')] = 1
