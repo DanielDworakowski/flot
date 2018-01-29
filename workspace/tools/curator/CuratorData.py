@@ -20,3 +20,14 @@ class CuratorData(object):
 
     def saveData(self):
         self.df.to_csv(self.folder + '/processed.csv')
+
+    def setUsable(self, flag, startRange, endRange):
+        # 
+        # Ensure that the bounds are respected. 
+        if startRange < 0:
+            startRange = 0
+        if endRange > self.size:
+            endRange = self.size - 1
+        # 
+        # Write the data.
+        self.df.loc[startRange:endRange, ('usable')] = flag
