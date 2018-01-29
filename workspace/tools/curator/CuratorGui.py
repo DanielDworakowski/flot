@@ -92,7 +92,7 @@ class CuratorGui(QMainWindow):
         self.curLabelIndicator = LedIndicator(self, self.usableImageFlag)
         # 
         # Create the data scroller.
-        self.pixButton = PicButton(self, 700, 20)
+        self.labelBar = PicButton(self, 700, 20)
         # 
         # Setup the top bar.
         hlayout.addWidget(self.labOnOff)
@@ -101,7 +101,7 @@ class CuratorGui(QMainWindow):
         hlayout.addWidget(self.curLabelIndicator)
         gridLayout.addWidget(self.labelBox, 0, 0)
         gridLayout.addWidget(self.dispImg, 1, 0)
-        gridLayout.addWidget(self.pixButton, 2, 0)
+        gridLayout.addWidget(self.labelBar, 2, 0)
         self.labelBox.setLayout(hlayout)
         # 
         # Keyboard shortcuts.
@@ -109,14 +109,16 @@ class CuratorGui(QMainWindow):
         self.lArrow = QShortcut(QKeySequence("left"), self)
         self.uArrow = QShortcut(QKeySequence("up"), self)
         self.dArrow = QShortcut(QKeySequence("down"), self)
-        self.enter = QShortcut(QKeySequence(Qt.EnterKeyDefault), self)
+        self.returnKey = QShortcut(QKeySequence(Qt.Key_Return), self)
+        self.enter = QShortcut(QKeySequence(Qt.Key_Enter), self)
         self.space = QShortcut(QKeySequence(Qt.Key_Space), self)
-        self.rArrow.activated.connect(self.rightArrowCB)
-        self.lArrow.activated.connect(self.leftArrowCB)
-        self.uArrow.activated.connect(self.upArrowCB)
-        self.dArrow.activated.connect(self.downArrowCB)
-        self.space.activated.connect(self.spaceCB)
-        self.enter.activated.connect(self.enterCB)
+        self.rArrow.activated.connect(self.forwardOneCV)
+        self.lArrow.activated.connect(self.backOneCB)
+        self.uArrow.activated.connect(self.skipCB)
+        self.dArrow.activated.connect(self.skipBackCB)
+        self.space.activated.connect(self.usableFlagCB)
+        self.enter.activated.connect(self.labelOnOffCB)
+        self.returnKey.activated.connect(self.labelOnOffCB)
         self.jumpSize = 60
         self.show()
 
@@ -133,6 +135,9 @@ class CuratorGui(QMainWindow):
         # 
         # Process all draw events. 
         QApplication.processEvents()
+        self.labelOnOffIndicator.update()
+        self.curLabelIndicator.update()
+        self.labelBar.update()
 
     def paintEvent(self, event):
         pass
@@ -149,9 +154,9 @@ class CuratorGui(QMainWindow):
     def setIdx(self, relIdx):
         old = self.dIdx
         self.dIdx = int(self.data.getSize() * relIdx)
-        self.data.setUsable(self.flag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
+        self.data.setUsable(self.usableImageFlag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
 
-    def upArrowCB(self):
+    def skipCB(self):
         oldVal = self.dIdx
         self.dIdx += self.jumpSize
         # 
@@ -161,9 +166,9 @@ class CuratorGui(QMainWindow):
         # 
         # Label data as requested. 
         if self.labelOnOffFlag:
-            self.data.setUsable(self.flag, oldVal, self.dIdx)
+            self.data.setUsable(self.usableImageFlag, oldVal, self.dIdx)
 
-    def downArrowCB(self):
+    def skipBackCB(self):
         oldVal = self.dIdx
         self.dIdx -= self.jumpSize
         # 
@@ -173,9 +178,9 @@ class CuratorGui(QMainWindow):
         # 
         # Label data as requested. 
         if self.labelOnOffFlag:
-            self.data.setUsable(self.flag, self.dIdx, oldVal)
+            self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
 
-    def rightArrowCB(self):
+    def forwardOneCV(self):
         oldVal = self.dIdx
         self.dIdx += 1
         # 
@@ -185,9 +190,9 @@ class CuratorGui(QMainWindow):
         # 
         # Label data as requested. 
         if self.labelOnOffFlag:
-            self.data.setUsable(self.flag, oldVal, self.dIdx)
+            self.data.setUsable(self.usableImageFlag, oldVal, self.dIdx)
 
-    def leftArrowCB(self):
+    def backOneCB(self):
         oldVal = self.dIdx
         self.dIdx -= 1
         # 
@@ -197,13 +202,12 @@ class CuratorGui(QMainWindow):
         # 
         # Label data as requested. 
         if self.labelOnOffFlag:
-            self.data.setUsable(self.flag, self.dIdx, oldVal)
+            self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
 
-    def spaceCB(self):
+    def usableFlagCB(self):
         self.usableImageFlag = not self.usableImageFlag
-        print(self.usableImageFlag)
         self.curLabelIndicator.setColour(int(self.usableImageFlag))
 
-    def enterCB(self):
+    def labelOnOffCB(self):
         self.labelOnOffFlag = not self.labelOnOffFlag
         self.labelOnOffIndicator.setColour(int(self.labelOnOffFlag))
