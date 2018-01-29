@@ -45,12 +45,17 @@ class PicButton(QAbstractButton):
         self.data = np.zeros((height, width, 3), dtype=np.uint8)
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.data)))
         self.width = width
-
+        idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
+        self.rgbMatrix = np.zeros((1 ,idx.shape[0], 3)).astype(np.uint8)
+    
     def paintEvent(self, event):
-        # 
-        # TODO: Fix this to be wider.
         painter = QPainter(self)
-        self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(np.expand_dims(self.parent.data.df['usable'].as_matrix().astype(np.uint8), axis = 1))))
+        mask = self.parent.data.df['labelled'].as_matrix().astype(np.uint8)
+        idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
+        self.rgbMatrix[0, :, 0] = (idx < 1) * 255 # Not usable.
+        self.rgbMatrix[0, :, 2] = idx * 255 # Usable. 
+        self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled. 
+        self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.rgbMatrix)))
         painter.drawPixmap(event.rect(), self.pix)
 
     def sizeHint(self):
@@ -64,6 +69,7 @@ class CuratorGui(QMainWindow):
 
     def __init__(self, data):
         QMainWindow.__init__(self)
+        self.running = True
         self.setMinimumSize(QSize(700, 550))
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.setWindowTitle('Curator')
@@ -121,6 +127,11 @@ class CuratorGui(QMainWindow):
         self.returnKey.activated.connect(self.labelOnOffCB)
         self.jumpSize = 60
         self.show()
+
+    def closeEvent(self, event):
+        if self.running:
+            self.running = False
+            self.data.saveData()
 
     def visualize(self):
         #
