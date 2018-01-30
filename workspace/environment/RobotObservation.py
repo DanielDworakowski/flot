@@ -11,8 +11,8 @@ import cv2
 # Recorder, run in seperate process.
 class RobotObserver(observations.Observer):
     # Constructor.
-    def __init__(self, obsDir):
-        observations.Observer.__init__(self, obsDir)
+    def __init__(self, obsDir, serialize):
+        observations.Observer.__init__(self, obsDir, serialize)
 
         # Member variables.
         self.stream = RobotUtil.VideoStreamClient(BGR2RGB=True)

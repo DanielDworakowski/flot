@@ -3,13 +3,13 @@ from DefaultConfig import DefaultConfig, EnvironmentTypes
 class Config(DefaultConfig):
 
     # Where to load the model from.
-    modelLoadPath = '/home/rae/flot/workspace/data/model/model_best.pth.tar'
+    modelLoadPath = '/home/kelvin/model_best.pth.tar'
 
     # Image shape
     image_shape = (224, 224, 3)
 
     # Save training data.
-    serialize = True
+    serialize = False
 
     # Initialize with DefaultConfig
     def __init__(self):

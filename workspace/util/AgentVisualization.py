@@ -33,14 +33,27 @@ class Visualizer(QMainWindow):
     def visualize(self, obs, action, agent):
         #
         # Generate image.
-        img = Image.fromarray(obs['img'].decompressPNG()[:,:,0:3])
-        draw = ImageDraw.Draw(img)
-        print(action.meta['activations'])
-        visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
-        #
-        # Convert to Qt for presentation.
-        imgqt = ImageQt(img)
-        pix = QtGui.QPixmap.fromImage(imgqt)
-        self.dispImg.setPixmap(pix)
-        # self.title.setText('index: %s'%idx.val)
-        QApplication.processEvents()
+        # img = Image.fromarray(obs['img'].decompressPNG()[:,:,0:3])
+        # draw = ImageDraw.Draw(img)
+        # print(action.meta['activations'])
+        # visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
+        # #
+        # # Convert to Qt for presentation.
+        # imgqt = ImageQt(img)
+        # pix = QtGui.QPixmap.fromImage(imgqt)
+        # self.dispImg.setPixmap(pix)
+        # # self.title.setText('index: %s'%idx.val)
+        # QApplication.processEvents()
+
+        if obs['img'].uint8Img is not None:
+            img = Image.fromarray(obs['img'].uint8Img)
+            draw = ImageDraw.Draw(img)
+            # print(action.meta['activations'])
+            # visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
+            #
+            # Convert to Qt for presentation.
+            imgqt = ImageQt(img)
+            pix = QtGui.QPixmap.fromImage(imgqt)
+            self.dispImg.setPixmap(pix)
+            # self.title.setText('index: %s'%idx.val)
+            QApplication.processEvents()

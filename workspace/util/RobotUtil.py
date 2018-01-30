@@ -59,6 +59,7 @@ class VideoStreamClient(threading.Thread):
                         stdout=PIPE,
                         bufsize=self.bufsize)
 
+
         if self.VERBOSE:
             print('Listening for video stream...')
 
