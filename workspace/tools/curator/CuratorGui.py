@@ -173,7 +173,7 @@ class CuratorGui(QMainWindow):
         # 
         # Bounds.
         if self.dIdx > self.data.getSize():
-            self.dIdx = self.data.getSize - 1
+            self.dIdx = self.data.getSize() - 1
         # 
         # Label data as requested. 
         if self.labelOnOffFlag:
