@@ -3,13 +3,11 @@ from debug import *
 import os
 import torch
 import pandas as pd
-# from skimage import io, transform, img_as_float
 from PIL import Image
 import numpy as np
 import torch.utils.data
 from torchvision import transforms, utils
 from interval_tree import IntervalTree
-
 import functools
 import time
 
@@ -43,7 +41,6 @@ class FlotDataset(torch.utils.data.Dataset):
             features.append(feature)
         self.binSelector = IntervalTree(features, 0, self.len + 1)
 
-
     def __len__(self):
         return self.len
 
@@ -76,7 +73,7 @@ class DataFolder(torch.utils.data.Dataset):
         try:
             labels = self.csvFrame.ix[idx]
         except:
-            printError('idx error')
+            printError('Indexing error')
             raise ValueError
         imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
         #
