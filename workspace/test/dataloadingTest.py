@@ -14,7 +14,10 @@ if __name__ == '__main__':
                                           shuffle = True, pin_memory = False)
     writer = SummaryWriter()
     for data in dataset:
-        writer.add_image('Image', data['img'].cuda(), 0)
+        if torch.cuda.is_available():
+            writer.add_image('Image', data['img'].cuda(), 0)
+        else:
+            writer.add_image('Image', data['img'], 0)
         writer.add_text('Text', 'text logged at step:'+str(1), 1)
         DataUtil.plotSample(data)
         break

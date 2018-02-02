@@ -59,15 +59,30 @@ class DataFolder(torch.utils.data.Dataset):
         self.rootDir = dataPath
         self.transform = transform
         self.csvFrame = pd.read_csv(self.rootDir + '/' + self.csvFileName)
-        self.imgColIdx = self.csvFrame.columns.get_loc('idx')
+        self.getImNameFn = None
+        # 
+        # If the full image name is already part of the label just take the image name. 
+        try:
+            self.pngColIdx = self.csvFrame.columns.get_loc('PNG')
+            self.getImNameFn = self.getImgNamePNG
+        except:
+            self.getImNameFn = self.getImgNameIdx
+        self.imgColIdx = self.csvFrame.columns.get_loc('idx')    
         self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
         self.conf = conf
         if self.__len__() < 1:
             printError('File %s has no data. This will cause issues'%conf.csvFileName)
             raise ValueError
 
+    def getImgNameIdx(self, labels):
+        return os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
+
+    def getImgNamePNG(self, labels):
+        return os.path.join(self.rootDir, labels[self.pngColIdx])
+
     def __len__(self):
         return len(self.csvFrame)
+
 
     def __getitem__(self, idx):
         try:
@@ -75,7 +90,7 @@ class DataFolder(torch.utils.data.Dataset):
         except:
             printError('Indexing error')
             raise ValueError
-        imName = os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
+        imName = self.getImNameFn(labels)
         #
         # Construct meta data.
         meta = {
