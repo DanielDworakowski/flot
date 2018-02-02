@@ -12,6 +12,9 @@ def natural_keys(text):
     '''https://stackoverflow.com/questions/5967500/how-to-correctly-sort-a-string-with-a-number-inside'''
     return [atoi(c) for c in re.split('(\d+)', text)]
 
+class AutoLabelConf(object):
+    distanceThreshold = 0.5
+
 class CuratorData(object):
 
     def __init__(self, dataFolder):
@@ -20,17 +23,20 @@ class CuratorData(object):
         self.df = None
         self.dataIdx = 0
         files = glob.glob(self.folder + '/processed*.csv')
+        idxcol = 'idx'
         if len(files) > 0:
             files.sort(key = natural_keys)
             dataFile = files[-1]
             self.dataIdx = int(dataFile.split('processed')[1].split('.')[0])
-            self.df = pd.read_csv(dataFile)
+            self.df = pd.read_csv(dataFile, index_col=idxcol)
         else:
             self.df = pd.read_csv(dataFile)
             self.df['usable'] = 1
             self.df['labelled'] = 0 
         self.png = self.df['PNG']
         self.size = len(self.png)
+        self.df.index.name = idxcol
+        self.labelConf = AutoLabelConf()
 
     def getImage(self, idx):
         return Image.open(self.folder + '/' + self.png[idx])
@@ -39,10 +45,17 @@ class CuratorData(object):
         return self.size
 
     def saveData(self):
+        # 
+        # Save the processed / labelled data.
         self.dataIdx += 1
         saveLoc = self.folder + '/processed' + str(self.dataIdx) + '.csv'
         print('saving to ' + saveLoc)
         self.df.to_csv(saveLoc)
+        # 
+        # Reduce the data to only that what was labelled to be usable. 
+        saveLoc = self.folder + '/labels.csv'
+        labelDf = self.df[self.df['usable'] == 1] # Convert to logical indexing first.
+        labelDf.to_csv(saveLoc)
 
     def setUsable(self, flag, startRange, endRange):
         # 
@@ -55,3 +68,7 @@ class CuratorData(object):
         # Write the data.
         self.df.loc[startRange:endRange, ('usable')] = int(flag)
         self.df.loc[startRange:endRange, ('labelled')] = 1
+
+    def autoLabel(self):
+        self.df['collision_free'] = self.df['Sonar:Value'] > self.labelConf.distanceThreshold
+        self.df['collision_free'] = self.df['collision_free'].astype(int)

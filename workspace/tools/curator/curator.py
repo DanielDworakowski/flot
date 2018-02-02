@@ -25,6 +25,7 @@ def loop():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
     data = CuratorData.CuratorData(args.curationPath)
+    data.autoLabel()
     gui = CuratorGui.CuratorGui(data)
     exitNow = SigHandler.SigHandler()
     while not exitNow.exit and gui.running:
