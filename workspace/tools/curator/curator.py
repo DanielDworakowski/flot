@@ -22,14 +22,15 @@ def step(gui):
 #
 # Main loop for running the agent.
 def loop():
+    app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(True)
     data = CuratorData.CuratorData(args.curationPath)
     gui = CuratorGui.CuratorGui(data)
     exitNow = SigHandler.SigHandler()
-    while not exitNow.exit:
+    while not exitNow.exit and gui.running:
         step(gui)
 #
 # Main code.
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
     args = getInputArgs()
     loop()
