@@ -31,7 +31,6 @@ class CenterCrop(object):
         # Crop the image to size.
         h_0 = int((img_h - self.outputSize[0])/2)
         w_1 = int((img_w - self.outputSize[1])/2)
-        # image = image[h_0:h_0+self.outputSize[0],w_1:w_1+self.outputSize[1],:]
         image = image.crop((w_1, h_0, w_1 + self.outputSize[0], h_0 + self.outputSize[1]))
         return {'img': image,
                 'labels': labels,

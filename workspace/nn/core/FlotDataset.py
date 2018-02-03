@@ -83,7 +83,6 @@ class DataFolder(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.csvFrame)
 
-
     def __getitem__(self, idx):
         try:
             labels = self.csvFrame.ix[idx]
@@ -108,5 +107,4 @@ class DataFolder(torch.utils.data.Dataset):
         # Transform as needed.
         if self.transform:
             sample = self.transform(sample)
-
         return sample

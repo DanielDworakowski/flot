@@ -28,7 +28,6 @@ class Trainer():
     ''' Implements training neural networks.
         adapted from: http://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
     '''
-
     def __setupDatasets(self):
         ''' Setups up datasets from configuration.
         '''
