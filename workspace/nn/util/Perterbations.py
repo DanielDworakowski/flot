@@ -1,5 +1,6 @@
 import torch
 from torchvision import transforms, utils
+from PIL import ImageOps
 import random
 import numpy as np
 from debug import *
@@ -124,7 +125,6 @@ class RandomShift(object):
         # Crop the image to size.
         h_0 = int((img_h - self.outputSize[0])/2 + dy)
         w_0 = int((img_w - self.outputSize[1])/2 + dx)
-        # image = image[h_0:h_0 + self.outputSize[0], w_0:w_0 + self.outputSize[1], :]
         image = image.crop((w_0, h_0, w_0 + self.outputSize[0], h_0 + self.outputSize[1]))
         #
         # Create the mask for where the correct values will exist when
@@ -159,14 +159,51 @@ class ColourJitter(object):
             [-hue, hue]. Should be >=0 and <= 0.5.
     """
     def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
-        self.brightness = brightness
-        self.contrast = contrast
-        self.saturation = saturation
-        self.hue = hue
+        self.t = transforms.ColorJitter.get_params(brightness, contrast,
+                                                   saturation, hue)
 
     def __call__(self, sample):
-        t = transforms.ColorJitter.get_params(self.brightness, self.contrast,
-                                              self.saturation, self.hue)
-        return {'img': t(sample['img']),
+        return {'img': self.t(sample['img']),
+                'labels': sample['labels'],
+                'meta': sample['meta']}
+
+class RandomHorizontalFlip(object):
+    """Randomly rotate an image between the specified angles.
+    
+    Args:
+        flipProb (float): Probability of flipping the image horizontally. 
+    """
+    def __init__(self, flipProb):
+        self.flipProb = flipProb
+
+    def __call__(self, sample):
+        flip = random.random() < self.flipProb
+        im = ImageOps.mirror(sample['img'])
+        # 
+        # Flip the labels of the mask to match the flipped image.
+        dx, dy = sample['meta']['shift']
+        dx *= -1
+        dy *= -1 
+        sample['meta']['shift'] = (dx, dy)
+        labels = sample['labels']
+        mask = labels[1:]
+        mask = np.flip(mask, 0)
+        return {'img': im,
+                'labels': np.append(labels[0], mask),
+                'meta': sample['meta']}
+
+class RandomRotation(object):
+    """Randomly rotate an image between the specified angles.
+    
+    Args:
+        deg (float): Extents of the random rotation.
+    """
+    def __init__(self, deg):
+        # 
+        # TODO: Possibly extend this to work for a larger range and choose the closest correct grid location.
+        self.t = transforms.RandomRotation(deg)
+
+    def __call__(self, sample):
+        return {'img': self.t(sample['img']),
                 'labels': sample['labels'],
                 'meta': sample['meta']}

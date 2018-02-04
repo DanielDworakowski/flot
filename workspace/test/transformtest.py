@@ -14,10 +14,7 @@ if __name__ == '__main__':
     train = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
     dataset = torch.utils.data.DataLoader(train, batch_size = 1, num_workers = 1,
                                           shuffle = True, pin_memory = False)
-    writer = SummaryWriter()
     for data in dataset:
-        writer.add_image('Image', data['img'].cuda(), 0)
-        writer.add_text('Text', 'text logged at step:'+str(1), 1)
         print(data['meta']['index'])
         print(data['meta']['shift'])
         print(data['labels'])
