@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 from core import FlotDataset
 from config import DefaultNNConfig
-import torch
 from nn.util import DataUtil
 from tensorboardX import SummaryWriter
+import torch
+import argparse
 #
 # Parse the input arguments.
 def getInputArgs():
