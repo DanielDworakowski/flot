@@ -94,8 +94,10 @@ class CuratorGui(QMainWindow):
         # Set the indicator.
         self.labOnOff = QLabel('Status', self)
         self.curLab = QLabel('Current Label', self)
+        self.dist = QLabel('Distance:', self)
         self.labelOnOffIndicator = LedIndicator(self, self.labelOnOffFlag)
         self.curLabelIndicator = LedIndicator(self, self.usableImageFlag)
+        self.distTxt = QLabel('tx', self)
         # 
         # Create the data scroller.
         self.labelBar = PicButton(self, 700, 20)
@@ -105,6 +107,8 @@ class CuratorGui(QMainWindow):
         hlayout.addWidget(self.labelOnOffIndicator)
         hlayout.addWidget(self.curLab)
         hlayout.addWidget(self.curLabelIndicator)
+        hlayout.addWidget(self.dist)
+        hlayout.addWidget(self.distTxt)
         gridLayout.addWidget(self.labelBox, 0, 0)
         gridLayout.addWidget(self.dispImg, 1, 0)
         gridLayout.addWidget(self.labelBar, 2, 0)
@@ -136,31 +140,28 @@ class CuratorGui(QMainWindow):
     def visualize(self):
         #
         # Generate image.
-        img = self.data.getImage(self.dIdx)
+        img, dist = self.data.getData(self.dIdx)
         draw = ImageDraw.Draw(img)
         #
         # Convert to Qt for presentation.
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
         self.dispImg.setPixmap(pix)
+        self.distTxt.setText('%0.2f'%dist)
+        palette = self.distTxt.palette()
+        col = None
+        if dist > self.data.labelConf.distanceThreshold:
+            col = QColor(20, 200, 60)
+        else:
+            col = QColor(255, 0, 0)
+        palette.setColor(self.distTxt.foregroundRole(), col)
+        self.distTxt.setPalette(palette)
         # 
         # Process all draw events. 
         QApplication.processEvents()
         self.labelOnOffIndicator.update()
         self.curLabelIndicator.update()
         self.labelBar.update()
-
-    def paintEvent(self, event):
-        pass
-        # 
-        # Paint indicators.
-        # painter = QtGui.QPainter(self)
-        # painter.setPen(QtGui.QPen(QtCore.Qt.red))
-        # painter.setRenderHint(QPainter.Antialiasing)
-        # painter.setPen(QPen(Qt.NoPen))
-        # painter.setBrush(QBrush(QColor(127, 127, 127)))
-        # painter.drawEllipse(20, 20, 20, 20)
-        # print(self.imLab.frameGeometry())
 
     def setIdx(self, relIdx):
         old = self.dIdx

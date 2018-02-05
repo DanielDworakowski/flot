@@ -22,6 +22,7 @@ class CuratorData(object):
         dataFile = self.folder + '/out.csv'
         self.df = None
         self.dataIdx = 0
+        self.touched = False
         files = glob.glob(self.folder + '/processed*.csv')
         idxcol = 'idx'
         if len(files) > 0:
@@ -34,17 +35,22 @@ class CuratorData(object):
             self.df['usable'] = 1
             self.df['labelled'] = 0 
         self.png = self.df['PNG']
+        self.dist = self.df['Sonar:Value']
         self.size = len(self.png)
         self.df.index.name = idxcol
         self.labelConf = AutoLabelConf()
 
-    def getImage(self, idx):
-        return Image.open(self.folder + '/' + self.png[idx])
+    def getData(self, idx):
+        return Image.open(self.folder + '/' + self.png[idx]), self.dist[idx]
 
     def getSize(self):
         return self.size
 
     def saveData(self):
+        # 
+        # Dont save anything if the data was not touched. 
+        if not self.touched:
+            return
         # 
         # Save the processed / labelled data.
         self.dataIdx += 1
@@ -68,6 +74,7 @@ class CuratorData(object):
         # Write the data.
         self.df.loc[startRange:endRange, ('usable')] = int(flag)
         self.df.loc[startRange:endRange, ('labelled')] = 1
+        self.touched = True
 
     def autoLabel(self):
         self.df['collision_free'] = self.df['Sonar:Value'] > self.labelConf.distanceThreshold
