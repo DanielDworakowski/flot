@@ -1,12 +1,12 @@
-from torchvision import transforms, models
 import torch
-import torch.nn as nn
-from nn.util import DataUtil, Perterbations
 import os
 from debug import *
-from config.DefaultNNConfig import DefaultConfig
+import torch.nn as nn
 from models import MultiTraj_FC
 from models import MultiTraj_conv
+from torchvision import transforms, models
+from nn.util import DataUtil, Perterbations
+from config.DefaultNNConfig import DefaultConfig
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):
@@ -14,10 +14,9 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self, type = 'train'):
         nSteps = (2, 0)
-        loadpath = '/disk1/model/model_best.pth.tar'
+        loadpath = '/Users/daniel/models/model_best.pth.tar'
         if type == 'train':
             loadpath = None
-        # super(Config, self).__init__(MultiTraj_FC.Resnet_Multifc(nSteps), loadPath = loadpath)
         super(Config, self).__init__(MultiTraj_conv.Resnet_MultiConv(nSteps), loadPath = loadpath)
         #
         # How far to shift the image.
@@ -27,13 +26,9 @@ class Config(DefaultConfig):
         self.epochSaveInterval = 1
         self.modelSavePath = '/disk1/model/'
         #
-        # The intermadiate shape of the data, in order to gain more information,
-        # within a single image we downscale.
-        self.cropShape = (448, 448)
-        #
         # Transforms.
         self.transforms = transforms.Compose([
-            Perterbations.RandomShift(self.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
+            Perterbations.RandomShift(self.hyperparam.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
             Perterbations.RandomHorizontalFlip(0.5),
             DataUtil.Rescale(self.hyperparam.image_shape),
             Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned.

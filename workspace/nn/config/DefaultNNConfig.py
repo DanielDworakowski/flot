@@ -28,15 +28,17 @@ class HyperParam():
     #
     # Network modification fn.
     networkModification = None
-    ############################################################################
-    ############################################################################
-    ############################################################################
     #
     # How far to shift the image.
     shiftBounds = int(224/3)
     #
     # The number of shift bins.
     nSteps = (0, 0)
+    #
+    # The intermadiate shape of the data, in order to gain more information,
+    # within a single image we downscale.
+    cropShape = (448, 448)
+
     def __init__(self, model):
         #
         # The model being used.
@@ -68,8 +70,8 @@ class DefaultConfig(object):
     def getAbsPath(path):
         return os.path.abspath(path)
     #
-    # Doesnt usually need to be changed.
-    usegpu = True
+    # Assume that cuda should be used if it is available. 
+    usegpu = torch.cuda.is_available()
     #
     # Save tensorboard data.
     useTensorBoard = False
@@ -113,13 +115,23 @@ class DefaultConfig(object):
         ])
         #
         # Load the model.
+        self.modelLoadPath = loadPath
         self.loadModel(loadPath)
 
     def loadModel(self, loadPath):
         ''' Load model from a specified directory.
         '''
         if loadPath != None and os.path.isfile(loadPath):
-            checkpoint = torch.load(loadPath)
+            # 
+            # Load the model based on where on whether it needs to go to the cpu / gpu.
+            checkpoint = None
+            if self.usegpu:
+                checkpoint = torch.load(self.modelLoadPath)
+            else:
+                print(self.modelLoadPath)
+                checkpoint = torch.load(self.modelLoadPath, map_location={'cuda:0': 'cpu'})
+            # 
+            # Ensure that the model type matches and load.
             if type(checkpoint['model']) == type(self.hyperparam.model):
                 self.modelLoadPath = loadPath
                 self.hyperparam.model = checkpoint['model']
@@ -130,7 +142,6 @@ class DefaultConfig(object):
                 printError('Loaded model from path: %s is of type: (%s) while the specified model is of type: (%s)'%(loadPath, type(checkpoint['model']), type(self.hyperparam.model)))
         elif loadPath != None:
             printError('Unable to load specified model: %s'%(loadPath))
-
 #
 # Class to use the default configuration.
 class Config(DefaultConfig):
@@ -139,4 +150,14 @@ class Config(DefaultConfig):
     def __init__(self):
         super(Config, self).__init__()
         self.modelSavePath = '/disk1/model/'
-        self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
+        self.dataTrainList = ['/Users/daniel/data/20180123_205116/']
+        # self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
+# 
+# Return the default set of transformations to obtain usable data.
+def getDefaultTransform(conf):
+    t = transforms.Compose([
+        Perterbations.CenterCrop(conf.hyperparam.cropShape),
+        DataUtil.Rescale(conf.hyperparam.image_shape),
+        DataUtil.ToTensor(),
+    ])
+    return t
