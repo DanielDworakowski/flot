@@ -1,15 +1,15 @@
 from __future__ import print_function, division
-from debug import *
 import os
+import time
 import torch
+import functools
+import numpy as np
+from debug import *
 import pandas as pd
 from PIL import Image
-import numpy as np
 import torch.utils.data
-from torchvision import transforms, utils
 from interval_tree import IntervalTree
-import functools
-import time
+from torchvision import transforms, utils
 
 def timeit(func):
     @functools.wraps(func)

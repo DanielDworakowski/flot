@@ -1,20 +1,20 @@
 #!/usr/bin/env python
-from nn.core import FlotDataset
-from nn.config import DefaultNNConfig
-from nn.util import Perterbations
-import argparse
 import os
 import sys
 import math
+import torch
+import argparse
 import numpy as np
 import pandas as pd
-from PIL import Image, ImageFont, ImageDraw
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import torch
+from nn.core import FlotDataset
+from nn.util import Perterbations
 from torch.autograd import Variable
+from nn.config import DefaultNNConfig
 from tensorboardX import SummaryWriter
+from mpl_toolkits.mplot3d import Axes3D
+from PIL import Image, ImageFont, ImageDraw
 #
 # Parse the input arguments.
 def getInputArgs():

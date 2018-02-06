@@ -33,9 +33,9 @@ class Rescale(object):
 
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
-
         w, h = image.size
-
+        # 
+        # Check input params.
         if isinstance(self.output_size, int):
             if h > w:
                 new_h, new_w = self.output_size * h / w, self.output_size
