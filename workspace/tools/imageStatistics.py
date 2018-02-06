@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 from core import FlotDataset
 from config import DefaultNNConfig
-import torch
 from nn.util import DataUtil
+from torchvision import transforms
+import DataUtil
+import Perterbations
+import torch
 import argparse
 import numpy as np
 #
@@ -26,7 +29,14 @@ def getConfig(args):
 def getStatistics(conf):
     n1 = conf.hyperparam.batchSize
     n2 = 0
-    dataset = FlotDataset.FlotDataset(conf, conf.dataTrainList, conf.transforms)
+    # 
+    # Change the transformations to only crop to the correct size. 
+    t = transforms.Compose([
+        Perterbations.CenterCrop(conf.hyperparam.cropShape),
+        DataUtil.Rescale(conf.hyperparam.image_shape),
+        DataUtil.ToTensor(),
+    ])
+    dataset = FlotDataset.FlotDataset(conf, conf.dataTrainList, t)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size = n1, num_workers = conf.numWorkers, shuffle = True,  pin_memory = False)
     # 
     # Iterate over the dataset and obtain individual means and std-devs.
