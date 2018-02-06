@@ -1,11 +1,15 @@
 import sys
-from PIL import Image, ImageFont, ImageDraw
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtCore import *
+import numpy as np
+from util.debug import *
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PIL.ImageQt import ImageQt
-import numpy as np
+import visualization as visutil
+from torch.autograd import Variable
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PIL import Image, ImageFont, ImageDraw
+from DefaultNNConfig import getDefaultTransform
 
 class LedIndicator(QAbstractButton):
     scaledSize = 1000.0
@@ -65,6 +69,32 @@ class PicButton(QAbstractButton):
         relLoc = e.x() / (self.width + 1)
         self.parent.setIdx(relLoc)
 
+class NNVis(object):
+    def __init__(self, conf, model):
+        self.conf = conf
+        self.model = model
+        self.modelVis = lambda *args: None
+        self.rgbTable = visutil.rtobTable()
+        self.sm = None
+        if self.conf != None:
+            import torch
+            self.t = getDefaultTransform(conf)
+            self.sm = torch.nn.Softmax(dim = 1)
+            self.modelVis = self.visModel
+
+    def visModel(self, img):
+        draw = ImageDraw.Draw(img)
+        sample = {'img': img, 'labels': np.array([0]), 'meta': np.array([0])}
+        data = self.t(sample)
+        if self.conf.usegpu:
+            labels = Variable(data['labels'].squeeze_()).cuda(async = True)
+            out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0).cuda(async = True))
+        else:
+            out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
+        posClasses = self.model.getClassifications(out, self.sm).squeeze_()
+        visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, self.conf, posClasses)
+        return img
+
 class CuratorGui(QMainWindow):
 
     def __init__(self, data):
@@ -77,6 +107,7 @@ class CuratorGui(QMainWindow):
         self.dIdx = 0
         self.usableImageFlag = True
         self.labelOnOffFlag = False
+        self.modelVis = NNVis(None, None)
         #
         # Create central widget + layout.
         centralWidget = QWidget()
@@ -144,9 +175,12 @@ class CuratorGui(QMainWindow):
         draw = ImageDraw.Draw(img)
         #
         # Convert to Qt for presentation.
+        img = self.modelVis.visModel(img)
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
         self.dispImg.setPixmap(pix)
+        # 
+        # Create the distance information text. 
         self.distTxt.setText('%0.2f'%dist)
         palette = self.distTxt.palette()
         col = None
@@ -223,3 +257,7 @@ class CuratorGui(QMainWindow):
     def labelOnOffCB(self):
         self.labelOnOffFlag = not self.labelOnOffFlag
         self.labelOnOffIndicator.setColour(int(self.labelOnOffFlag))
+
+    def setModel(self, model, conf):
+        if model != None:
+            self.modelVis = NNVis(conf, model)

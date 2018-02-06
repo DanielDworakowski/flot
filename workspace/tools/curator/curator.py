@@ -1,37 +1,44 @@
 #!/usr/bin/env python3
+import sys
 import argparse
 import SigHandler
-from debug import *
 import CuratorGui
 import CuratorData
-import sys
-import ratelimiter
+from util.debug import *
 from PyQt5.QtWidgets import QApplication
 #
 # Parse the input arguments.
 def getInputArgs():
     parser = argparse.ArgumentParser('Tool used to mark usable and unusable data.')
     parser.add_argument('--path', dest='curationPath', default=None, type=str, help='Where to read data from for curation.')
+    parser.add_argument('--conf', dest='configStr', default=None, type=str, help='Configuration used to load a model.')
     args = parser.parse_args()
     return args
 #
-# Rate limited stepping code limit to 30hz.
-# @ratelimiter.RateLimiter(max_calls=30, period=1)
-def step(gui):
-    gui.visualize()
+# Get the configuration, override as needed.
+def getConfig(args):
+    conf = None
+    if args.configStr != None:
+        config_module = __import__('config.' + args.configStr)
+        configuration = getattr(config_module, args.configStr)
+        conf = configuration.Config('test')
+    return conf
 #
 # Main loop for running the agent.
-def loop():
+def loop(args, conf):
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
     data = CuratorData.CuratorData(args.curationPath)
     data.autoLabel()
     gui = CuratorGui.CuratorGui(data)
+    model = conf.hyperparam.model
+    gui.setModel(model, conf)
     exitNow = SigHandler.SigHandler()
     while not exitNow.exit and gui.running:
-        step(gui)
+        gui.visualize()
 #
 # Main code.
 if __name__ == "__main__":
     args = getInputArgs()
-    loop()
+    conf = getConfig(args)
+    loop(args, conf)
