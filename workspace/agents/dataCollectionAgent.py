@@ -1,13 +1,12 @@
 from debug import *
+from torchvision import transforms
+from torch.autograd import Variable
+from Actions import Action
 import AgentBase as base
 import Observations as obv
 import os
 import numpy as np
 import torch
-from torchvision import transforms
-from torch.autograd import Variable
-from Actions import Action
-
 import sys
 import math
 import random
@@ -27,6 +26,8 @@ class Agent(base.AgentBase):
     def __init__(self, conf):
         super(Agent, self).__init__(conf)
         self.conf = conf
+        # Can be replaced with.
+        #  conf.hyperparam.model
         self.toTensor = transforms.ToTensor()
         #
         # Check if cuda is available.
