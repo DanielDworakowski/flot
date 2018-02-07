@@ -95,7 +95,8 @@ class DataFolder(torch.utils.data.Dataset):
         meta = {
             'filedir': self.rootDir,
             'index': int(labels[self.imgColIdx]),
-            'allLabels':  labels.to_dict()
+            'allLabels':  labels.to_dict(),
+            'shift': (0,0)
         }
         img = Image.open(imName).convert('RGB')
         #
