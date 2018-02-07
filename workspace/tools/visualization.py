@@ -71,11 +71,11 @@ def drawTrajectoryDots(x, y, space, sidel, rgbTable, draw, conf, posClassProb):
 def plotBatch(conf, meta, sorted, batchinfo):
     numImg = len(meta['index'])
     sidel = int(math.ceil(math.sqrt(numImg)))
-    testim =  os.path.join(meta['filedir'][0], '%s_%s.png'%(conf.imgName, int(meta['index'][0])))
-    print(testim)
+    imNames = meta['imName']
+    testim = imNames[0]
     im = Image.open(testim)
     width, height = im.size
-    inW, inH, inC = conf.hyperparam.image_shape
+    inW, inH = conf.hyperparam.image_shape
     grid = Image.new('RGB', (inW * sidel, inH * sidel))
     draw = ImageDraw.Draw(grid)
     font = ImageFont.truetype("sans-serif.ttf", 25)
@@ -88,7 +88,7 @@ def plotBatch(conf, meta, sorted, batchinfo):
             if infoIdx >= numImg:
                 break
             idx = sorted[i * sidel + j]
-            imName = os.path.join(meta['filedir'][idx], '%s_%s.png'%(conf.imgName, int(meta['index'][idx])))
+            imName = imNames[idx]
             #
             # TODO: Check if this actually shifts the visualization image properly.
             if 'shift' in meta:

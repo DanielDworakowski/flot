@@ -94,6 +94,7 @@ class DataFolder(torch.utils.data.Dataset):
         # Construct meta data.
         meta = {
             'filedir': self.rootDir,
+            'imName': imName,
             'index': int(labels[self.imgColIdx]),
             'allLabels':  labels.to_dict(),
             'shift': (0,0)
