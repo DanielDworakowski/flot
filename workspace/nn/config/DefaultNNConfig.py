@@ -18,7 +18,7 @@ class HyperParam():
     batchSize = 32
     #
     # How many epochs to train for.
-    numEpochs = 10
+    numEpochs = 32
     #
     # Criteria.
     criteria = nn.CrossEntropyLoss()
@@ -90,6 +90,9 @@ class DefaultConfig(object):
     #
     # Load a model.
     modelLoadPath = None
+    # 
+    # The starting epoch for training (cosmetic).
+    startingEpoch = 0
     ###########################################################################
     # Initialization that may be different across configurations.
     ###########################################################################
@@ -102,21 +105,23 @@ class DefaultConfig(object):
         pathlib.Path(self.modelSavePath).mkdir(parents=True, exist_ok=True)
         #
         # Check if cuda is available.
-        # if not torch.cuda.is_available():
-            # printError('CUDA is not available!')
-        self.usegpu = (torch.cuda.is_available() and self.usegpu)
-        if self.usegpu:
-            self.hyperparam.model.cuda()
+        self.usegpu = torch.cuda.is_available()
         #
         # Transforms.
         self.transforms = transforms.Compose([
             Perterbations.CenterCrop(self.hyperparam.image_shape),
+            Perterbations.RandomHorizontalFlip(0.5),
+            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
         #
         # Load the model.
         self.modelLoadPath = loadPath
         self.loadModel(loadPath)
+        # 
+        # Send the model to the GPU.
+        if self.usegpu:
+            self.hyperparam.model.cuda()
 
     def loadModel(self, loadPath):
         ''' Load model from a specified directory.
@@ -128,7 +133,7 @@ class DefaultConfig(object):
             if self.usegpu:
                 checkpoint = torch.load(self.modelLoadPath)
             else:
-                print(self.modelLoadPath)
+                print('Model will be converted to run on CPU')
                 checkpoint = torch.load(self.modelLoadPath, map_location={'cuda:0': 'cpu'})
             # 
             # Ensure that the model type matches and load.
@@ -137,6 +142,7 @@ class DefaultConfig(object):
                 self.hyperparam.model = checkpoint['model']
                 self.hyperparam.model.load_state_dict(checkpoint['state_dict'])
                 self.hyperparam.optimizer.load_state_dict(checkpoint['optimizer'])
+                self.startingEpoch = checkpoint['epoch']
                 printColour('Loaded model from path: %s'%loadPath, colours.OKBLUE)
             else:
                 printError('Loaded model from path: %s is of type: (%s) while the specified model is of type: (%s)'%(loadPath, type(checkpoint['model']), type(self.hyperparam.model)))
@@ -150,7 +156,7 @@ class Config(DefaultConfig):
     def __init__(self):
         super(Config, self).__init__()
         self.modelSavePath = '/disk1/model/'
-        self.dataTrainList = ['/Users/daniel/data/20180123_205116/']
+        self.dataTrainList = ['/disk1/rldata/20180123_205116']
         # self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
 # 
 # Return the default set of transformations to obtain usable data.
