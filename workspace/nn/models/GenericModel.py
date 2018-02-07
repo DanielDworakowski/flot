@@ -10,7 +10,7 @@ class GenericModel(nn.Module):
         #
         # specify the default modification required if the network is a normal
         # resnet18.
-        if isinstance(model, type(models.resnet18)):
+        if isinstance(self.model, models.resnet.ResNet):
             self.resizeFC()
 
     def forward(self, x):
