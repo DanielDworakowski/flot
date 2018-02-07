@@ -153,7 +153,7 @@ class DefaultConfig(object):
 class Config(DefaultConfig):
     #
     # Initialize.
-    def __init__(self, type):
+    def __init__(self, type = 'train'):
         super(Config, self).__init__(loadPath = '/disk1/model/06-02-2018-20-42-39_epoch_25.pth.tar')
         self.modelSavePath = '/disk1/model/'
         self.dataTrainList = ['/disk1/rldata/20180123_205116']
