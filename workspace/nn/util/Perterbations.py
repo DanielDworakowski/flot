@@ -159,11 +159,15 @@ class ColourJitter(object):
             [-hue, hue]. Should be >=0 and <= 0.5.
     """
     def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
-        self.t = transforms.ColorJitter.get_params(brightness, contrast,
-                                                   saturation, hue)
+        self.brightness = brightness 
+        self.contrast = contrast 
+        self.saturation = saturation 
+        self.hue = hue 
 
     def __call__(self, sample):
-        return {'img': self.t(sample['img']),
+        t = transforms.ColorJitter.get_params(self.brightness, self.contrast,
+                                              self.saturation, self.hue)
+        return {'img': t(sample['img']),
                 'labels': sample['labels'],
                 'meta': sample['meta']}
 
