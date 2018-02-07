@@ -110,8 +110,8 @@ class DefaultConfig(object):
         # Transforms.
         self.transforms = transforms.Compose([
             Perterbations.CenterCrop(self.hyperparam.image_shape),
-            Perterbations.RandomHorizontalFlip(0.5),
-            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned.
+            # Perterbations.RandomHorizontalFlip(0.5),
+            # Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
         #
@@ -153,8 +153,8 @@ class DefaultConfig(object):
 class Config(DefaultConfig):
     #
     # Initialize.
-    def __init__(self):
-        super(Config, self).__init__()
+    def __init__(self, type):
+        super(Config, self).__init__(loadPath = '/disk1/model/06-02-2018-20-42-39_epoch_25.pth.tar')
         self.modelSavePath = '/disk1/model/'
         self.dataTrainList = ['/disk1/rldata/20180123_205116']
         # self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
