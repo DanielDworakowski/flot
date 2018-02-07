@@ -95,7 +95,6 @@ class NNVis(object):
         draw = ImageDraw.Draw(img)
         sample = {'img': img, 'labels': np.array([0]), 'meta': np.array([0])}
         data = self.t(sample)
-        print(self.t)
         if self.conf.usegpu:
             labels = Variable(data['labels'].squeeze_()).cuda(async = True)
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0).cuda(async = True))

@@ -23,7 +23,7 @@ def getConfig(args):
         config_module = __import__('config.' + args.configStr)
         configuration = getattr(config_module, args.configStr)
         conf = configuration.Config('test')
-        model = conf.hyperparam.model
+        model = conf.hyperparam.model.eval()
     return conf, model
 #
 # Main loop for running the agent.
