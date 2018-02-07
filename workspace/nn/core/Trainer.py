@@ -77,19 +77,6 @@ class Trainer():
             self.logEpoch = logEpochTensorboard
             self.closeLogger = closeTensorboard
 
-    def __loadModel(self):
-        ''' Load model from a specified directory.
-        '''
-        if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
-            checkpoint = torch.load(self.conf.modelLoadPath)
-            self.model = checkpoint['model']
-            self.model.load_state_dict(checkpoint['state_dict'])
-            self.optimizer.load_state_dict(checkpoint['optimizer'])
-            self.startingEpoch = checkpoint['epoch']
-            printColour('Loaded model from path: %s'%self.conf.modelLoadPath, colours.OKBLUE)
-        elif self.conf.modelLoadPath != None:
-            printError('Unable to load specified model: %s'%(self.conf.modelLoadPath))
-
     def __saveCheckpoint(self, epoch, isBest):
         ''' Save a model.
         '''
@@ -123,7 +110,9 @@ class Trainer():
         self.logger = None
         self.logEpoch = None
         self.closeLogger = None
-        self.__loadModel() # must happen after loading of config.
+        self.model = conf.hyperparam.model
+        self.optimizer = conf.hyperparam.optimizer
+        self.startingEpoch = conf.startingEpoch
         self.__setupDatasets()
         self.__setupLogging()
 
