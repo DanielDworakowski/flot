@@ -9,7 +9,6 @@ import visualization as visutil
 from torch.autograd import Variable
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PIL import Image, ImageFont, ImageDraw
-from DefaultNNConfig import getDefaultTransform
 
 class LedIndicator(QAbstractButton):
     scaledSize = 1000.0
@@ -70,22 +69,33 @@ class PicButton(QAbstractButton):
         self.parent.setIdx(relLoc)
 
 class NNVis(object):
+
     def __init__(self, conf, model):
         self.conf = conf
         self.model = model
-        self.modelVis = lambda *args: None
+        self.visModelCB = lambda img: img
         self.rgbTable = visutil.rtobTable()
         self.sm = None
+        self.lIdx = -1
+        self.lastImg = None
         if self.conf != None:
             import torch
+            from config.DefaultNNConfig import getDefaultTransform
             self.t = getDefaultTransform(conf)
             self.sm = torch.nn.Softmax(dim = 1)
-            self.modelVis = self.visModel
+            self.visModelCB = self.visModel
 
-    def visModel(self, img):
+    def visModel(self, img, idx):
+        # 
+        # If the current image being looked at is the same as the last image, do not process.
+        if self.lIdx == idx: 
+            return self.lastImg
+        # 
+        # Process the new image. 
         draw = ImageDraw.Draw(img)
         sample = {'img': img, 'labels': np.array([0]), 'meta': np.array([0])}
         data = self.t(sample)
+        print(self.t)
         if self.conf.usegpu:
             labels = Variable(data['labels'].squeeze_()).cuda(async = True)
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0).cuda(async = True))
@@ -93,6 +103,8 @@ class NNVis(object):
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, self.conf, posClasses)
+        self.lIdx = idx
+        self.lastImg = img
         return img
 
 class CuratorGui(QMainWindow):
@@ -175,7 +187,7 @@ class CuratorGui(QMainWindow):
         draw = ImageDraw.Draw(img)
         #
         # Convert to Qt for presentation.
-        img = self.modelVis.visModel(img)
+        img = self.modelVis.visModelCB(img, self.dIdx)
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
         self.dispImg.setPixmap(pix)
