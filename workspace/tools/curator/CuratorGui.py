@@ -42,12 +42,15 @@ class LedIndicator(QAbstractButton):
 
 class PicButton(QAbstractButton):
 
-    def __init__(self, parent=None, width = 700, height = 20, ):
+    def __init__(self, parent=None, width = 700, height = 20):
         super(PicButton, self).__init__(parent)
         self.parent = parent
         self.data = np.zeros((height, width, 3), dtype=np.uint8)
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.data)))
         self.width = width
+        self.curIdx = 0
+        self.maxIdx = self.parent.data.getSize() - 1
+        self.lineWidth = int(0.001 * self.maxIdx)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
         self.rgbMatrix = np.zeros((1 ,idx.shape[0], 3)).astype(np.uint8)
     
@@ -55,11 +58,17 @@ class PicButton(QAbstractButton):
         painter = QPainter(self)
         mask = self.parent.data.df['labelled'].as_matrix().astype(np.uint8)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
-        self.rgbMatrix[0, :, 0] = (idx < 1) * 255 # Not usable.
-        self.rgbMatrix[0, :, 2] = idx * 255 # Usable. 
+        self.rgbMatrix[0, (idx < 1), :] = np.array([20, 200, 60])
+        self.rgbMatrix[0, (idx > 0), :] = np.array([200, 19, 56])
         self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled. 
+        # 
+        # Set a white line at the current index.
+        self.rgbMatrix[0, max(0, self.curIdx - self.lineWidth):min(self.maxIdx - 1, self.curIdx + self.lineWidth), :] = 255
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.rgbMatrix)))
         painter.drawPixmap(event.rect(), self.pix)
+
+    def setCurIdx(self, idx):
+        self.curIdx = idx
 
     def sizeHint(self):
         return self.pix.size()
@@ -202,6 +211,9 @@ class CuratorGui(QMainWindow):
         palette.setColor(self.distTxt.foregroundRole(), col)
         self.distTxt.setPalette(palette)
         # 
+        # Update the bottom bar on the current location.
+        self.labelBar.setCurIdx(self.dIdx)
+        # 
         # Process all draw events. 
         QApplication.processEvents()
         self.labelOnOffIndicator.update()
@@ -209,7 +221,7 @@ class CuratorGui(QMainWindow):
         self.labelBar.update()
 
     def setIdx(self, relIdx):
-        old = self.dIdx
+        oldVal = self.dIdx
         self.dIdx = int(self.data.getSize() * relIdx)
         self.data.setUsable(self.usableImageFlag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
 
