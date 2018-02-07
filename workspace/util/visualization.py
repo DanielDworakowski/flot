@@ -267,7 +267,7 @@ def visualize(conf, args):
         plotMeanTraj(args, conf)
 # 
 # View a tensor.
-def showTensor(tensor);
+def showTensor(tensor):
     from torchvision import transforms
     vt = transforms.ToPILImage()
     newimg = vt(data['img']).show()
