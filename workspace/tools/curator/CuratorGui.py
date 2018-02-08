@@ -5,8 +5,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PIL.ImageQt import ImageQt
-import visualization as visutil
 from torch.autograd import Variable
+import tools.visualization as visutil
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PIL import Image, ImageFont, ImageDraw
 
@@ -58,8 +58,8 @@ class PicButton(QAbstractButton):
         painter = QPainter(self)
         mask = self.parent.data.df['labelled'].as_matrix().astype(np.uint8)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
-        self.rgbMatrix[0, (idx < 1), :] = np.array([20, 200, 60])
-        self.rgbMatrix[0, (idx > 0), :] = np.array([200, 19, 56])
+        self.rgbMatrix[0, (idx < 1), :] = np.array([200, 19, 56]) # Bad.
+        self.rgbMatrix[0, (idx > 0), :] = np.array([20, 200, 60]) # Good. 
         self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled. 
         # 
         # Set a white line at the current index.
@@ -82,7 +82,7 @@ class NNVis(object):
     def __init__(self, conf, model):
         self.conf = conf
         self.model = model
-        self.visModelCB = lambda img: img
+        self.visModelCB = lambda img, idx: img
         self.rgbTable = visutil.rtobTable()
         self.sm = None
         self.lIdx = -1
@@ -141,6 +141,7 @@ class CuratorGui(QMainWindow):
         self.labelBox = QGroupBox('Label Status')
         self.dispImg.setAlignment(QtCore.Qt.AlignCenter)
         self.dispImg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.savebutton = QPushButton('Save', self)
         # 
         # Set the indicator.
         self.labOnOff = QLabel('Status', self)
@@ -160,6 +161,7 @@ class CuratorGui(QMainWindow):
         hlayout.addWidget(self.curLabelIndicator)
         hlayout.addWidget(self.dist)
         hlayout.addWidget(self.distTxt)
+        hlayout.addWidget(self.savebutton)
         gridLayout.addWidget(self.labelBox, 0, 0)
         gridLayout.addWidget(self.dispImg, 1, 0)
         gridLayout.addWidget(self.labelBar, 2, 0)
@@ -180,6 +182,7 @@ class CuratorGui(QMainWindow):
         self.space.activated.connect(self.usableFlagCB)
         self.enter.activated.connect(self.labelOnOffCB)
         self.returnKey.activated.connect(self.labelOnOffCB)
+        self.savebutton.clicked.connect(self.saveCB)
         self.jumpSize = 60
         self.show()
 
@@ -284,3 +287,7 @@ class CuratorGui(QMainWindow):
     def setModel(self, model, conf):
         if model != None:
             self.modelVis = NNVis(conf, model)
+
+    def saveCB(self, event):
+        print('Saving data!')
+        self.data.saveData(True)
