@@ -1,5 +1,59 @@
 .bg-texture {
   background: transparent radial-gradient(circle farthest-side at right bottom, #90CAF9 5%, #64B5F6 25%, #42A5F5 80%, #42A5F5 98%) repeat scroll 0% 0%; }
 
+.text-primary {
+  color: #64b5f6 !important; }
+
 .bg-texture-collage {
   background: linear-gradient(-45deg, #90CAF9 33%, transparent 0%), linear-gradient(-45deg, #64B5F6 67%, transparent 33%), linear-gradient(-45deg, #42A5F5 100%, transparent 67%); }
+
+.btn-primary {
+  background-color: #90CAF9 !important;
+  border-color: #BBDEFB !important; }
+
+.btn-white {
+  color: #64b5f6 !important;
+  background-color: #fff;
+  border-color: #fff; }
+
+.btn-white:hover {
+  color: #64b5f6; }
+
+.card .card-body .icon-box {
+  padding: 20px 0;
+  color: #2196F3; }
+
+.text-twitter-alt, .text-facebook-alt, .text-linkedin-alt, .text-google-alt, .text-github-alt {
+  color: #2196F3; }
+
+.list-default > li:before {
+  content: "\f21b";
+  position: absolute;
+  left: -25px;
+  top: 8px;
+  font-size: 10px;
+  color: #2196F3;
+  font-family: "Ionicons"; }
+
+::-moz-selection {
+  color: #fff;
+  text-shadow: none;
+  background: #2196F3; }
+
+::selection {
+  color: #fff;
+  text-shadow: none;
+  background: #2196F3; }
+
+a {
+  color: #2196F3;
+  transition: all .35s; }
+
+a:hover,
+a:focus {
+  color: #2196F3 !important;
+  outline: 0;
+  text-decoration: none !important; }
+
+.card-outline-primary {
+  border: solid 1px #2196F3; }
