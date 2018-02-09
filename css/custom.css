@@ -57,3 +57,11 @@ a:focus {
 
 .card-outline-primary {
   border: solid 1px #2196F3; }
+
+.row {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px; }
