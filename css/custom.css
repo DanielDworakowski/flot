@@ -29,6 +29,13 @@
   height: 90%;
 }
 
+.blogcard {
+  border: none;
+  margin-bottom: 30px;
+  background-color: #fff;
+  height: 100%;
+}
+
 .text-twitter-alt, .text-facebook-alt, .text-linkedin-alt, .text-google-alt, .text-github-alt {
   color: #2196F3; }
 
