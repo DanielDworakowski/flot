@@ -125,35 +125,28 @@ class Agent(base.AgentBase):
         left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
         action_array = np.zeros(self.action_array_dim)
         if center_prob > self.straight_min_prob:
-            printFrame()
             action_array[int(self.action_array_dim/2)] = 1
             action = Action(action_array)
 
         elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
-            printFrame()
             action = Action(action_array)
 
         elif right_prob < self.turn_min_prob and left_prob < self.turn_min_prob:
-            printFrame()
             action_array[0] = 1
             action = Action(action_array)
 
         elif left_prob > right_prob and left_prob < self.turn_min_prob:
-            printFrame()
             action_array[0] = 1
             action = Action(action_array)
 
         elif right_prob >= left_prob and right_prob < self.turn_min_prob:
-            printFrame()
             action_array[-1] = 1
             action = Action(action_array)
 
         elif left_prob > right_prob:
-            printFrame()
             action = Action(v_t=left_prob*self.max_v_t,w=-left_prob*self.max_w)
 
         else:
-            printFrame()
             action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)
         # action = Action(action_array)
         print('_____________________________________________________________________________________________________________________________________')
