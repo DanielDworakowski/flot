@@ -1,12 +1,12 @@
+import os
+import torch
+import numpy as np
 from debug import *
 import AgentBase as base
+from Actions import Action
 import Observations as obv
-import os
-import numpy as np
-import torch
 from torchvision import transforms
 from torch.autograd import Variable
-from Actions import Action
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
