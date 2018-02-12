@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-import Environment
-import Observations
+import sys
 import argparse
 import SigHandler
+import Environment
 import ratelimiter
-import sys
 from debug import *
+import Observations
 import util.AgentVisualization as visual
 from PyQt5.QtWidgets import QApplication
 #

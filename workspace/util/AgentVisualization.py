@@ -1,10 +1,10 @@
 import sys
-import visualization as visutil
-from PIL import Image, ImageFont, ImageDraw
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QGridLayout, QWidget
 from PyQt5.QtCore import QSize
 from PIL.ImageQt import ImageQt
+import tools.visualization as visutil
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PIL import Image, ImageFont, ImageDraw
+from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QGridLayout, QWidget
 
 class Visualizer(QMainWindow):
 
