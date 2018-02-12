@@ -104,7 +104,7 @@ class GenericObservation():
     def serialize(self):
         if self.val == None:
             printError('Observation has no value.')
-            self.val = m.nan
+            self.val = float('nan')
         return '%s'%(self.val)
 #
 # Class defining a generic set of observations.
@@ -174,11 +174,11 @@ class Observer():
         self.obsDir = obsDir
         self.obsCsv = None
         self.obs = Observation(obsDir)
-        self.serialize = serialize
+        self.serializeData = serialize
     #
     # Open observation file.
     def __enter__(self):
-        if self.serialize:
+        if self.serializeData:
             self.obsCsv = open(self.obsDir + '/observations.csv', 'w')
             self.obsCsv.write(self.obs.getFormat() + '\n')
         return self
