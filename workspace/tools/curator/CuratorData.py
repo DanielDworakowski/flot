@@ -41,13 +41,12 @@ class CuratorData(object):
             self.df['usable'] = 1
             self.df['labelled'] = 0 
         self.png = self.df['PNG']
-        self.dist = self.df['Sonar:Value']
         self.size = len(self.png)
         self.df.index.name = idxcol
         self.labelConf = AutoLabelConf()
 
     def getData(self, idx):
-        return Image.open(self.folder + '/' + self.png[idx]), self.dist[idx]
+        return Image.open(self.folder + '/' + self.png[idx]), self.df['Sonar:Smoothed'][idx]
 
     def getSize(self):
         return self.size
@@ -91,24 +90,23 @@ class CuratorData(object):
     def autoLabel(self):
         arrays = self.__consecutive(np.where(self.df['Sonar:Value'] == 0)[0])
         mask = np.zeros(len(self.df['Sonar:Value']))
-        # masked = ma.masked_array(self.df['Sonar:Value'], mask = [0] * len(self.df['Sonar:Value']))
         masked = ma.masked_array(self.df['Sonar:Value'], mask = mask)
+        self.df['Sonar:Smoothed'] = self.df['Sonar:Value']
         # 
         # Assume that if there are multiple zeros in a row this indicates that the 
         # there is nothing there. Obstacles are beyond the max range of the sensor. 
         # If there are too few measurements in a row, extend the last measurement. 
-        for array in arrays:
-            masked.mask[array] = 1
-
-            if len(array) > self.labelConf.consecutiveZeroForPositive:
-                self.df.loc[array, ('Sonar:Value')] = self.labelConf.maxDistanceMarker
-            else:
-                self.df.loc[array, ('Sonar:Value')] = self.df['Sonar:Value'][max(array[0] - 1, 0)]
-        kf = KalmanFilter([1], [1], [0.2**2], [0.2**2])
-        means, cov = kf.smooth(masked)
-        # 
-        # Create the labels based on a distance threshold.
-        self.dist = means
-        self.df['collision_free'] = np.squeeze(means)
-        # self.df['collision_free'] = self.df['Sonar:Value'] > self.labelConf.distanceThreshold
+        if len(arrays[0]) > 0:
+            for array in arrays:
+                masked.mask[array] = 1
+                if len(array) > self.labelConf.consecutiveZeroForPositive:
+                    self.df.loc[array, ('Sonar:Smoothed')] = self.labelConf.maxDistanceMarker
+                else:
+                    self.df.loc[array, ('Sonar:Smoothed')] = self.df['Sonar:Value'][max(array[0] - 1, 0)]
+            kf = KalmanFilter([1], [1], [0.2**2], [0.2**2])
+            means, cov = kf.smooth(masked)
+            # 
+            # Create the labels based on a distance threshold.
+            self.df['Sonar:Smoothed'] = np.squeeze(means)
+        self.df['collision_free'] = self.df['Sonar:Smoothed'] > self.labelConf.distanceThreshold
         self.df['collision_free'] = self.df['collision_free'].astype(int)
