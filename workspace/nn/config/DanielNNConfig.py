@@ -11,8 +11,10 @@ from config.DefaultNNConfig import DefaultConfig
 class Config(DefaultConfig):
     #
     # Initialize.
-    def __init__(self):
-        modelLoadPath = '/disk1/model/model_best.pth.tar'
+    def __init__(self, mode = 'train'):
+        modelLoadPath = None
+        if mode == 'test':
+            modelLoadPath = '/disk1/model/model_best.pth.tar'
         super(Config, self).__init__(loadPath = modelLoadPath)
         self.hyperparam.numEpochs = 32
         self.epochSaveInterval = 1
