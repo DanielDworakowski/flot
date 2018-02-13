@@ -11,8 +11,8 @@ def talker():
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
         pub0.publish(1.0)
-        pub1.publish(0.0)
-        pub2.publish(0.22)
+        pub1.publish(0.2)
+        pub2.publish(0.0)
         rate.sleep()
 
 if __name__ == '__main__':
