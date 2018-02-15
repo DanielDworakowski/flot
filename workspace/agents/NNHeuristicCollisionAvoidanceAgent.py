@@ -1,12 +1,12 @@
+import os
+import torch
+import numpy as np
 from debug import *
 import AgentBase as base
+from Actions import Action
 import Observations as obv
-import os
-import numpy as np
-import torch
 from torchvision import transforms
 from torch.autograd import Variable
-from Actions import Action
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
@@ -27,6 +27,7 @@ class Agent(base.AgentBase):
             else:
                 checkpoint = torch.load(self.conf.modelLoadPath, map_location={'cuda:0': 'cpu'})
             self.model = checkpoint['model']
+            self.nnconf = checkpoint['conf']
             self.model.load_state_dict(checkpoint['state_dict'])
             printColour('Loaded model from path: %s'%self.conf.modelLoadPath, colours.OKBLUE)
         else:
@@ -90,13 +91,17 @@ class Agent(base.AgentBase):
         cropped_imgs = self.cropImageToThree(npimg)
         collision_free_prob = []
         softmax = torch.nn.Softmax()
-        for cropped_img in cropped_imgs:
+        probs = None
+        for idx, cropped_img in enumerate(cropped_imgs):
             if self.usegpu:
                 img = Variable(self.toTensor(cropped_img).unsqueeze_(0).cuda())
             else:
                 img = Variable(self.toTensor(cropped_img).unsqueeze_(0))
-            collision_free_pred = self.model(img).data
-            collision_free_prob.append(softmax(collision_free_pred)[0,1].data.cpu().numpy(0))
+            classActivation = self.model(img)
+            collision_free_pred = classActivation.data
+            if idx == 1:
+                probs = self.model.getClassifications(classActivation, softmax)
+            collision_free_prob.append(softmax(Variable(collision_free_pred))[0,1].data.cpu().numpy())
         #
         # collision free probability
         left_prob, center_prob, right_prob = collision_free_prob
@@ -126,6 +131,9 @@ class Agent(base.AgentBase):
         print('_____________________________________________________________________________________________________________________________________')
         print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
         print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
-
+        #
+        # Place the activations for visualization.
+        action.meta['activations'] = probs.cpu().numpy()[0]
+        #
         # Do more stuff.
         return action

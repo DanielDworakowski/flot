@@ -5,11 +5,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PIL.ImageQt import ImageQt
-import visualization as visutil
 from torch.autograd import Variable
+import tools.visualization as visutil
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PIL import Image, ImageFont, ImageDraw
-from DefaultNNConfig import getDefaultTransform
 
 class LedIndicator(QAbstractButton):
     scaledSize = 1000.0
@@ -43,12 +42,15 @@ class LedIndicator(QAbstractButton):
 
 class PicButton(QAbstractButton):
 
-    def __init__(self, parent=None, width = 700, height = 20, ):
+    def __init__(self, parent=None, width = 700, height = 20):
         super(PicButton, self).__init__(parent)
         self.parent = parent
         self.data = np.zeros((height, width, 3), dtype=np.uint8)
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.data)))
         self.width = width
+        self.curIdx = 0
+        self.maxIdx = self.parent.data.getSize() - 1
+        self.lineWidth = int(0.001 * self.maxIdx)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
         self.rgbMatrix = np.zeros((1 ,idx.shape[0], 3)).astype(np.uint8)
     
@@ -56,11 +58,17 @@ class PicButton(QAbstractButton):
         painter = QPainter(self)
         mask = self.parent.data.df['labelled'].as_matrix().astype(np.uint8)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
-        self.rgbMatrix[0, :, 0] = (idx < 1) * 255 # Not usable.
-        self.rgbMatrix[0, :, 2] = idx * 255 # Usable. 
+        self.rgbMatrix[0, (idx < 1), :] = np.array([200, 19, 56]) # Bad.
+        self.rgbMatrix[0, (idx > 0), :] = np.array([20, 200, 60]) # Good. 
         self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled. 
+        # 
+        # Set a white line at the current index.
+        self.rgbMatrix[0, max(0, self.curIdx - self.lineWidth):min(self.maxIdx - 1, self.curIdx + self.lineWidth), :] = 255
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.rgbMatrix)))
         painter.drawPixmap(event.rect(), self.pix)
+
+    def setCurIdx(self, idx):
+        self.curIdx = idx
 
     def sizeHint(self):
         return self.pix.size()
@@ -70,19 +78,29 @@ class PicButton(QAbstractButton):
         self.parent.setIdx(relLoc)
 
 class NNVis(object):
+
     def __init__(self, conf, model):
         self.conf = conf
         self.model = model
-        self.modelVis = lambda *args: None
+        self.visModelCB = lambda img, idx: img
         self.rgbTable = visutil.rtobTable()
         self.sm = None
+        self.lIdx = -1
+        self.lastImg = None
         if self.conf != None:
             import torch
+            from config.DefaultNNConfig import getDefaultTransform
             self.t = getDefaultTransform(conf)
             self.sm = torch.nn.Softmax(dim = 1)
-            self.modelVis = self.visModel
+            self.visModelCB = self.visModel
 
-    def visModel(self, img):
+    def visModel(self, img, idx):
+        # 
+        # If the current image being looked at is the same as the last image, do not process.
+        if self.lIdx == idx: 
+            return self.lastImg
+        # 
+        # Process the new image. 
         draw = ImageDraw.Draw(img)
         sample = {'img': img, 'labels': np.array([0]), 'meta': np.array([0])}
         data = self.t(sample)
@@ -93,6 +111,8 @@ class NNVis(object):
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, self.conf, posClasses)
+        self.lIdx = idx
+        self.lastImg = img
         return img
 
 class CuratorGui(QMainWindow):
@@ -121,6 +141,7 @@ class CuratorGui(QMainWindow):
         self.labelBox = QGroupBox('Label Status')
         self.dispImg.setAlignment(QtCore.Qt.AlignCenter)
         self.dispImg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.savebutton = QPushButton('Save', self)
         # 
         # Set the indicator.
         self.labOnOff = QLabel('Status', self)
@@ -140,6 +161,7 @@ class CuratorGui(QMainWindow):
         hlayout.addWidget(self.curLabelIndicator)
         hlayout.addWidget(self.dist)
         hlayout.addWidget(self.distTxt)
+        hlayout.addWidget(self.savebutton)
         gridLayout.addWidget(self.labelBox, 0, 0)
         gridLayout.addWidget(self.dispImg, 1, 0)
         gridLayout.addWidget(self.labelBar, 2, 0)
@@ -160,6 +182,7 @@ class CuratorGui(QMainWindow):
         self.space.activated.connect(self.usableFlagCB)
         self.enter.activated.connect(self.labelOnOffCB)
         self.returnKey.activated.connect(self.labelOnOffCB)
+        self.savebutton.clicked.connect(self.saveCB)
         self.jumpSize = 60
         self.show()
 
@@ -175,7 +198,7 @@ class CuratorGui(QMainWindow):
         draw = ImageDraw.Draw(img)
         #
         # Convert to Qt for presentation.
-        img = self.modelVis.visModel(img)
+        img = self.modelVis.visModelCB(img, self.dIdx)
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
         self.dispImg.setPixmap(pix)
@@ -191,6 +214,9 @@ class CuratorGui(QMainWindow):
         palette.setColor(self.distTxt.foregroundRole(), col)
         self.distTxt.setPalette(palette)
         # 
+        # Update the bottom bar on the current location.
+        self.labelBar.setCurIdx(self.dIdx)
+        # 
         # Process all draw events. 
         QApplication.processEvents()
         self.labelOnOffIndicator.update()
@@ -198,7 +224,7 @@ class CuratorGui(QMainWindow):
         self.labelBar.update()
 
     def setIdx(self, relIdx):
-        old = self.dIdx
+        oldVal = self.dIdx
         self.dIdx = int(self.data.getSize() * relIdx)
         self.data.setUsable(self.usableImageFlag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
 
@@ -261,3 +287,7 @@ class CuratorGui(QMainWindow):
     def setModel(self, model, conf):
         if model != None:
             self.modelVis = NNVis(conf, model)
+
+    def saveCB(self, event):
+        print('Saving data!')
+        self.data.saveData(True)

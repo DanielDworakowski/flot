@@ -1,10 +1,10 @@
 import sys
-import visualization as visutil
-from PIL import Image, ImageFont, ImageDraw
-from PyQt5 import QtCore, QtWidgets, QtGui
-from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QGridLayout, QWidget
 from PyQt5.QtCore import QSize
 from PIL.ImageQt import ImageQt
+import tools.visualization as visutil
+from PyQt5 import QtCore, QtWidgets, QtGui
+from PIL import Image, ImageFont, ImageDraw
+from PyQt5.QtWidgets import QMainWindow, QApplication, QLabel, QGridLayout, QWidget
 
 class Visualizer(QMainWindow):
 
@@ -49,7 +49,7 @@ class Visualizer(QMainWindow):
             img = Image.fromarray(obs['img'].uint8Img)
             draw = ImageDraw.Draw(img)
             # print(action.meta['activations'])
-            # visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
+            visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
             #
             # Convert to Qt for presentation.
             imgqt = ImageQt(img)

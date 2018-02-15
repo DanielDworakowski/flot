@@ -12,7 +12,8 @@ class Config(DefaultConfig.DefaultConfig):
     image_shape = (224, 224, 3)
     #
     # Save training data.
-    serialize = True
+    serialize = False
+    print('Serialization disabled!')
     #
     # Initialize.
     def __init__(self):

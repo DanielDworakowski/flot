@@ -10,7 +10,7 @@ class GenericModel(nn.Module):
         #
         # specify the default modification required if the network is a normal
         # resnet18.
-        if isinstance(model, type(models.resnet18)):
+        if isinstance(self.model, models.resnet.ResNet):
             self.resizeFC()
 
     def forward(self, x):
@@ -19,6 +19,16 @@ class GenericModel(nn.Module):
     def resizeFC(self):
         numFeat = self.model.fc.in_features
         self.model.fc = nn.Linear(numFeat, 2) # Binary classification.
+
+    def getClassifications(self, netOut, metric):
+        #
+        # Iterate over the columns and build probabilities.
+        nCols = int(netOut.shape[1] / 2)
+        out = torch.zeros((netOut.shape[0], nCols))
+        for idx in range(nCols):
+            activations = netOut[:, 2 * idx : 2 * idx + 2]
+            out[:, idx] = metric(activations).data[:, 1] # Get the probaility of the positive class.
+        return out
 
     def pUpdate(self, optimizer, criteria, netOut, labels, meta, phase):
         #

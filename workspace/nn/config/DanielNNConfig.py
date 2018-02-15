@@ -11,8 +11,10 @@ from config.DefaultNNConfig import DefaultConfig
 class Config(DefaultConfig):
     #
     # Initialize.
-    def __init__(self):
-        modelLoadPath = '/disk1/model/model_best.pth.tar'
+    def __init__(self, mode = 'train'):
+        modelLoadPath = None
+        if mode == 'test':
+            modelLoadPath = '/disk1/model/model_best.pth.tar'
         super(Config, self).__init__(loadPath = modelLoadPath)
         self.hyperparam.numEpochs = 32
         self.epochSaveInterval = 1
@@ -47,13 +49,13 @@ class Config(DefaultConfig):
             '/disk1/data/dagger1/20171202-133243/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-13-32-59/',
             # #
             # # Dagger 2.
-            # '/disk1/data/dagger2/20171202-140740/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-07-55/',
-            # '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-14-50/',
-            # '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-35-24/',
-            # '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-25-06/',
-            # '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-55-58/',
-            # '/disk1/data/dagger2/20171202-135535/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-13-55-50/',
-            # '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-45-41/',
+            '/disk1/data/dagger2/20171202-140740/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-07-55/',
+            '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-14-50/',
+            '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-35-24/',
+            '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-25-06/',
+            '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-55-58/',
+            '/disk1/data/dagger2/20171202-135535/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-13-55-50/',
+            '/disk1/data/dagger2/20171202-141434/dataCollectionAgent_EnvironmentTypes.AirSim_02-12-2017-14-45-41/',
         ]
         self.dataValList = [
             '/disk1/data/20171202-011944/dumbAgent_EnvironmentTypes.AirSim_02-12-2017-02-31-14/',

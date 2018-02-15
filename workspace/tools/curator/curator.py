@@ -18,20 +18,21 @@ def getInputArgs():
 # Get the configuration, override as needed.
 def getConfig(args):
     conf = None
+    model = None
     if args.configStr != None:
         config_module = __import__('config.' + args.configStr)
         configuration = getattr(config_module, args.configStr)
         conf = configuration.Config('test')
-    return conf
+        model = conf.hyperparam.model.eval()
+    return conf, model
 #
 # Main loop for running the agent.
-def loop(args, conf):
+def loop(args, conf, model):
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
     data = CuratorData.CuratorData(args.curationPath)
     data.autoLabel()
     gui = CuratorGui.CuratorGui(data)
-    model = conf.hyperparam.model
     gui.setModel(model, conf)
     exitNow = SigHandler.SigHandler()
     while not exitNow.exit and gui.running:
@@ -40,5 +41,5 @@ def loop(args, conf):
 # Main code.
 if __name__ == "__main__":
     args = getInputArgs()
-    conf = getConfig(args)
-    loop(args, conf)
+    conf, model = getConfig(args)
+    loop(args, conf, model)
