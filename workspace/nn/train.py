@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import argparse
-from core import Trainer
-
 from debug import *
+from core import Trainer
 #
 # Parse the input arguments.
 def getInputArgs():
