@@ -48,7 +48,7 @@ def getStatistics(conf):
     for data in dataloader:
         imgs, labels_cpu = data['img'], data['labels']
         curMean = np.mean(imgs.numpy(), axis=(0,2,3))
-        curVar = np.var(imgs.numpy(), axis=(0,2,3))
+        curVar = np.sqrt(np.var(imgs.numpy(), axis=(0,2,3)))
         oldMean = totMean
         totMean = (n1 * curMean + n2 * totMean) / (n1 + n2)
         totVar = (n1 * curVar + n2 * totVar + n1 * np.power((curMean - totMean), 2) + n2 * np.power((oldMean - totMean), 2)) / (n1 + n2)
@@ -56,7 +56,7 @@ def getStatistics(conf):
     # 
     # Print the final results. 
     print('Mean of the data: %s'%totMean)
-    print('Variance of the data: %s'%totVar)
+    print('stddev of the data: %s'%totVar)
 
 
 
