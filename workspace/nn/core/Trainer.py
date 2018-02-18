@@ -1,27 +1,27 @@
 #
 # Built in.
-import time
 import os
+import time
 import shutil
 #
 # Torch.
 import torch
+import torchvision
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim import lr_scheduler
 from torch.autograd import Variable
-import torchvision
+from torch.optim import lr_scheduler
 from torchvision import datasets, models, transforms
 #
 # Other.
-from tensorboardX import SummaryWriter
-import numpy as np
 import tqdm
+import numpy as np
+from tensorboardX import SummaryWriter
 #
 # Flot.
-from core import FlotDataset
 from debug import *
 from itertools import count
+from core import FlotDataset
 from multiprocessing import Lock
 
 class Trainer():
