@@ -1,4 +1,5 @@
 # Ignore simulation enviroments, would be nice to make this a submodule
+workspace/environment/ai2thor_src/
 workspace/SimulationEnvironments/
 workspace/data/
 workspace/ai2thor/

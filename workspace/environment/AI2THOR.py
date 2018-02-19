@@ -57,42 +57,14 @@ class AI2THOR():
         self.yaw = self.event.metadata['agent']['rotation']['y']*(np.pi/180.)
         self.collided = self.event.metadata['collided']
 
-    def takeMultipleSteps(self, steps, axis):
-        step_dict = {
-            ('x',True): "MoveRight",
-            ('x', False): "MoveLeft",
-            ('z', True): "MoveAhead",
-            ('z', False): "MoveBack"
-        }
-        is_positive = (steps >= 0)
-
-        success = True
-        for i in range(abs(steps)):
-            self.event = self.controller.step(dict(action=step_dict[(axis,is_positive)]))
-            success = self.event.metadata['lastActionSuccess']
-            time.sleep(0.5)
-        return success
-
-    # def step(self, v_ref, w_ref):
-    #     self.update()
-    #     self.v = (1-self.v_rate)*self.v + self.v_rate*v_ref
-    #     self.w = (1-self.w_rate)*self.w + self.w_rate*w_ref
-    #     new_x = self.position['x'] + self.v*self.dt*np.sin(self.yaw)
-    #     new_z = self.position['z'] + self.v*self.dt*np.cos(self.yaw)
-    #     new_yaw = self.yaw + self.dt*self.w
-    #     self.event = self.controller.step(dict(action='Teleport', x=new_x, y=0.3, z=new_z))
-    #     self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
-    #     print(self.event.metadata['agent']['position'])
-
     def step(self, v_ref, w_ref):
-        # self.update()
+        self.update()
         self.v = (1-self.v_rate)*self.v + self.v_rate*v_ref
         self.w = (1-self.w_rate)*self.w + self.w_rate*w_ref
-        x_steps = int(self.v*self.dt*np.sin(self.yaw)/self.grid_size)
-        z_steps = int(self.v*self.dt*np.cos(self.yaw)/self.grid_size)
-        yaw = self.yaw + self.dt*self.w
-        x_fail = not self.takeMultipleSteps(x_steps, 'x')
-        z_fail = not self.takeMultipleSteps(z_steps, 'z')
-        self.collided = x_fail and z_fail
-        self.controller.step(dict(action='Rotate', rotation=yaw*(180./np.pi)))
-        print(self.collided)
+        new_x = self.position['x'] + self.v*self.dt*np.sin(self.yaw)
+        new_z = self.position['z'] + self.v*self.dt*np.cos(self.yaw)
+        new_yaw = self.yaw + self.dt*self.w
+        self.event = self.controller.step(dict(action='Teleport', x=new_x, y=0.3, z=new_z))
+        self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
+        print(self.event.metadata['agent']['position'])
+
