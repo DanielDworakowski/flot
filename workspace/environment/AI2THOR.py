@@ -64,6 +64,7 @@ class AI2THOR():
         new_x = self.position['x'] + self.v*self.dt*np.sin(self.yaw)
         new_z = self.position['z'] + self.v*self.dt*np.cos(self.yaw)
         new_yaw = self.yaw + self.dt*self.w
+        
         self.event = self.controller.step(dict(action='Teleport', x=new_x, y=0.3, z=new_z))
         self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
         print(self.event.metadata['agent']['position'])
