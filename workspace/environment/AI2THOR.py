@@ -7,7 +7,7 @@ class AI2THOR():
     controller = ai2thor_src.ai2thor.controller.BFSController()
     controller.start(player_screen_width=640, player_screen_height=480)
     
-    def __init__(self, scene='FloorPlan230', grid_size=0.01, v_rate=0.1, w_rate=0.1, dt = 0.05):
+    def __init__(self, scene='FloorPlan224', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.2):
         # Member variables.
         self.controller.reset(scene)
         self.event = self.controller.step(dict(action='Initialize', gridSize=grid_size))
@@ -35,8 +35,8 @@ class AI2THOR():
             self.floor_plans.append(floor_plan_name)
             self.occup_maps[floor_plan_name] = set([])
             for free_space in floor_plan:
-                grid_x = int(round(floor_plan['x']*self.grid_scale))
-                grid_z = int(round(floor_plan['z']*self.grid_scale))
+                grid_x = int(round(free_space['x']*self.grid_scale))
+                grid_z = int(round(free_space['z']*self.grid_scale))
                 self.occup_maps[floor_plan_name].add((grid_x, grid_z))
         if not(self.floor_plan in self.floor_plans):
             print("Scene not available")
@@ -75,6 +75,9 @@ class AI2THOR():
         self.yaw = self.event.metadata['agent']['rotation']['y']*(np.pi/180.)
         self.collided = self.event.metadata['collided']
 
+    def positionToGrid(self, position):
+        return int(round(int(round(position*self.grid_scale))/(self.grid_size*self.grid_scale))*(self.grid_size*self.grid_scale))
+
     def step(self, v_ref, w_ref):
         self.update()
         self.v = (1-self.v_rate)*self.v + self.v_rate*v_ref
@@ -82,11 +85,13 @@ class AI2THOR():
         new_x = self.position['x'] + self.v*self.dt*np.sin(self.yaw)
         new_z = self.position['z'] + self.v*self.dt*np.cos(self.yaw)
         new_yaw = self.yaw + self.dt*self.w
-        grid_x = int(round(new_x*self.grid_scale))
-        grid_z = int(round(new_z*self.grid_scale))
+        grid_x = self.positionToGrid(new_x)
+        grid_z = self.positionToGrid(new_z)
         success = False
+        self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
+        print((grid_x, grid_z))
         if (grid_x, grid_z) in self.occup_maps[self.floor_plan]:            
-            self.event = self.controller.step(dict(action='Teleport', x=new_x, y=0.3, z=new_z))
-            self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
+            self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
             success = True
+        self.update()
         return success
