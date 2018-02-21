@@ -1,5 +1,5 @@
 import numpy as np 
-import tensorflow as tf 
+import torch
 import importlib
 from algorithms.utils.utils import *
 from algorithms.utils.PolicyNetwork import PolicyNetwork
@@ -60,7 +60,7 @@ class Agent:
                logs_path="/home/user/workspace/logs/"):
 
     # Tensorflow Session
-    self.sess = sess
+    self.model = A2C()
     
     # OpenAI Environment
     self.env = env

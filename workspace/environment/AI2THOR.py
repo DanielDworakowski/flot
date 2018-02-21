@@ -62,8 +62,6 @@ class AI2THOR():
         return self.image_rgb
 
     def isCollided(self):
-        self.event = self.controller.step(dict(action='MoveAhead'))
-        self.update()
         return self.collided
 
     def update(self):
@@ -73,7 +71,6 @@ class AI2THOR():
         self.image_png = self.event.image
         self.image_rgb = self.event.frame
         self.yaw = self.event.metadata['agent']['rotation']['y']*(np.pi/180.)
-        self.collided = self.event.metadata['collided']
 
     def positionToGrid(self, position):
         return int(round(int(round(position*self.grid_scale))/(self.grid_size*self.grid_scale))*(self.grid_size*self.grid_scale))
@@ -94,4 +91,5 @@ class AI2THOR():
             self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
             success = True
         self.update()
+        self.collided = not success
         return success
