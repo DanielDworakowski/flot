@@ -11,8 +11,10 @@ prop = propeller.Prop()
 
 u_scale = 32767
 u0 = 0.0
+u = 0.0
 
 def down_callback(data):
+    global u
     u = data.data
     if u > 1:
         u = 1
@@ -26,8 +28,9 @@ def v_callback(data):
 def delta_callback(data):
     global u0
     u_delta = data.data
-    prop.left(int((-u0 - u_delta)*u_scale))#its the right prop in the test setup
-    prop.right(int((-u0+ u_delta)*u_scale))# its the left set up in the test set up
+    prop.right(int(-1*(-u0 - u_delta-u*0.1)*u_scale))#its the right prop in the test setup
+    prop.left(int(-1*(-u0+ u_delta+u*0.1)*u_scale))# its the left set up in the test set u
+    
 
 def propellers():
     rospy.init_node("propellers", anonymous=True)
