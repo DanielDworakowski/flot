@@ -1,7 +1,8 @@
 import re
+import threading
 from bluepy import *
 
-class Prop:
+class Prop(object):
 
     def __init__(self, mac="C4:C3:00:01:07:3F"):
         # Check for empty arg and correct MAC address format
@@ -11,7 +12,8 @@ class Prop:
             self.mac = "C4:C3:00:01:07:3F"
         else:
             self.mac = mac
-
+        self.shutdown = threading.Event()
+        self.watchdog_thread = threading.Thread(target=self._watchdog, name="watchdog")
         self.requester = btle.Peripheral(self.mac)
 
     def is_connected(self):
@@ -21,65 +23,60 @@ class Prop:
         except:
             return False
 
+    def _watchdog(self):
+        failCnt = 0
+        while True:
+            if self.shutdown.wait(timeout=5):
+                failCnt = 0
+                return
+            if not self.is_connected():
+                failCnt += 1
+                print('Failed to connect. On attempt ', failCnt)
+
     # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for left propeller
     def left(self, value):
-
-        if self.is_connected():
-            if -32768 < value < 32768:
-                if value < 0:
-                    command = '{:04x}'.format(-1*int(value))
-                else:
-                    command = '{:04x}'.format(65535 - int(value))
-
-                self.requester.writeCharacteristic(34, command.decode('hex'))
+        if -32768 < value < 32768:
+            if value < 0:
+                command = '{:04x}'.format(-1*int(value))
             else:
-                print("Command value is must be integer between -32767 & 32767")
+                command = '{:04x}'.format(65535 - int(value))
+
+            self.requester.writeCharacteristic(34, command.decode('hex'))
         else:
-            print("First connect to target before commanding thrust")
+            print("Command value is must be integer between -32767 & 32767")
 
     # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for right propeller
     def right(self, value):
-        
-        if self.is_connected():
-            if -32768 < value < 32768:
-                if value < 0:
-                    command = '{:04x}'.format(-1*int(value))
-                else:
-                    command = '{:04x}'.format(65535 - int(value))
-
-                self.requester.writeCharacteristic(36, command.decode('hex'))
+        if -32768 < value < 32768:
+            if value < 0:
+                command = '{:04x}'.format(-1*int(value))
             else:
-                print("Command value is must be integer between -32767 & 32767")
+                command = '{:04x}'.format(65535 - int(value))
+
+            self.requester.writeCharacteristic(36, command.decode('hex'))
         else:
-            print("First connect to target before commanding thrust")
+            print("Command value is must be integer between -32767 & 32767")
 
     # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for down propeller
     def down(self, value):
-
-        if self.is_connected():
-            if -32768 < value < 32768:
-                if value < 0:
-                    command = '{:04x}'.format(-1*int(value))
-                else:
-                    command = '{:04x}'.format(65535 - int(value))
-
-                self.requester.writeCharacteristic(38, command.decode('hex'))
+        if -32768 < value < 32768:
+            if value < 0:
+                command = '{:04x}'.format(-1*int(value))
             else:
-                print("Command value is must be integer between -32767 & 32767")
+                command = '{:04x}'.format(65535 - int(value))
+
+            self.requester.writeCharacteristic(38, command.decode('hex'))
         else:
-            print("First connect to target before commanding thrust")
+            print("Command value is must be integer between -32767 & 32767")
 
     # Function to stop all actuators
     def stop(self):
-        if self.is_connected():
-                command = '{:04x}'.format(65535)
-                self.requester.writeCharacteristic(34, command.decode('hex'))
-                self.requester.writeCharacteristic(36, command.decode('hex'))
-                self.requester.writeCharacteristic(38, command.decode('hex'))
-        else:
-            print("Command failed; not connected to target")
+        command = '{:04x}'.format(65535)
+        self.requester.writeCharacteristic(34, command.decode('hex'))
+        self.requester.writeCharacteristic(36, command.decode('hex'))
+        self.requester.writeCharacteristic(38, command.decode('hex'))
 
 
