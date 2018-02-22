@@ -87,3 +87,8 @@ class VideoStreamClient(threading.Thread):
             self.pipe.stdout.flush()
 
         cv2.destroyAllWindows()
+
+    def getFrame(self):
+        ret = self.frame
+        self.frame = None
+        return ret

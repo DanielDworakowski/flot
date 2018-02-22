@@ -53,7 +53,7 @@ def image_pub():
     # ROS loop
     while not rospy.is_shutdown():
         # Publish compressed image with new timestamp
-        image = client.frame
+        image = client.getFrame()
 
         if image is not None:
             msg.header.stamp = rospy.Time.now()
