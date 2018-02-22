@@ -1,6 +1,6 @@
 #!/bin/bash
 
-host_ip=10.0.1.2
+host_ip=10.0.1.101
 port=2222
 
 echo Starting raspivid camera stream
