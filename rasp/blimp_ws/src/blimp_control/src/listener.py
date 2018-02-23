@@ -1,57 +1,21 @@
 #!/usr/bin/env python
-# Software License Agreement (BSD License)
-#
-# Copyright (c) 2008, Willow Garage, Inc.
-# All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions
-# are met:
-#
-#  * Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#  * Redistributions in binary form must reproduce the above
-#    copyright notice, this list of conditions and the following
-#    disclaimer in the documentation and/or other materials provided
-#    with the distribution.
-#  * Neither the name of Willow Garage, Inc. nor the names of its
-#    contributors may be used to endorse or promote products derived
-#    from this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-# FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-# COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-# INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-# BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-# ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
-#
-# Revision $Id$
 
-## Simple talker demo that listens to std_msgs/Strings published 
-## to the 'chatter' topic
+from __future__ import print_function
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+import sys
 import os
-import rospy
+# import rospy
+from rospy import init_node, Subscriber, Rate, spin
 import datetime
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 from sensor_msgs.msg import Imu
-
-import sys, time, threading
-import numpy as np
-from subprocess import Popen, PIPE
-from shlex import split
+from subprocess import Popen
 from blimp_control.msg import Float64WithHeader
 from tf.transformations import euler_from_quaternion
-
-# Removes conflict regarding CV2 if ROS Kinetic has been sourced
-del os.environ['PYTHONPATH']
 
 timestr = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 if not os.path.exists(timestr):
@@ -81,13 +45,13 @@ def store(data, datatype):
     tn = data.header.stamp.nsecs/float(1e9)
     stamp = "{:.10f}".format(ts+tn)
     if datatype=='sonar':
-        print('sonar:{}\n'.format(data.header))
+        # eprint('sonar:{}\n'.format(data.header))
         val = data.float.data
         with open(sfile,'a') as f:
             f.write('{},{}\n'.format(val, stamp))
 
     elif datatype=='imu':
-        print('imu:{}\n'.format(data))
+        # eprint('imu:{}\n'.format(data))
         quat = data.orientation
         angvel = data.angular_velocity
         linacc = data.linear_acceleration
@@ -107,7 +71,7 @@ def store(data, datatype):
             f.write('{},{}\n'.format(st,stamp))
 
     elif datatype=='yaw':
-        print('yaw:{}\n'.format(data.header))
+        # eprint('yaw:{}\n'.format(data.header))
         val = data.float.data
         with open(yfile,'a') as f:
             f.write('{},{}\n'.format(val, stamp))
@@ -133,12 +97,12 @@ def listener():
     # anonymous=True flag means that rospy will choose a unique
     # name for our 'listener' node so that multiple listeners can
     # run simultaneously.
-    print('Building Listener.')
-    rospy.init_node('listener', anonymous=True)
-    rospy.Subscriber('sonar_meas', Float64WithHeader, sonar_callback)
-    rospy.Subscriber('imu_data', Imu, imu_callback)
-    rospy.Subscriber('yaw_rate', Float64WithHeader, yaw_callback)
-    rate = rospy.Rate(100)   # 100 Hz to prevent aliasing of 40 FPS feed
+    eprint('Building Listener.')
+    init_node('listener', anonymous=True)
+    Subscriber('sonar_meas', Float64WithHeader, sonar_callback)
+    Subscriber('imu_data', Imu, imu_callback)
+    Subscriber('yaw_rate', Float64WithHeader, yaw_callback)
+    rate = Rate(100)   # 100 Hz to prevent aliasing of 40 FPS feed
 
     raspividcmd = [
         'raspivid',
@@ -157,11 +121,11 @@ def listener():
         '--save-pts',
         '%s/video_ts.csv'%(timestr)
     ]
-    print('Opening camera logging.')
+    eprint('Opening camera logging.')
     pipe = Popen(raspividcmd)
-    print('Spinning.')
+    eprint('Spinning.')
     # spin() simply keeps python from exiting until this node is stopped
-    rospy.spin()
+    spin()
 
 if __name__ == '__main__':
     listener()
