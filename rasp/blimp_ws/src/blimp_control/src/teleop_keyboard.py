@@ -35,15 +35,15 @@ CTRL-C to quit
 e = """Error"""
 
 moveBindings = {
-        'i':(0.3,0.0),
-        'o':(0.3,-0.3),
+        'i':(0.4,0.0),
+        'o':(0.2,-0.3),
         'j':(0.0,0.3),
         'l':(0.0,-0.3),
         'k':(0.0,0.0),
-        'u':(0.3,0.3),
-        ',':(-0.3,0.0),
-        '.':(-0.3,0.3),
-        'm':(-0.3,-0.3),
+        'u':(0.2,0.3),
+        ',':(-0.4,0.0),
+        '.':(-0.2,0.3),
+        'm':(-0.2,-0.3),
         }
 
 altitudeBindings={
@@ -73,18 +73,15 @@ def vels(linear, angular, altitude):
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    pub0 = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
-    pub1 = rospy.Publisher('cmd_v', Float64, queue_size = 10)
-    pub2 = rospy.Publisher('cmd_w', Float64, queue_size = 10)
+    pub_a = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
+    pub_v = rospy.Publisher('cmd_v', Float64, queue_size = 10)
+    pub_w = rospy.Publisher('cmd_w', Float64, queue_size = 10)
     rospy.init_node('teleop_keyboard')
     rate = rospy.Rate(10)
 
     v = 0.0
     w = 0.0
     z = 1.0
-    ik = -1.0
-
-    status = 0
 
     try:
         print msg
@@ -105,20 +102,20 @@ if __name__=="__main__":
                     break
 
             print 'v %f '%(v)
-            print 'w %f '%(w)
-            pub0.publish(z)
-            pub1.publish(v)
-            pub2.publish(w)
+            print 'w %f \n'%(w)
+            pub_a.publish(z)
+            pub_v.publish(v)
+            pub_w.publish(w)
             rate.sleep()
 
     except rospy.ROSInterruptException:
         pass
 
     finally:
-        print ik
-        pub0.publish(z)
-        pub1.publish(v)
-        pub2.publish(w)
+        print 'IM SHOOKETH'
+        pub_a.publish(z)
+        pub_v.publish(v)
+        pub_w.publish(w)
 
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
