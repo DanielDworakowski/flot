@@ -4,6 +4,7 @@ import smbus
 import math
 import time
 import numpy as np
+import sys
 
 class MPU6050:
 
@@ -25,8 +26,12 @@ class MPU6050:
         return self.bus.read_byte_data(self.address, self.adr)
 
     def read_word(self, adr):
-        high = self.bus.read_byte_data(self.address, adr)
-        low = self.bus.read_byte_data(self.address, adr+1)
+        # high = self.bus.read_byte_data(self.address, adr)
+        # low = self.bus.read_byte_data(self.address, adr+1)
+        # val = (high << 8) + low
+        reverseMe = self.bus.read_word_data(self.address, adr)
+        low = (0xFF00 & reverseMe) >> 8
+        high = 0x00FF & reverseMe
         val = (high << 8) + low
         return val
 
@@ -58,6 +63,10 @@ class MPU6050:
         accel_yout = self.read_word_2c(0x3d) / 16384.0
         accel_zout = self.read_word_2c(0x3f) / 16384.0
 
+        # accel_xout = 0
+        # accel_yout = 0
+        # accel_zout = 9.81
+
         x_rotation = self.get_x_rotation(accel_xout, accel_yout, accel_zout)
         y_rotation = self.get_y_rotation(accel_xout, accel_yout, accel_zout)
 
@@ -67,12 +76,15 @@ class MPU6050:
 
         last_time = time.time()
         gyro_arr = np.zeros([self.iter])
+        dtTot = 0
+        num = 0
         for i in range(self.iter):
             gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation = self.get_data()
-	    dt = time.time() - last_time
+
+            dt = time.time() - last_time
             last_time = time.time()
             if np.abs(accel_yout) < 0.05:
-	        accel_yout = 0.0
+                accel_yout = 0.0
             self.linear_velocity += dt*accel_yout
             gyro_arr[i] = gyro_zout
             time.sleep(self.delay)

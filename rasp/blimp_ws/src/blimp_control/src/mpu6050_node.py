@@ -19,15 +19,21 @@ def imu():
         pub2 = rospy.Publisher('yaw_rate_control', Float64, queue_size=10)
         rospy.init_node('imu', anonymous=True)
         rate = rospy.Rate(10) # 10hz
+        print('Running IMU node.')
         while not rospy.is_shutdown():
-            # [gyro_xout, gyro_yout, gyro_zout, accel_xout, accel_yout, accel_zout, x_rotation, y_rotation]
+            # 
+            # Read IMU data.
             data  = imu_t.get_data()
-            # imu_data.header.stamp = rospy.Time.now()
+            imu_data.header.stamp = rospy.Time.now()
             imu_data.header.stamp = rospy.get_rostime()
+            # 
+            # Get quaternion.
             roll = 180 * math.atan(data[3] / math.sqrt(data[4]**2 + data[5]**2)) / math.pi
             pitch = 180 * math.atan(data[4] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
             yaw = 180 * math.atan(data[5] / math.sqrt(data[3]**2 + data[5]**2)) / math.pi
             quaternion = tf.transformations.quaternion_from_euler(roll,pitch,yaw)
+            # 
+            # Fill message.
             imu_data.orientation.w = quaternion[0]
             imu_data.orientation.x = quaternion[1]
             imu_data.orientation.y = quaternion[2]
@@ -40,15 +46,15 @@ def imu():
             imu_data.angular_velocity.y = data[1]
             imu_data.angular_velocity.z = data[2]
             imu_data.angular_velocity_covariance[0] = -1
-            rospy.loginfo(imu_data)
             pub0.publish(imu_data)
 
             yaw_rate = Float64WithHeader()
             yaw_rate.header.stamp = rospy.get_rostime()
             yaw_rate.float.data = data[2]
-            rospy.loginfo(yaw_rate)
             pub1.publish(yaw_rate)
             pub2.publish(data[2]/250.0) #data2 is yaw rate, 1 is pitch rate, 0 roll, have to fix the imudata
+            # rospy.loginfo(imu_data)
+            # rospy.loginfo(yaw_rate)
             rate.sleep()
 
 if __name__ == '__main__':

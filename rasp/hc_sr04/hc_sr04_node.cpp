@@ -36,8 +36,8 @@ class Sonar {
     int bail = 1000;
     while(digitalRead(echo_) == LOW) {
       if (--bail == 0) {
-	*error = true;
-	return 0;
+        *error = true;
+        return 0;
       }
     }
 
@@ -50,8 +50,8 @@ class Sonar {
     while(digitalRead(echo_) == HIGH) {
       travelTime = micros() - startTime;
       if (travelTime > TRAVEL_TIME_MAX) {
-	travelTime = TRAVEL_TIME_MAX;
-	break;
+  travelTime = TRAVEL_TIME_MAX;
+  break;
       }
       delayMicroseconds(100);
     }
@@ -106,9 +106,9 @@ int main(int argc, char **argv) {
       range.header.stamp = ros::Time::now();
       range.range = sonars[i].distance(&error);
       if (error)
-	ROS_WARN("Error on sonar %d", i);
+  ROS_WARN("Error on sonar %d", i);
       else
-	sonar_pubs[i].publish(range);
+  sonar_pubs[i].publish(range);
     }
     ros::spinOnce();
     rate.sleep();
