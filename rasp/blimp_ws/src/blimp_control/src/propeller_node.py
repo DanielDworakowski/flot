@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+#tflot
+
 
 import rospy
 from std_msgs.msg import Float64
@@ -18,7 +20,7 @@ def down_callback(data):
     u = data.data
     if u > 1:
         u = 1
-    prop.down(int(u*u_scale))
+    prop.down(int(1.2*u*u_scale))
     #print(data)
 
 def v_callback(data):
@@ -28,9 +30,11 @@ def v_callback(data):
 def delta_callback(data):
     global u0
     u_delta = data.data
-    prop.right(int(-1*(-u0 - u_delta-u*0.1)*u_scale))#its the right prop in the test setup
-    prop.left(int(-1*(-u0+ u_delta+u*0.1)*u_scale))# its the left set up in the test set u
+    #prop.right(int(-1*(-u0 - u_delta-u*0.5)*u_scale))#its the right prop in the test setup
+    #prop.left(int(-1*(-u0+ u_delta+u*0.5)*u_scale))# its the left set up in the test set u
     
+    prop.right(int(-1*(-u0 - u_delta)*u_scale))#its the right prop in the test setup
+    prop.left(int(-1*(-u0+ u_delta)*u_scale))# its the left set up in the test set u
 
 def propellers():
     rospy.init_node("propellers", anonymous=True)

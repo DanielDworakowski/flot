@@ -20,10 +20,9 @@ anything else : stop
 i and , for pure linear
 l and j for pure rotation
 u o m . for combination
-
+k for KILL all motors except altitude.
 ----------------------------
 Altitude setting: (default is 1 meter)
-k for KILL all motors except altitude.
 t/b : increase/decrease Altitude #to be determined
 
 q/z : increase/decrease max speeds by 10%
@@ -33,16 +32,18 @@ e/c : increase/decrease only angular speed by 10%
 CTRL-C to quit
 """
 
+e = """Error"""
+
 moveBindings = {
-        'i':(1.0,0.0),
-        'o':(.7,-.7),
-        'j':(0.0,1.0),
-        'l':(0.0,-1.0),
+        'i':(0.3,0.0),
+        'o':(0.3,-0.3),
+        'j':(0.0,0.3),
+        'l':(0.0,-0.3),
         'k':(0.0,0.0),
-        'u':(.7,.7),
-        ',':(-1.0,0.0),
-        '.':(-.7,.7),
-        'm':(-.7,-.7),
+        'u':(0.3,0.3),
+        ',':(-0.3,0.0),
+        '.':(-0.3,0.3),
+        'm':(-0.3,-0.3),
         }
 
 altitudeBindings={
@@ -76,35 +77,26 @@ if __name__=="__main__":
     pub1 = rospy.Publisher('cmd_v', Float64, queue_size = 10)
     pub2 = rospy.Publisher('cmd_w', Float64, queue_size = 10)
     rospy.init_node('teleop_keyboard')
-
-    linear = rospy.get_param("~linear", 0.0)
-    angular = rospy.get_param("~angular", 0.0)
-    altitude = rospy.get_param("~altitude", 1.0)
+    rate = rospy.Rate(10)
 
     v = 0.0
     w = 0.0
     z = 1.0
+    ik = -1.0
 
     status = 0
 
     try:
         print msg
-        print vels(linear,angular, altitude)
-        while(1):
+        while not rospy.is_shutdown():
             key = getKey()
             if key in moveBindings.keys():
                 v = moveBindings[key][0]
                 w = moveBindings[key][1]
             elif key in speedBindings.keys():
-                linear = linear * speedBindings[key][0]
-                angular = angular * speedBindings[key][1]
+                pass
             elif key in altitudeBindings.keys():
                 z = z + moveBindings[key][0]
-
-                print vels(linear,angular, altitude)
-                if (status == 14):
-                    print msg
-                status = (status + 1) % 15
             else:
                 v = 0.0
                 w = 0.0
@@ -112,82 +104,21 @@ if __name__=="__main__":
                 if (key == '\x03'):
                     break
 
+            print 'v %f '%(v)
+            print 'w %f '%(w)
             pub0.publish(z)
             pub1.publish(v)
             pub2.publish(w)
+            rate.sleep()
 
-    except:
-        print e
+    except rospy.ROSInterruptException:
+        pass
 
     finally:
+        print ik
         pub0.publish(z)
         pub1.publish(v)
         pub2.publish(w)
 
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
 
-
-
-"""
-def vels(speed,turn):
-    return "currently:\tspeed %s\tturn %s " % (speed,turn)
-
-if __name__=="__main__":
-        settings = termios.tcgetattr(sys.stdin)
-
-    pub0 = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
-    pub1 = rospy.Publisher('cmd_v', Float64, queue_size = 10)
-    pub2 = rospy.Publisher('cmd_w', Float64, queue_size = 10)
-    rospy.init_node('teleop_keyboard')
-
-    speed = rospy.get_param("~speed", 0.5)
-    turn = rospy.get_param("~turn", 1.0)
-    x = 0
-    y = 0
-    z = 0
-    th = 0
-    status = 0
-
-    try:
-        print msg
-        print vels(speed,turn)
-        while(1):
-            key = getKey()
-            if key in moveBindings.keys():
-                x = moveBindings[key][0]
-                y = moveBindings[key][1]
-                z = moveBindings[key][2]
-                th = moveBindings[key][3]
-            elif key in speedBindings.keys():
-                speed = speed * speedBindings[key][0]
-                turn = turn * speedBindings[key][1]
-
-                print vels(speed,turn)
-                if (status == 14):
-                    print msg
-                status = (status + 1) % 15
-            else:
-                x = 0
-                y = 0
-                z = 0
-                th = 0
-                if (key == '\x03'):
-                    break
-
-            twist = Twist()
-            twist.linear.x = x*speed; twist.linear.y = y*speed; twist.linear.z = z*speed;
-            twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = th*turn
-            pub.publish(twist)
-
-    except:
-        print e
-
-    finally:
-        twist = Twist()
-        twist.linear.x = 0; twist.linear.y = 0; twist.linear.z = 0
-        twist.angular.x = 0; twist.angular.y = 0; twist.angular.z = 0
-        pub.publish(twist)
-
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
-
-"""
