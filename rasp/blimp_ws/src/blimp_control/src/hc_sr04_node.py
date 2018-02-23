@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import rospy
+from rospy import Publisher, init_node, Rate, is_shutdown, get_rostime, ROSInterruptException
 from std_msgs.msg import Float64
 import RPi.GPIO as GPIO
 import time
@@ -16,11 +16,11 @@ GPIO.output(TRIG, False)
 time.sleep(2)
 
 def sonar():
-    pub = rospy.Publisher('sonar_meas', Float64WithHeader, queue_size=10)
-    pub1 = rospy.Publisher('sonar_meas_control', Float64, queue_size=10)
-    rospy.init_node('sonar', anonymous=True)
-    rate = rospy.Rate(20) # 10hz
-    while not rospy.is_shutdown():
+    pub = Publisher('sonar_meas', Float64WithHeader, queue_size=10)
+    pub1 = Publisher('sonar_meas_control', Float64, queue_size=10)
+    init_node('sonar', anonymous=True)
+    rate = Rate(20) # 10hz
+    while not is_shutdown():
         GPIO.output(TRIG, True)
         time.sleep(0.00001)
         GPIO.output(TRIG, False)
@@ -44,7 +44,7 @@ def sonar():
         distance = distance/100.0
 
         sonar_data = Float64WithHeader()
-        sonar_data.header.stamp = rospy.get_rostime()
+        sonar_data.header.stamp = get_rostime()
         if abs(distance) < 2.0:
             sonar_data.float.data = distance
             pub1.publish(distance)
@@ -58,5 +58,5 @@ def sonar():
 if __name__ == '__main__':
     try:
         sonar()
-    except rospy.ROSInterruptException:
+    except ROSInterruptException:
         pass
