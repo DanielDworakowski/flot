@@ -25,6 +25,8 @@ Clone this repo
 
 Copy the LinuxNoEditor packaged enviroment in the /home/user/workspace/SimulationEnvironments
 
+Edit /opt/ros/kinetic/etc/ros/python_logging.conf on Rpi to remove logging
+
 # Run
 ```docker build . -t flot_ws ```
 
