@@ -50,12 +50,15 @@ def image_pub():
     rospy.init_node('image_pub', anonymous=True)
     rate = rospy.Rate(100)   # 100 Hz to prevent aliasing of 40 FPS feed
 
+    cnt = 0
     # ROS loop
     while not rospy.is_shutdown():
         # Publish compressed image with new timestamp
         image = client.getFrame()
 
         if image is not None:
+            cnt += 1
+            print(cnt)
             msg.header.stamp = rospy.Time.now()
             msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
             pub.publish(msg)
