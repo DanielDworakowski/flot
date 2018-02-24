@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 #tflot
 
-
-import rospy
+from rospy import init_node, Subscriber, spin
 from std_msgs.msg import Float64
 import propeller
 import time
@@ -17,34 +16,36 @@ u = 0.0
 
 def down_callback(data):
     global u
+    global u0
     u = data.data
     if u > 1:
         u = 1
-    prop.down(int(1.2*u*u_scale))
+    prop.down(int((u+u0*0.8)*u_scale))
     #print(data)
 
 def v_callback(data):
     global u0
     u0 = data.data
-    print u0
     
 def delta_callback(data):
     global u0
     global u
     u_delta = data.data
-    #prop.right(int(-1*(-u0 - u_delta-u*0.5)*u_scale))#its the right prop in the test setup
-    #prop.left(int(-1*(-u0+ u_delta+u*0.5)*u_scale))# its the left set up in the test set u
-    
-    prop.right(int(-1*(-u0 - u_delta)*u_scale))#its the right prop in the test setup
-    prop.left(int(-1*(-u0+ u_delta)*u_scale))# its the left set up in the test set u
+    prop.right(int(-1*(-u0 - u_delta-u*0.6)*u_scale))#its the right prop in the test setup
+    prop.left(int(-1*(-u0+ u_delta+u*0.6)*u_scale))# its the left set up in the test set u
 
 def propellers():
-    rospy.init_node("propellers", anonymous=True)
-    rospy.Subscriber("prop_down_re", Float64, down_callback)
-    #rospy.Subscriber("v_setpoint", Float64, v_callback)#dummy setpoint
-    rospy.Subscriber("cmd_v", Float64, v_callback)
-    rospy.Subscriber("delta_re", Float64, delta_callback)
-    rospy.spin()
+    #rospy.init_node("propellers", anonymous=True)
+    #rospy.Subscriber("prop_down_re", Float64, down_callback)
+    #rospy.Subscriber("cmd_v", Float64, v_callback)
+    #rospy.Subscriber("delta_re", Float64, delta_callback)
+    #rospy.spin()
+
+    init_node("propellers", anonymous=True)
+    Subscriber("prop_down", Float64, down_callback)
+    Subscriber("cmd_v", Float64, v_callback)
+    Subscriber("delta", Float64, delta_callback)
+    spin()
 
 if __name__ == '__main__':
     propellers()

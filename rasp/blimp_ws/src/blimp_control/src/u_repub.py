@@ -7,11 +7,13 @@ pub0 = rospy.Publisher('prop_down_re', Float64, queue_size=1)
 pub1 = rospy.Publisher('delta_re', Float64, queue_size=1)
 count = 0
 
+thresh = 1
+
 def callback0(data):
     global count
     u = data.data
     count += 1
-    if count > 15:
+    if count > 1:
         pub0.publish(u)
         count = 0
 
@@ -19,7 +21,7 @@ def callback1(data):
     global count
     u = data.data
     count += 1
-    if count > 15:
+    if count > thresh:
         pub1.publish(u)
         count = 0
 

@@ -35,29 +35,29 @@ CTRL-C to quit
 e = """Error"""
 
 moveBindings = {
-        'i':(0.4,0.0),
-        'o':(0.2,-0.3),
-        'j':(0.0,0.3),
-        'l':(0.0,-0.3),
+        'i':(0.3,0.0),
+        'o':(0.12,-0.12),
+        'j':(0.0,0.12),
+        'l':(0.0,-0.12),
         'k':(0.0,0.0),
-        'u':(0.2,0.3),
-        ',':(-0.4,0.0),
-        '.':(-0.2,0.3),
-        'm':(-0.2,-0.3),
+        'u':(0.12,0.12),
+        ',':(-0.3,0.0),
+        '.':(-0.12,0.12),
+        'm':(-0.12,-0.12),
         }
 
 altitudeBindings={
-        't':(0.01),
-        'b':(-.01),
+        't':(0.01,0),
+        'b':(-0.01,0),
         }
 
 speedBindings={
         'q':(1.1,1.1),
         'z':(.9,.9),
-        'w':(1.1,1),
-        'x':(.9,1),
-        'e':(1,1.1),
-        'c':(1,.9),
+        'w':(1.2,1),
+        'x':(.8,1),
+        'e':(1.3,1.1),
+        'c':(0.7,.9),
         }
 
 def getKey():
@@ -88,21 +88,22 @@ if __name__=="__main__":
         while not rospy.is_shutdown():
             key = getKey()
             if key in moveBindings.keys():
-                v = moveBindings[key][0]
+                v =moveBindings[key][0]
                 w = moveBindings[key][1]
             elif key in speedBindings.keys():
                 pass
             elif key in altitudeBindings.keys():
-                z = z + moveBindings[key][0]
+                z += altitudeBindings[key][0]
+                z = max(min(1.75,z),0)
+                #z = z + moveBindings[key][0]
+                #print 'HER'
             else:
                 v = 0.0
                 w = 0.0
-                # does it need a case for z?
                 if (key == '\x03'):
                     break
 
-            print 'v %f '%(v)
-            print 'w %f \n'%(w)
+            print 'v %f w %f z %f m \n'%(v,w,z)
             pub_a.publish(z)
             pub_v.publish(v)
             pub_w.publish(w)
