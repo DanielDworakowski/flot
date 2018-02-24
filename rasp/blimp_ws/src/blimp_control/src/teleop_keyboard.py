@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 #TO USE: rosrun teleop_keyboard teleop_keyboard.py
-import roslib; roslib.load_manifest('blimp_control')
-import rospy
+from roslib import load_manifest; load_manifest('blimp_control')
+from rospy import Publisher, init_node, Rate, is_shutdown
 from std_msgs.msg import Float64
-
 import sys, select, termios, tty
 
 msg = """
@@ -73,11 +72,11 @@ def vels(linear, angular, altitude):
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    pub_a = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
-    pub_v = rospy.Publisher('cmd_v', Float64, queue_size = 10)
-    pub_w = rospy.Publisher('cmd_w', Float64, queue_size = 10)
-    rospy.init_node('teleop_keyboard')
-    rate = rospy.Rate(10)
+    pub_a = Publisher('cmd_alt', Float64, queue_size = 10)
+    pub_v = Publisher('cmd_v', Float64, queue_size = 10)
+    pub_w = Publisher('cmd_w', Float64, queue_size = 10)
+    init_node('teleop_keyboard')
+    rate = Rate(10)
 
     v = 0.0
     w = 0.0
@@ -85,7 +84,7 @@ if __name__=="__main__":
 
     try:
         print msg
-        while not rospy.is_shutdown():
+        while not is_shutdown():
             key = getKey()
             if key in moveBindings.keys():
                 v =moveBindings[key][0]
@@ -109,7 +108,7 @@ if __name__=="__main__":
             pub_w.publish(w)
             rate.sleep()
 
-    except rospy.ROSInterruptException:
+    except ROSInterruptException:
         pass
 
     finally:
