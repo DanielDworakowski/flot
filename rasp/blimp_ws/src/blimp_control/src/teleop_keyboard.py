@@ -33,31 +33,35 @@ CTRL-C to quit
 
 e = """Error"""
 
+fixedV = 0.3
+fixedW = 0.12
+
 moveBindings = {
-        'i':(0.3,0.0),
-        'o':(0.12,-0.12),
-        'j':(0.0,0.12),
-        'l':(0.0,-0.12),
+        'i':(fixedV,0.0),
+        'o':(0.1,-1*fixedW),
+        'j':(0.0,fixedW),
+        'l':(0.0,-1*fixedW),
         'k':(0.0,0.0),
-        'u':(0.12,0.12),
-        ',':(-0.3,0.0),
-        '.':(-0.12,0.12),
-        'm':(-0.12,-0.12),
+        'u':(0.1,fixedW),
+        ',':(-1*fixedV,0.0),
+        '.':(-0.1,fixedW),
+        'm':(-0.1,-1*fixedW),
         }
 
 altitudeBindings={
-        't':(0.01,0),
-        'b':(-0.01,0),
+        't':(0.01),
+        'b':(-0.01),
         }
 
-speedBindings={
+vSpeedBindings={
         'q':(1.1,1.1),
         'z':(.9,.9),
-        'w':(1.2,1),
-        'x':(.8,1),
-        'e':(1.3,1.1),
-        'c':(0.7,.9),
         }
+
+wSpeedBindings={
+	'e':(1.1,1.1),
+	'c':(.9,.9),
+	}
 
 def getKey():
     tty.setraw(sys.stdin.fileno())
@@ -87,15 +91,15 @@ if __name__=="__main__":
         while not is_shutdown():
             key = getKey()
             if key in moveBindings.keys():
-                v =moveBindings[key][0]
+                v = moveBindings[key][0]
                 w = moveBindings[key][1]
-            elif key in speedBindings.keys():
-                pass
+            elif key in vSpeedBindings.keys():
+		fixedV = fixedV*vSpeedBindings[key][0]
+	    elif key in wSpeedBindings.keys():
+		fixedW = fixedW*wSpeedBindings[key][0]                   
             elif key in altitudeBindings.keys():
-                z += altitudeBindings[key][0]
-                z = max(min(1.75,z),0)
-                #z = z + moveBindings[key][0]
-                #print 'HER'
+                z += altitudeBindings[key]
+                z = max(min(1.75,z),0.2)
             else:
                 v = 0.0
                 w = 0.0
