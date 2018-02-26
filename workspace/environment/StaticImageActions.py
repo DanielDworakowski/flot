@@ -9,7 +9,6 @@ class StaticAction(Action):
 class StaticActionEngine(ActionEngine):
     def __init__(self):
         ActionEngine.__init__(self)
-        self.action
 
     def executeActionImpl(self, obs):
         print(self.v_t)

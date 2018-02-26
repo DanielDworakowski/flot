@@ -1,7 +1,7 @@
-import DefaultConfig
+from DefaultConfig import DefaultConfig, EnvironmentTypes
 #
 # Class to use the default configuration.
-class Config(DefaultConfig.DefaultConfig):
+class Config(DefaultConfig):
     #
     # Where to load the model from.
     # modelLoadPath = '/home/user/workspace/data/model_best.pth.tar'
@@ -14,9 +14,8 @@ class Config(DefaultConfig.DefaultConfig):
     # Save training data.
     serialize = False
     #
-    # Use to load images
-    saveFolder = '/home/rae/data/'
-    #
     # Initialize.
     def __init__(self):
         super(Config, self).__init__()
+        self.envType = EnvironmentTypes.Static
+        self.agentType = 'StaticAgent'

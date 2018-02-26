@@ -28,9 +28,9 @@ class EnvironmentOptions():
     #
     # Static configuration options.
     def getStaticConfig():
-        import StaticObservation as obs
-        import StaticActions as act
-        observer = obs.StaticObserver
+        import StaticImageObservations as obs
+        import StaticImageActions as act
+        observer = obs.StaticImageObserver
         actionClient = act.StaticActionEngine
         return [observer, actionClient]
     #

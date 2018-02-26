@@ -8,6 +8,7 @@ class EnvironmentTypes(Enum):
     AirSim = 0
     Blimp = 1 # Unimplemented.
     Drone = 2 # Unimplemented.
+    Static = 3
 #
 # Default configuration that is overriden by subsequent configurations.
 class DefaultConfig():
