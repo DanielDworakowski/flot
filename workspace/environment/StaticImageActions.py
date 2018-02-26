@@ -11,7 +11,5 @@ class StaticActionEngine(ActionEngine):
         ActionEngine.__init__(self)
 
     def executeActionImpl(self, obs):
-        print(self.v_t)
-        print(self.w)
-
+        
         return True

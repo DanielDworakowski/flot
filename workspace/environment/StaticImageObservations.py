@@ -1,6 +1,6 @@
 from debug import *
 import Observations as observations
-from PIL import Image
+import cv2
 from itertools import cycle
 import glob
 import time
@@ -15,15 +15,16 @@ class StaticImageObserver(observations.Observer):
         #
         # Member variables.
         self.images = []
-        for filename in glob.glob('/home/rae/data/20180223_220314/*.png'):
-            im=Image.open(filename)
+        png_images = glob.glob('/home/rae/data/500test/*.png')
+        png_images.sort()
+        for filename in png_images:
+            im=cv2.imread(filename)
             self.images.append(im.copy())
-            im.close()
         self.image_queue = cycle(self.images)
 
 
     def observeImpl(self, obs):
+        obs.serializable['img'].uint8Img = next(self.image_queue)
         time.sleep(1)
-        obs.serializable['img'].pngImgs = next(self.image_queue)
         
         return True
