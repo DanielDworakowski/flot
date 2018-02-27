@@ -3,7 +3,7 @@ from DefaultConfig import DefaultConfig, EnvironmentTypes
 class Config(DefaultConfig):
 
     # Where to load the model from.
-    modelLoadPath = '/home/kelvin/model_best.pth.tar'
+    modelLoadPath = '/home/jiwon/data/model/model_best.pth.tar'
 
     # Image shape
     image_shape = (224, 224, 3)
