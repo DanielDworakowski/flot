@@ -17,6 +17,7 @@ u = 0.0
 def down_callback(data):
     global u
     global u0
+    #global u_delta
     u = data.data
     if u > 1:
         u = 1
@@ -30,6 +31,7 @@ def v_callback(data):
 def delta_callback(data):
     global u0
     global u
+    #global u_delta
     u_delta = data.data
     prop.right(int(-1*(-u0 - u_delta-u*0.55)*u_scale))#its the right prop in the test setup
     prop.left(int(-1*(-u0+ u_delta+u*0.55)*u_scale))# its the left set up in the test set u
