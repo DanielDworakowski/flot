@@ -15,7 +15,7 @@ class StaticImageObserver(observations.Observer):
         #
         # Member variables.
         self.images = []
-        png_images = glob.glob('/home/rae/data/500test/*.png')
+        png_images = glob.glob('/home/jiwon/data/500test/*.png')
         png_images.sort()
         for filename in png_images:
             im=cv2.imread(filename) # RGB change

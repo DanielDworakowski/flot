@@ -34,7 +34,7 @@ CTRL-C to quit
 e = """Error"""
 
 fixedV = 0.3
-fixedW = 0.12
+fixedW = 0.1
 
 moveBindings = {
         'i':(fixedV,0.0),
@@ -59,9 +59,9 @@ vSpeedBindings={
         }
 
 wSpeedBindings={
-	'e':(1.1,1.1),
-	'c':(.9,.9),
-	}
+        'e':(1.1,1.1),
+        'c':(.9,.9),
+        }
 
 def getKey():
     tty.setraw(sys.stdin.fileno())
@@ -94,9 +94,9 @@ if __name__=="__main__":
                 v = moveBindings[key][0]
                 w = moveBindings[key][1]
             elif key in vSpeedBindings.keys():
-		fixedV = fixedV*vSpeedBindings[key][0]
-	    elif key in wSpeedBindings.keys():
-		fixedW = fixedW*wSpeedBindings[key][0]                   
+                fixedV = fixedV*vSpeedBindings[key][0]
+            elif key in wSpeedBindings.keys():
+                fixedW = fixedW*wSpeedBindings[key][0]
             elif key in altitudeBindings.keys():
                 z += altitudeBindings[key]
                 z = max(min(1.75,z),0.2)

@@ -6,7 +6,7 @@ class Config(DefaultConfig):
     # Where to load the model from.
     # modelLoadPath = '/home/user/workspace/data/model_best.pth.tar'
     # modelLoadPath = '/home/tommy/Downloads/model/model_best.pth.tar'
-    modelLoadPath = '/home/rae/data/model/model_best.pth.tar'
+    modelLoadPath = '/home/jiwon/data/model/model_best.pth.tar'
     #
     # Image shape
     image_shape = (224, 224, 3)

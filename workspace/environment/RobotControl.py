@@ -45,6 +45,15 @@ class RobotControl(threading.Thread):
 
     def __exit__(self, type, value, traceback):
         """ Exit the thread """
+        # Reset RobotCommands attributes (v_t, v_z, w) to None, if possible
+        if self.isConnected:
+            try:
+                self.RC.proxy.setVT(None)
+                self.RC.proxy.setVZ(None)
+                self.RC.proxy.setW(None)
+            except:
+                pass
+
         self.running = False
         self.join()
         return False
@@ -58,19 +67,24 @@ class RobotControl(threading.Thread):
             self.RC.proxy.setVZ(self.v_z)
             self.RC.proxy.setW(self.w)
 
+            # print('RobotControl.executeCommand({},{})'.format(self.v_t, self.w))
+
             if self.RC.proxy._pyroConnection is not None:
                 self.isConnected = True
+            else:
+                self.isConnected = False
         except:
             self.isConnected = False
         return
 
 
-    def setCommand(self, v_t_ref, w_ref, z, v_z_ref=0.):
+    def setCommand(self, v_t_ref, w_ref, z=0., v_z_ref=0.):
         """ Set the desired tangential velocity, angular velocity, velocity in z """
         self.v_t = v_t_ref
         self.w = w_ref
         self.v_z = v_z_ref
         self.z = z
+        # print('RobotControl.setCommand({},{})'.format(self.v_t, self.w))
 
     def run(self):
         """ Keep going until obj destruction """
@@ -161,7 +175,7 @@ class RobotCommands(object):
     def getVZ(self):
         return self.v_z
 
-    def setVz(self, v_z):
+    def setVZ(self, v_z):
         self.v_z = v_z
 
     def getW(self):
