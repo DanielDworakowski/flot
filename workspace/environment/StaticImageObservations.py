@@ -18,7 +18,7 @@ class StaticImageObserver(observations.Observer):
         png_images = glob.glob('/home/rae/data/500test/*.png')
         png_images.sort()
         for filename in png_images:
-            im=cv2.imread(filename)
+            im=cv2.imread(filename) # RGB change
             self.images.append(im.copy())
         self.image_queue = cycle(self.images)
 
