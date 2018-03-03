@@ -44,19 +44,11 @@ class Agent:
   """
   def __init__(self,
                env,
-               sess,
-               data_collection_params = {'min_batch_size':1000,
-                                         'min_episodes':1, 
-                                         'episode_adapt_rate':3},
-               training_params = {'total_timesteps':1000000,  
-                                  'adaptive_lr':True, 
+               training_params = {'min_batch_size':1000,
+                                    'total_timesteps':1000000,
                                   'desired_kl':2e-3},
-               network_params = {'value_network':['fully_connected_network','large'], 
-                                 'policy_network':['fully_connected_network','large']},
                algorithm_params = {'gamma':0.99, 
-                                   'learning_rate':1e-3,
-                                   'std_dev':['fixed', 0.2], 
-                                   'target_update_rate':0.001},
+                                   'learning_rate':1e-3},
                logs_path="/home/user/workspace/logs/"):
 
     # Tensorflow Session
