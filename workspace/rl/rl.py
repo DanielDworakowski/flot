@@ -8,6 +8,7 @@ from env_settings import env_settings
 import time
 import environment.AI2THOR as ai2thor
 import torch
+import util.MountainCarContinousPixel as mountain_env
 
 # Parse the input arguments.
 def getInputArgs():
@@ -18,7 +19,8 @@ def getInputArgs():
     return args
 
 def train(agent_class, id, env_name, seed, record, data_collection_params, training_params, network_params, algorithm_params, logs_path):
-    env = ai2thor.AI2THOR(env_name)
+    env = mountain_env.Env()
+    # env = ai2thor.AI2THOR(env_name)
     np.random.seed(seed)
     torch.manual_seed(seed)
     agent = agent_class.Agent(env, sess, data_collection_params, training_params, network_params, algorithm_params, logs_path)
