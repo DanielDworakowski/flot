@@ -26,11 +26,20 @@ class EnvironmentOptions():
     def getDroneConfig():
         raise NotImplementedError
     #
+    # Static configuration options.
+    def getStaticConfig():
+        import StaticImageObservations as obs
+        import StaticImageActions as act
+        observer = obs.StaticImageObserver
+        actionClient = act.StaticActionEngine
+        return [observer, actionClient]
+    #
     # Return the configuration options for each environment.
     options = {
         EnvironmentTypes.AirSim: getAirSimConfig,
         EnvironmentTypes.Blimp: getBlimpConfig,
         EnvironmentTypes.Drone: getDroneConfig,
+        EnvironmentTypes.Static: getStaticConfig
     }
 #
 # The environment dictates how actions are performed and the observations recieved.

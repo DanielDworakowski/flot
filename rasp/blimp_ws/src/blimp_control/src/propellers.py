@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import rospy
+from rospy import init_node, Subscriber, spin
 from std_msgs.msg import Float64
 import Blimp
 
@@ -13,13 +13,13 @@ print("Propellers Connected!")
 u_scale = 32768
 
 def down_callback(data):
-	blimp.down(data.data*u_scale)
+    blimp.down(data.data*u_scale)
 
 def propellers():
-    rospy.init_node('propellers', anonymous=True)
-    rospy.Subscriber("prop_down", Float64, down_callback)
-	rospy.spin()        
+    init_node('propellers', anonymous=True)
+    Subscriber("prop_down", Float64, down_callback)
+    spin()
 
 
 if __name__ == '__main__':
-	propellers()
+    propellers()

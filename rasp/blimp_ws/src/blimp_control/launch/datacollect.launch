@@ -1,5 +1,6 @@
 <launch>
-    <node name="sonar" pkg="blimp_control" type="hc_sr04_node.py" />
+    <node name="sonar" pkg="blimp_control" type="interrupt_hc_sr04_node.py" />
     <node name="imu" pkg="blimp_control" type="mpu6050_node.py" />
-    <node name="camera" pkg="blimp_control" type="camera_stream.sh" />
+    <node name="logger" pkg="blimp_control" type="listener.py" />
+    <!-- <node name="camera" pkg="blimp_control" type="camera_stream.sh" /> -->
 </launch>

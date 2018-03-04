@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 #TO USE: rosrun teleop_keyboard teleop_keyboard.py
-import roslib; roslib.load_manifest('blimp_control')
-import rospy
+from roslib import load_manifest; load_manifest('blimp_control')
+from rospy import Publisher, init_node, Rate, is_shutdown
 from std_msgs.msg import Float64
-
 import sys, select, termios, tty
 
 msg = """
@@ -34,30 +33,34 @@ CTRL-C to quit
 
 e = """Error"""
 
+fixedV = 0.3
+fixedW = 0.1
+
 moveBindings = {
-        'i':(0.4,0.0),
-        'o':(0.2,-0.3),
-        'j':(0.0,0.3),
-        'l':(0.0,-0.3),
+        'i':(fixedV,0.0),
+        'o':(0.1,-1*fixedW),
+        'j':(0.0,fixedW),
+        'l':(0.0,-1*fixedW),
         'k':(0.0,0.0),
-        'u':(0.2,0.3),
-        ',':(-0.4,0.0),
-        '.':(-0.2,0.3),
-        'm':(-0.2,-0.3),
+        'u':(0.1,fixedW),
+        ',':(-1*fixedV,0.0),
+        '.':(-0.1,fixedW),
+        'm':(-0.1,-1*fixedW),
         }
 
 altitudeBindings={
         't':(0.01),
-        'b':(-.01),
+        'b':(-0.01),
         }
 
-speedBindings={
+vSpeedBindings={
         'q':(1.1,1.1),
         'z':(.9,.9),
-        'w':(1.1,1),
-        'x':(.9,1),
-        'e':(1,1.1),
-        'c':(1,.9),
+        }
+
+wSpeedBindings={
+        'e':(1.1,1.1),
+        'c':(.9,.9),
         }
 
 def getKey():
@@ -73,11 +76,11 @@ def vels(linear, angular, altitude):
 if __name__=="__main__":
     settings = termios.tcgetattr(sys.stdin)
 
-    pub_a = rospy.Publisher('cmd_alt', Float64, queue_size = 10)
-    pub_v = rospy.Publisher('cmd_v', Float64, queue_size = 10)
-    pub_w = rospy.Publisher('cmd_w', Float64, queue_size = 10)
-    rospy.init_node('teleop_keyboard')
-    rate = rospy.Rate(10)
+    pub_a = Publisher('cmd_alt', Float64, queue_size = 10)
+    pub_v = Publisher('cmd_v', Float64, queue_size = 10)
+    pub_w = Publisher('cmd_w', Float64, queue_size = 10)
+    init_node('teleop_keyboard')
+    rate = Rate(10)
 
     v = 0.0
     w = 0.0
@@ -85,30 +88,31 @@ if __name__=="__main__":
 
     try:
         print msg
-        while not rospy.is_shutdown():
+        while not is_shutdown():
             key = getKey()
             if key in moveBindings.keys():
                 v = moveBindings[key][0]
                 w = moveBindings[key][1]
-            elif key in speedBindings.keys():
-                pass
+            elif key in vSpeedBindings.keys():
+                fixedV = fixedV*vSpeedBindings[key][0]
+            elif key in wSpeedBindings.keys():
+                fixedW = fixedW*wSpeedBindings[key][0]
             elif key in altitudeBindings.keys():
-                z = z + moveBindings[key][0]
+                z += altitudeBindings[key]
+                z = max(min(1.75,z),0.2)
             else:
                 v = 0.0
                 w = 0.0
-                # does it need a case for z?
                 if (key == '\x03'):
                     break
 
-            print 'v %f '%(v)
-            print 'w %f \n'%(w)
+            print 'v %f w %f z %f m \n'%(v,w,z)
             pub_a.publish(z)
             pub_v.publish(v)
             pub_w.publish(w)
             rate.sleep()
 
-    except rospy.ROSInterruptException:
+    except ROSInterruptException:
         pass
 
     finally:

@@ -37,26 +37,30 @@ def blimp_cmd_pub():
     rate = rospy.Rate(100)   # 100 Hz loop rate
 
     vt_pub = rospy.Publisher('/blimp_vt', Float64)
-    vz_pub = rospy.Publisher('/blimp_vz', Float64)
+    # vz_pub = rospy.Publisher('/blimp_vz', Float64)
+    alt_pub = rospy.Publisher('/blimp_alt', Float64)
     w_pub = rospy.Publisher('/blimp_w', Float64)
 
     # ROS loop
     while not rospy.is_shutdown():
         vt = rc.getVT()
-        vz = rc.getVZ()
+        # vz = rc.getVZ()
+        vz = 1.
         w = rc.getW()
+        
+        if vt is None:
+            vt = 0.3
+        if w is None:
+            w = 0.1
 
-        if vt is not None:
-            msg.data = float(vt)
-            vt_pub.publish(msg)
+        msg.data = float(vt)
+        vt_pub.publish(msg)
 
-        if vz is not None:
-            msg.data = float(vz)
-            vz_pub.publish(msg)
+        msg.data = float(vz)
+        alt_pub.publish(msg)
 
-        if w is not None:
-            msg.data = float(w)
-            w_pub.publish(msg)
+        msg.data = float(w)
+        w_pub.publish(msg)
 
         rate.sleep()    # Maintain loop rate
 

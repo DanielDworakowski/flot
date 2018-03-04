@@ -4,11 +4,15 @@ import time
 import ai2thor_map
 
 class AI2THOR():
+    screen_w = 600
+    screen_h = 400
     controller = ai2thor_src.ai2thor.controller.BFSController()
-    controller.start(player_screen_width=640, player_screen_height=480)
+    controller.start(player_screen_width=screen_w, player_screen_height=screen_h)
     
     def __init__(self, scene='FloorPlan224', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.2):
         # Member variables.
+        self.observation_shape = (screen_h, screen_w, 3)
+        self.action_shape = (2,)
         self.controller.reset(scene)
         self.event = self.controller.step(dict(action='Initialize', gridSize=grid_size))
         self.grid_size = grid_size
@@ -75,7 +79,8 @@ class AI2THOR():
     def positionToGrid(self, position):
         return int(round(int(round(position*self.grid_scale))/(self.grid_size*self.grid_scale))*(self.grid_size*self.grid_scale))
 
-    def step(self, v_ref, w_ref):
+    def step(self, action):
+        v_ref, w_ref = action[0], action[1]
         self.update()
         self.v = (1-self.v_rate)*self.v + self.v_rate*v_ref
         self.w = (1-self.w_rate)*self.w + self.w_rate*w_ref
