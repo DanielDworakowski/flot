@@ -8,9 +8,15 @@ import itertools
 class A2CPolicyNetwork(torch.nn.Module):
     def __init__(self, action_dim):
         super(A2CPolicyNetwork, self).__init__()
+        self.action_dim = action_dim
         self.model = models.resnet18(pretrained=True)
-        self.model.fc = nn.Linear(self.model.fc.in_features, action_dim)
+        self.model.fc = nn.Linear(self.model.fc.in_features, self.action_dim*2)
   
     def forward(self, x):
         return self.model(x)
+
+    def compute(self, observation):
+        model_out = self.forward(observation)
+        mean, std_dev = model_out[:self.action_dim], model_out[self.action_dim:             ]
   
+    def train(self)

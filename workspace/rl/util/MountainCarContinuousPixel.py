@@ -18,3 +18,5 @@ class Env():
 
     def reset(self):
         self.env.reset()
+        self.image = self.env.render("rgb_array")
+        return self.image
