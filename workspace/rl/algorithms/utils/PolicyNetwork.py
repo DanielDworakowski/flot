@@ -17,6 +17,8 @@ class A2CPolicyNetwork(torch.nn.Module):
 
     def compute(self, observation):
         model_out = self.forward(observation)
-        mean, std_dev = model_out[:self.action_dim], model_out[self.action_dim:             ]
+        mean, std_dev = model_out[:self.action_dim], model_out[self.action_dim:]
+        distribution = torch.distributions.Normal(mean, std_dev)
+        return distribution.sample()
   
     def train(self)
