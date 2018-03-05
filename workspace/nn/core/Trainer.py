@@ -22,7 +22,9 @@ from tensorboardX import SummaryWriter
 from debug import *
 from itertools import count
 from core import FlotDataset
-from multiprocessing import Lock
+#
+# Speeds things up??
+torch.backends.cudnn.benchmark = True
 
 class Trainer():
     ''' Implements training neural networks.
