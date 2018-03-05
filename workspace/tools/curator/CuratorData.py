@@ -20,6 +20,7 @@ class AutoLabelConf(object):
     consecutiveZeroForPositive = 5
     medianFilterSizer = 5
     maxDistanceMarker = 9999
+    tSkip = 1/30.0 * 4
 
 class CuratorData(object):
 
@@ -46,10 +47,47 @@ class CuratorData(object):
         self.labelConf = AutoLabelConf()
 
     def getData(self, idx):
-        return Image.open(self.folder + '/' + self.png[idx]), self.df['Sonar:Smoothed'][idx]
+        idx = min(self.size - 1, max(0, idx))
+        return Image.open(self.folder + '/' + self.png[idx]), self.df['Sonar:Smoothed'][idx], idx
 
     def getSize(self):
         return self.size
+
+    def _prune(self, pruneDf):
+        ts = pruneDf['video_ts:Timestamp']
+        mask = np.zeros_like(ts, dtype=bool)
+        ts_shift = np.delete(np.roll(np.copy(ts), -1), -1)
+        ts = ts[:-1]
+        tDiff= ts_shift - ts
+        #
+        # Iterate over all of the indexes and remove if there is not enough of a tdiff.
+        runDiff = 0
+        mask[0] = True
+        for idx, diff in enumerate(tDiff):
+            if runDiff > self.labelConf.tSkip:
+                mask[idx] = 1
+                runDiff = False
+            runDiff += diff
+        #
+        # Balance the dataset.
+        label = pruneDf['collision_free']
+        positives = label==1
+        negatives = label==0
+        positives[mask == 0] = False
+        negatives[mask == 0] = False
+        labels_diff = label[positives].shape[0] - label[negatives].shape[0]
+        if labels_diff > 0:
+            posShape = label[positives].shape
+            new_positive_label = np.ones(posShape)
+            new_positive_label[np.random.choice(posShape[0],labels_diff,replace=False)]= 0
+            mask[positives] = new_positive_label
+        elif labels_diff < 0:
+            labels_diff = -1*labels_diff
+            negShape = label[negatives].shape
+            new_negative_label = np.ones(negShape)
+            new_negative_label[np.random.choice(negShape[0],labels_diff,replace=False)]= 0
+            mask[negatives] = new_negative_col_traj
+        return mask
 
     def saveData(self, force = False):
         #
@@ -67,6 +105,9 @@ class CuratorData(object):
         # Reduce the data to only that what was labelled to be usable.
         saveLoc = self.folder + '/labels.csv'
         labelDf = self.df[self.df['usable'] == 1] # Convert to logical indexing first.
+        # mask = self._prune(labelDf)
+        labelDf = labelDf[mask.astype(bool)]
+        print('savedata: uncomment when done!!')
         labelDf.to_csv(saveLoc)
 
     def setUsable(self, flag, startRange, endRange):
@@ -92,8 +133,9 @@ class CuratorData(object):
         smoothedKey = 'Sonar:Smoothed'
         arrays = self.__consecutive(np.where(self.df[sonarKey] == 0)[0])
         mask = np.zeros(len(self.df[sonarKey]))
-        masked = ma.masked_array(self.df[sonarKey], mask = mask)
         self.df[smoothedKey] = self.df[sonarKey]
+        self.df.loc[np.isnan(self.df[smoothedKey]), smoothedKey] = self.labelConf.maxDistanceMarker
+        masked = ma.masked_array(self.df[smoothedKey], mask = mask)
         #
         # Assume that if there are multiple zeros in a row this indicates that the
         # there is nothing there. Obstacles are beyond the max range of the sensor.

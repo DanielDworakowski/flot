@@ -22,7 +22,7 @@ def main(d):
     csvs = []
 
     for x in files:
-        if x.endswith('csv') and not x.endswith(outname):
+        if x.endswith('csv') and not x.endswith(outname) and 'processed' not in x and 'labels' not in x:
             csvs.append(x)
         elif x.endswith('png'):
             pngs.append(x)
@@ -43,10 +43,7 @@ def main(d):
         sys.exit(0)
 
     pngs = sorted(pngs)
-    # png_times = sorted([float(x.split('/')[-1].rsplit('.',1)[0]) for x in pngs])
     png_times = video_ts
-    # print(png_times.keys())
-    # png_times.loc[:, 'Timestamp'] = png_times['Timestamp'] / 1e3
 
     for k, df in dfs.items():
         df = df.rename(columns=lambda x: x.strip())
@@ -70,8 +67,8 @@ def main(d):
         dfs[k] = df
 
     sensory_dfs = dfs.copy()
-    # print(dfs)
-    png_time = sensory_dfs.pop('video_ts')
+    # png_time = sensory_dfs.pop('video_ts')
+    png_time = sensory_dfs['video_ts']
 
     png_list = np.array(png_time['Timestamp'].tolist())
     closest_values = {}
@@ -99,7 +96,8 @@ def main(d):
     for k, df in sensory_dfs.items():
         tmp = df.loc[closest_values[k]]
         tmp = tmp.reset_index(drop=True)
-        tmp = tmp.drop(['Timestamp'], axis=1)
+        if 'video_ts' not in k:
+            tmp = tmp.drop(['Timestamp'], axis=1)
         tmp = tmp.rename(columns=lambda x:'{}:{}'.format(k,x))
         l.append(tmp)
 

@@ -53,15 +53,15 @@ class PicButton(QAbstractButton):
         self.lineWidth = int(0.001 * self.maxIdx)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
         self.rgbMatrix = np.zeros((1 ,idx.shape[0], 3)).astype(np.uint8)
-    
+
     def paintEvent(self, event):
         painter = QPainter(self)
         mask = self.parent.data.df['labelled'].as_matrix().astype(np.uint8)
         idx = self.parent.data.df['usable'].as_matrix().astype(np.uint8)
         self.rgbMatrix[0, (idx < 1), :] = np.array([200, 19, 56]) # Bad.
-        self.rgbMatrix[0, (idx > 0), :] = np.array([20, 200, 60]) # Good. 
-        self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled. 
-        # 
+        self.rgbMatrix[0, (idx > 0), :] = np.array([20, 200, 60]) # Good.
+        self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled.
+        #
         # Set a white line at the current index.
         self.rgbMatrix[0, max(0, self.curIdx - self.lineWidth):min(self.maxIdx - 1, self.curIdx + self.lineWidth), :] = 255
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.rgbMatrix)))
@@ -95,12 +95,12 @@ class NNVis(object):
             self.visModelCB = self.visModel
 
     def visModel(self, img, idx):
-        # 
+        #
         # If the current image being looked at is the same as the last image, do not process.
-        if self.lIdx == idx: 
+        if self.lIdx == idx:
             return self.lastImg
-        # 
-        # Process the new image. 
+        #
+        # Process the new image.
         draw = ImageDraw.Draw(img)
         sample = {'img': img, 'labels': np.array([0]), 'meta': np.array([0])}
         data = self.t(sample)
@@ -142,7 +142,7 @@ class CuratorGui(QMainWindow):
         self.dispImg.setAlignment(QtCore.Qt.AlignCenter)
         self.dispImg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.savebutton = QPushButton('Save', self)
-        # 
+        #
         # Set the indicator.
         self.labOnOff = QLabel('Status', self)
         self.curLab = QLabel('Current Label', self)
@@ -150,10 +150,10 @@ class CuratorGui(QMainWindow):
         self.labelOnOffIndicator = LedIndicator(self, self.labelOnOffFlag)
         self.curLabelIndicator = LedIndicator(self, self.usableImageFlag)
         self.distTxt = QLabel('tx', self)
-        # 
+        #
         # Create the data scroller.
         self.labelBar = PicButton(self, 700, 20)
-        # 
+        #
         # Setup the top bar.
         hlayout.addWidget(self.labOnOff)
         hlayout.addWidget(self.labelOnOffIndicator)
@@ -166,7 +166,7 @@ class CuratorGui(QMainWindow):
         gridLayout.addWidget(self.dispImg, 1, 0)
         gridLayout.addWidget(self.labelBar, 2, 0)
         self.labelBox.setLayout(hlayout)
-        # 
+        #
         # Keyboard shortcuts.
         self.rArrow = QShortcut(QKeySequence("right"), self)
         self.lArrow = QShortcut(QKeySequence("left"), self)
@@ -194,7 +194,7 @@ class CuratorGui(QMainWindow):
     def visualize(self):
         #
         # Generate image.
-        img, dist = self.data.getData(self.dIdx)
+        img, dist, self.dIdx = self.data.getData(self.dIdx)
         draw = ImageDraw.Draw(img)
         #
         # Convert to Qt for presentation.
@@ -202,8 +202,8 @@ class CuratorGui(QMainWindow):
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
         self.dispImg.setPixmap(pix)
-        # 
-        # Create the distance information text. 
+        #
+        # Create the distance information text.
         self.distTxt.setText('%0.2f'%dist)
         palette = self.distTxt.palette()
         col = None
@@ -213,11 +213,11 @@ class CuratorGui(QMainWindow):
             col = QColor(255, 0, 0)
         palette.setColor(self.distTxt.foregroundRole(), col)
         self.distTxt.setPalette(palette)
-        # 
+        #
         # Update the bottom bar on the current location.
         self.labelBar.setCurIdx(self.dIdx)
-        # 
-        # Process all draw events. 
+        #
+        # Process all draw events.
         QApplication.processEvents()
         self.labelOnOffIndicator.update()
         self.curLabelIndicator.update()
@@ -231,48 +231,48 @@ class CuratorGui(QMainWindow):
     def skipCB(self):
         oldVal = self.dIdx
         self.dIdx += self.jumpSize
-        # 
+        #
         # Bounds.
         if self.dIdx > self.data.getSize():
             self.dIdx = self.data.getSize() - 1
-        # 
-        # Label data as requested. 
+        #
+        # Label data as requested.
         if self.labelOnOffFlag:
             self.data.setUsable(self.usableImageFlag, oldVal, self.dIdx)
 
     def skipBackCB(self):
         oldVal = self.dIdx
         self.dIdx -= self.jumpSize
-        # 
+        #
         # Bounds.
         if self.dIdx < 0:
             self.dIdx = 0
-        # 
-        # Label data as requested. 
+        #
+        # Label data as requested.
         if self.labelOnOffFlag:
             self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
 
     def forwardOneCV(self):
         oldVal = self.dIdx
         self.dIdx += 1
-        # 
+        #
         # Bounds.
         if self.dIdx > self.data.getSize():
-            self.dIdx -= 1
-        # 
-        # Label data as requested. 
+            self.dIdx = self.data.getSize() - 1
+        #
+        # Label data as requested.
         if self.labelOnOffFlag:
             self.data.setUsable(self.usableImageFlag, oldVal, self.dIdx)
 
     def backOneCB(self):
         oldVal = self.dIdx
         self.dIdx -= 1
-        # 
+        #
         # Bounds.
         if self.dIdx < 0:
-            self.dIdx += 1
-        # 
-        # Label data as requested. 
+            self.dIdx = 0
+        #
+        # Label data as requested.
         if self.labelOnOffFlag:
             self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
 
