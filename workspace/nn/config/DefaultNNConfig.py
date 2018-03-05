@@ -56,7 +56,6 @@ class DefaultConfig(object):
     #
     # The default validation set.
     dataValList = [
-        # '/disk1/val/data1'
     ]
     #
     # The csv file name.
@@ -70,7 +69,7 @@ class DefaultConfig(object):
     def getAbsPath(path):
         return os.path.abspath(path)
     #
-    # Assume that cuda should be used if it is available. 
+    # Assume that cuda should be used if it is available.
     usegpu = torch.cuda.is_available()
     #
     # Save tensorboard data.
@@ -90,7 +89,7 @@ class DefaultConfig(object):
     #
     # Load a model.
     modelLoadPath = None
-    # 
+    #
     # The starting epoch for training (cosmetic).
     startingEpoch = 0
     ###########################################################################
@@ -118,7 +117,7 @@ class DefaultConfig(object):
         # Load the model.
         self.modelLoadPath = loadPath
         self.loadModel(loadPath)
-        # 
+        #
         # Send the model to the GPU.
         if self.usegpu:
             self.hyperparam.model.cuda()
@@ -127,7 +126,7 @@ class DefaultConfig(object):
         ''' Load model from a specified directory.
         '''
         if loadPath != None and os.path.isfile(loadPath):
-            # 
+            #
             # Load the model based on where on whether it needs to go to the cpu / gpu.
             checkpoint = None
             if self.usegpu:
@@ -135,7 +134,7 @@ class DefaultConfig(object):
             else:
                 print('Model will be converted to run on CPU')
                 checkpoint = torch.load(self.modelLoadPath, map_location={'cuda:0': 'cpu'})
-            # 
+            #
             # Ensure that the model type matches and load.
             if type(checkpoint['model']) == type(self.hyperparam.model):
                 self.modelLoadPath = loadPath
@@ -154,12 +153,20 @@ class Config(DefaultConfig):
     #
     # Initialize.
     def __init__(self, type = 'train'):
-        super(Config, self).__init__(loadPath = '/disk1/model/model_best.pth.tar')
+        super(Config, self).__init__(loadPath = '/disk1/model/model_best_recent.pth.tar')
         # super(Config, self).__init__()
         self.modelSavePath = '/disk1/model/'
-        self.dataTrainList = ['/disk1/rldata/20180123_205116']
-        # self.dataTrainList = ['/home/rae/flot/workspace/data/test_dataset/']
-# 
+        # self.dataValList = ['/disk1/rldata/20180123_205116']
+        # self.dataTrainList = [
+        # '/disk1/rldata/20180223_220314',
+        # '/disk1/rldata/20180304_042341'
+        # ]
+        self.dataValList = ['/disk1/rldata/20180223_220314',]
+        self.dataTrainList = [
+
+        '/disk1/rldata/20180304_042341'
+        ]
+#
 # Return the default set of transformations to obtain usable data.
 def getDefaultTransform(conf):
     t = transforms.Compose([
