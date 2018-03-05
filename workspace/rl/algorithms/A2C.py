@@ -4,8 +4,10 @@ import importlib
 from algorithms.utils.utils import *
 from algorithms.utils.PolicyNetwork import A2CPolicyNetwork
 from algorithms.utils.ValueNetwork import A2CValueNetwork
-
+from tensorboardX import SummaryWriter
 import itertools
+
+import pdb
 
 class Agent:
     """
@@ -18,28 +20,28 @@ class Agent:
                                    'total_timesteps':1000000,
                                    'desired_kl':2e-3},
                  algorithm_params = {'gamma':0.99, 
-                                    'learning_rate':1e-3},
-                 logs_path="/home/user/workspace/logs/"):
+                                    'learning_rate':1e-3}):
 
         self.env = env
+        self.dtype = torch.cuda
 
         # Getting the shape of observation space and action space of the environment
-        self.observation_shape = self.env.observation_space
-        self.action_shape = self.env.action_space
+        self.observation_shape = self.env.observation_shape
+        self.action_shape = self.env.action_shape
         
         # Hyper Parameters
         self.training_params = training_params
         self.algorithm_params = algorithm_params
-
-        # Path to save training logs
-        self.logs_path = logs_path
         
         ##### Networks #####
+        self.value_network = A2CValueNetwork(self.dtype)
+        self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0])
 
-        self.value_network = A2CValueNetwork()
-        self.policy_network = A2CPolicyNetwork(self.action_shape[0])
+        self.value_network.cuda()
+        self.policy_network.cuda()
 
-        ##### Save Model #####
+        ##### Logging #####
+        self.writer = SummaryWriter()
         self.save()
 
     def save(self):
@@ -47,7 +49,7 @@ class Agent:
         torch.save(self.policy_network.state_dict(), "policy_network.pt")
 
     # Collecting experience (data) and training the agent (networks)
-    def train(self, saver=None, save_dir=None):
+    def train(self):
 
         # Keeping count of total timesteps and episodes of environment experience for stats
         total_timesteps = 0
@@ -107,7 +109,7 @@ class Agent:
         ##### Collect Batch #####
 
         # Collecting minium batch size or minimum episodes of experience
-        while episodes < self.data_collection_params['min_episodes'] or batch_size < self.data_collection_params['min_batch_size']:
+        while batch_size < self.training_params['min_batch_size']:
                           
             ##### Episode #####
 
@@ -124,8 +126,6 @@ class Agent:
             total_timesteps += len(rewards)
             episodes += 1
 
-            self.log_rewards(np.sum(rewards), total_timesteps)
-
             # Episode trajectory
             trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones)}
             trajectories.append(trajectory)
@@ -134,7 +134,7 @@ class Agent:
             return_ = discount(trajectory["rewards"], self.algorithm_params['gamma'])
 
             # Compute the value estimates for the observations seen during this episode
-            values = self.value_network.compute_value(observations)
+            values = self.value_network.compute(observations)
 
             # Computing the advantage estimate
             advantage = return_ - np.concatenate(values[0])
@@ -159,14 +159,8 @@ class Agent:
 
             # Sample action with current policy
             action = self.compute_action(observation)
-
-            # For single dimension actions, wrap it in np array
-            if not isinstance(action, (list, tuple, np.ndarray)):
-            action = np.array([action])
-            action = np.concatenate(action)
-
             # Take action in environment
-            observation, reward, done, _ = self.env.step(action)
+            observation, reward, done = self.env.step(action)
 
             # Collect reward and action
             rewards.append(reward)
@@ -177,7 +171,7 @@ class Agent:
 
     # Compute action using policy network
     def compute_action(self, observation):
-        action = self.policy_network.compute_action(observation)
+        action = self.policy_network.compute(observation)
         return action
 
     # Log rewards
