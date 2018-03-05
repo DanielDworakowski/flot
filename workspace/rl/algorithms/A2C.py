@@ -134,10 +134,10 @@ class Agent:
             return_ = discount(trajectory["rewards"], self.algorithm_params['gamma'])
 
             # Compute the value estimates for the observations seen during this episode
-            values = self.value_network.compute(observations)
+            values = np.squeeze(self.value_network.compute(observations))
 
             # Computing the advantage estimate
-            advantage = return_ - np.concatenate(values[0])
+            advantage = return_ - values
             returns.append(return_)
             advantages.append(advantage)
 
@@ -189,7 +189,7 @@ class Agent:
         next_observations_batch[0,:] = observations_batch[0,:]
 
         # Actions for this batch, reshapeing to handel 1D action space
-        actions_batch = np.concatenate([trajectory["actions"] for trajectory in trajectories]).reshape([-1,self.action_shape])
+        actions_batch = np.concatenate([trajectory["actions"] for trajectory in trajectories]).reshape([-1,self.action_shape[0]])
 
         # Rewards of the trajectory as a batch
         rewards_batch = np.concatenate([trajectory["rewards"] for trajectory in trajectories]).reshape([-1,1])
@@ -207,15 +207,11 @@ class Agent:
 
     # Update learning rate
     def update_lr(self, kl):
-        if self.training_params['adaptive_lr']:
-          if kl > self.training_params['desired_kl'] * 2: 
+        if kl > self.training_params['desired_kl'] * 2: 
             self.algorithm_params['learning_rate'] /= 1.5
-          elif kl < self.training_params['desired_kl'] / 2: 
+        elif kl < self.training_params['desired_kl'] / 2: 
             self.algorithm_params['learning_rate'] *= 1.5
-          learning_rate = self.algorithm_params['learning_rate']
-        else:
-          learning_rate = self.algorithm_params['learning_rate']
-        return learning_rate
+        return self.algorithm_params['learning_rate']
 
     # Add summaries to the writer
     def add_summaries(self, summaries, timestep):
@@ -225,7 +221,7 @@ class Agent:
 
     # Train value network
     def train_value_network(self, batch_size, observations_batch, returns_batch, learning_rate):
-        summaries, stats = self.value_network.train_once(batch_size, observations_batch, returns_batch, learning_rate)
+        summaries, stats = self.value_network.train(batch_size, observations_batch, returns_batch, learning_rate)
         return [summaries, stats]
 
     # Train policy network
