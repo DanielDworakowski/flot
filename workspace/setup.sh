@@ -15,23 +15,14 @@ cd ../external/AirSim
 ./build.sh
 cd $LOCAL_HOME
 #
-# Install the rate limiter python package.
-sudo pip install ratelimiter
-sudo pip install visdom
-sudo pip install tensorboardX
-sudo pip install tensorflow-tensorboard
-sudo pip install interval_tree
-sudo pip install tqdm
-sudo pip install pandas
-sudo pip install pathlib
-sudo pip install matplotlib
-sudo pip install scikit-image
-
-
-
-# pip install ratelimiter
-# pip install visdom
-# pip install tensorboardX
-# pip install tensorflow-tensorboard
-# pip install interval_tree
-# pip install tqdm
+# Install python packages.
+pip install ratelimiter
+pip install visdom
+pip install tensorboardX
+pip install tensorflow-tensorboard
+pip install interval_tree
+pip install tqdm
+pip install pandas
+pip install pathlib
+pip install matplotlib
+pip install scikit-image

@@ -16,41 +16,42 @@ def listdir_fullpath(d):
 
 def main(d):
     outname = 'out.csv'
-    startdir = os.path.expanduser('~/.ros')
-    path = '{}/{}'.format(startdir, d)
+    path = os.path.abspath(d)
     files = listdir_fullpath(path)
     pngs = []
     csvs = []
 
     for x in files:
-        if x.endswith('csv') and not x.endswith(outname):
+        if x.endswith('csv') and not x.endswith(outname) and 'processed' not in x and 'labels' not in x:
             csvs.append(x)
         elif x.endswith('png'):
             pngs.append(x)
 
-    imu, yrate, sonar = csvs
+    dfs = {}
+    video_ts = None
+    for csv in csvs:
+        df = pd.read_csv(csv)
+        if 'video_ts' in csv:
+            df.columns = ['Timestamp']
+            df.rename(index=str, columns={'':'Timestamp'})
+            df = df.iloc[1:] / 1e3
+            video_ts = df.iloc[1:]
+        dfs[csv.split('.')[0].split('/')[-1]] = df
 
-    imu = pd.read_csv(imu)
-    yrate = pd.read_csv(yrate)
-    sonar = pd.read_csv(sonar)
+    if type(video_ts) is None:
+        print('Cannot process this folder as there is no data file for the timestamps.')
+        sys.exit(0)
 
     pngs = sorted(pngs)
-    png_times = sorted([float(x.split('/')[-1].rsplit('.',1)[0]) for x in pngs])
-    png_times = pd.DataFrame({'Timestamp':png_times})
+    png_times = video_ts
 
-    dfs = {
-            'IMU': imu,
-            'YawRate': yrate,
-            'Sonar': sonar,
-            'PNG': png_times
-            }
-    for k, df in dfs.iteritems():
+    for k, df in dfs.items():
         df = df.rename(columns=lambda x: x.strip())
         dfs[k] = df.sort_values('Timestamp')
 
     arrmin = []
     arrmax = []
-    for df in dfs.itervalues():
+    for df in dfs.values():
         arrmin.append(min(df['Timestamp'].tolist()))
         arrmax.append(max(df['Timestamp'].tolist()))
 
@@ -58,7 +59,7 @@ def main(d):
     upperbound = min(arrmax)
     counts = []
 
-    for k, df in dfs.iteritems():
+    for k, df in dfs.items():
         df = df.drop(df[df.Timestamp < lowerbound].index)
         df = df.drop(df[df.Timestamp > upperbound].index)
         df = df.reset_index(drop=True)
@@ -66,13 +67,14 @@ def main(d):
         dfs[k] = df
 
     sensory_dfs = dfs.copy()
-    png_time = sensory_dfs.pop('PNG')
+    # png_time = sensory_dfs.pop('video_ts')
+    png_time = sensory_dfs['video_ts']
 
     png_list = np.array(png_time['Timestamp'].tolist())
     closest_values = {}
-    for k, df in sensory_dfs.iteritems():
+    for k, df in sensory_dfs.items():
         df_times = np.array(df['Timestamp'].tolist())
-        png_rep = np.tile(png_list,(df_times.shape[0],1))
+        png_rep = np.tile(png_list, (df_times.shape[0],1))
         df_times_rep = np.transpose(np.tile(df_times, (png_list.shape[0],1)))
         res = abs(png_rep - df_times_rep)
         idx = np.argmin(res, axis=0)
@@ -91,12 +93,13 @@ def main(d):
         png_out = pngs[:]
 
     l = []
-    for k, df in sensory_dfs.iteritems():
+    for k, df in sensory_dfs.items():
         tmp = df.loc[closest_values[k]]
         tmp = tmp.reset_index(drop=True)
-        tmp = tmp.drop(['Timestamp'], axis=1)
+        if 'video_ts' not in k:
+            tmp = tmp.drop(['Timestamp'], axis=1)
         tmp = tmp.rename(columns=lambda x:'{}:{}'.format(k,x))
-        l.append(tmp)    
+        l.append(tmp)
 
     png_out = sorted([x.split('/')[-1] for x in png_out])
     png_out = pd.DataFrame({'PNG':png_out})
