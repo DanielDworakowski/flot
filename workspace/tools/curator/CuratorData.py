@@ -106,7 +106,7 @@ class CuratorData(object):
         saveLoc = self.folder + '/labels.csv'
         labelDf = self.df[self.df['usable'] == 1] # Convert to logical indexing first.
         # mask = self._prune(labelDf)
-        labelDf = labelDf[mask.astype(bool)]
+        # labelDf = labelDf[mask.astype(bool)]
         print('savedata: uncomment when done!!')
         labelDf.to_csv(saveLoc)
 
