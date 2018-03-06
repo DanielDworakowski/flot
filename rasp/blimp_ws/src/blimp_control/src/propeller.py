@@ -44,7 +44,7 @@ class Prop(object):
 
             self.requester.writeCharacteristic(34, command.decode('hex'))
         else:
-            print("Command value is must be integer between -32767 & 32767")
+            print("Left command value must be integer between -32767 & 32767; received {}".format(value))
 
     # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for right propeller
@@ -57,7 +57,7 @@ class Prop(object):
 
             self.requester.writeCharacteristic(36, command.decode('hex'))
         else:
-            print("Command value is must be integer between -32767 & 32767")
+            print("Right command value must be integer between -32767 & 32767; received {}".format(value))
 
     # Enter value between -32767 to 32767
     # Negative value commands backward thrust, and vice versa with positive value, for down propeller
@@ -70,7 +70,7 @@ class Prop(object):
 
             self.requester.writeCharacteristic(38, command.decode('hex'))
         else:
-            print("Command value is must be integer between -32767 & 32767")
+            print("Down command value must be integer between -32767 & 32767; received {}".format(value))
 
     # Function to stop all actuators
     def stop(self):
@@ -79,4 +79,7 @@ class Prop(object):
         self.requester.writeCharacteristic(36, command.decode('hex'))
         self.requester.writeCharacteristic(38, command.decode('hex'))
 
-
+    # Get battery level of propellers in integer values
+    #def batteryLevel(self):
+    #    byte = self.requester.readCharacteristic(14)
+    #    return int.from_bytes(byte, byteorder='big')
