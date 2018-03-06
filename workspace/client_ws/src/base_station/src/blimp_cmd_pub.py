@@ -34,7 +34,7 @@ def blimp_cmd_pub():
         print('Starting blimp_cmd_pub node...')
 
     rospy.init_node('blimp_cmd_pub', anonymous=True)
-    rate = rospy.Rate(100)   # 100 Hz loop rate
+    rate = rospy.Rate(10)   # 100 Hz loop rate
 
     vt_pub = rospy.Publisher('/blimp_vt', Float64)
     # vz_pub = rospy.Publisher('/blimp_vz', Float64)
@@ -47,7 +47,7 @@ def blimp_cmd_pub():
         # vz = rc.getVZ()
         vz = 1.
         w = rc.getW()
-        
+
         if vt is None:
             vt = 0.3
         if w is None:

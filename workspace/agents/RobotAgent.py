@@ -46,7 +46,7 @@ class Agent(base.AgentBase):
         self.action_array_dim = 11
         #
         # minimum probability of collision free to go straight
-        self.straight_min_prob = 0.80
+        self.straight_min_prob = 0.60
         #
         # minimum probability of collision free to stop
         self.stop_min_prob = 0.0
@@ -154,7 +154,7 @@ class Agent(base.AgentBase):
             # action = Action(action_array)
             print('_____________________________________________________________________________________________________________________________________')
             print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
-            print("Linear Velocity: {} Angular Velocity: {}".format(action.v_t,action.w))
+            print("Linear Velocity: {:.2f} Angular Velocity: {:.2f}".format(action.v_t,action.w))
 
             # Place the activations for visualization.
             action.meta['activations'] = probs.cpu().numpy()[0]
