@@ -22,7 +22,7 @@ def cbfunc(gpio, level, tick):
    if level == 0: # echo line changed from high to low.
       if high_tick is not None:
          echo = pigpio.tickDiff(high_tick, tick)
-         distance = (echo / 1000000.0) * 34030 / 2
+         distance = (echo / 1000000.0) * 34030 / 200
          sonar_data = Float64WithHeader()
          sonar_data.header.stamp = get_rostime()
          if abs(distance) < 2.0:
@@ -32,7 +32,7 @@ def cbfunc(gpio, level, tick):
             sonar_data.float.data = 0.0
             pub1.publish(0.0)
          pub.publish(sonar_data)
-         print("echo was {} micros long ({:.1f} cms)".format(echo, distance))
+         print("echo was {} micros long ({:.1f} m)".format(echo, distance))
    else:
       high_tick = tick
 

@@ -80,6 +80,6 @@ class Prop(object):
         self.requester.writeCharacteristic(38, command.decode('hex'))
 
     # Get battery level of propellers in integer values
-    def batteryLevel(self):
-        byte = self.requester.readCharacteristic(14)
-        return int.from_bytes(byte, byteorder='big')
+    #def batteryLevel(self):
+    #    byte = self.requester.readCharacteristic(14)
+    #    return int.from_bytes(byte, byteorder='big')

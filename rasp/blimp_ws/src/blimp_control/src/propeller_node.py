@@ -64,8 +64,8 @@ def propellers():
     # ROS loop
     while not rospy.is_shutdown():
         # Update and publish battery level
-        msg.data = float(prop.batteryLevel())
-        battery_pub.publish(msg)
+        # msg.data = float(prop.batteryLevel())
+        # battery_pub.publish(msg)
         rate.sleep()
 
 if __name__ == '__main__':
