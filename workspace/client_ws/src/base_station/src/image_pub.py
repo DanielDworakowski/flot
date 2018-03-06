@@ -63,7 +63,7 @@ def image_pub():
             msg.data = np.array(cv2.imencode('.png', image)[1]).tostring()
             pub.publish(msg)
 
-        rate.sleep()    # Maintain loop rate
+        # rate.sleep()    # Maintain loop rate
 
 if __name__ == '__main__':
     try:

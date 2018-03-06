@@ -5,8 +5,10 @@ from subprocess import Popen, PIPE
 from shlex import split
 import cv2
 from scipy.misc import imsave
+import torch.multiprocessing as mp
+import torch
 
-class VideoStreamClient(threading.Thread):
+class VideoStreamClient(mp.Process):
 
     VERBOSE = None
     BGR2RGB = None
@@ -16,34 +18,12 @@ class VideoStreamClient(threading.Thread):
 
 
     ffmpeg_cmd = [ 'ffmpeg',
-            # '-nostats',
-            # '-debug_ts',
-            # '-hwaccel', 'cuvid',
             '-framerate', '30',
              '-i', 'pipe:0',           # Use stdin pipe for input
              '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.
              '-vcodec', 'rawvideo',
             '-an','-sn',              # we want to disable audio processing (there is no audio)
             '-f', 'image2pipe', '-']
-
-    # ffmpeg_cmd = [ '/home/ddworakowski/code/ffmpeg/ffmpeg',
-    #         # '-nostats',
-    #         # '-debug_ts',
-    #         # '-hwaccel', 'cuvid',
-    #         '-vsync', '0',
-    #         '-c:v','h264_cuvid',
-    #         # '-fps', '40',
-    #         '-i', 'pipe:0',           # Use stdin pipe for input
-    #         # '-vf', 'scale_npp=640:480',
-    #         '-pix_fmt', 'bgr24',      # opencv requires bgr24 pixel format.
-    #         '-vcodec', 'rawvideo',
-    #         '-f', 'image2pipe', '-'
-    #         # '-f', 'rawvideo',
-    #         # 'out.yuv'
-    #         ]
-    #         # '-an','-sn',              # we want to disable audio processing (there is no audio)
-    #         # '-vf', 'showinfo',
-    #         # '-f', 'image2pipe', '-']
 
     # Pipe buffer size calculation for image size
     width = None
@@ -62,7 +42,7 @@ class VideoStreamClient(threading.Thread):
     # Class constructor
     def __init__(self, port='2222', width=640, height=480, depth=3, num=2, VERBOSE=False, BGR2RGB=False, saveRoot=None):
 
-        threading.Thread.__init__(self)
+        super(VideoStreamClient, self).__init__()
 
         self.port = port
         self.width = width
@@ -74,6 +54,10 @@ class VideoStreamClient(threading.Thread):
         self.VERBOSE = VERBOSE
         self.BGR2RGB = BGR2RGB
         self.saveRoot = saveRoot
+        self.frameLock = mp.Lock()
+        self.frameNotifier = mp.Event()
+        self.sharedFrame = torch.ByteTensor(width, height, depth)
+        self.sharedFrame.storage().share_memory_()
 
     def getNCCommand(self):
         return split(self.nc_cmd + self.port)
@@ -85,7 +69,6 @@ class VideoStreamClient(threading.Thread):
                         stdin=self.nc_pipe.stdout,
                         stdout=PIPE,
                         bufsize=self.bufsize)
-
 
         if self.VERBOSE:
             print('Listening for video stream...')
@@ -104,7 +87,12 @@ class VideoStreamClient(threading.Thread):
                     self.frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 else:
                     self.frame = image
-
+                #
+                # Move the frame into shared memory.
+                self.frameLock.acquire()
+                self.sharedFrame.copy_(torch.from_numpy(self.frame).view_as(self.sharedFrame))
+                self.frameLock.release()
+                self.frameNotifier.set()
                 if self.saveRoot != None:
                     imsave('%s/%s.png'%(self.saveRoot, cnt), self.frame)
 
@@ -119,6 +107,8 @@ class VideoStreamClient(threading.Thread):
         cv2.destroyAllWindows()
 
     def getFrame(self):
-        ret = self.frame
-        self.frame = None
+        self.frameNotifier.wait()
+        self.frameLock.acquire()
+        ret = torch.ByteTensor(self.sharedFrame.clone()).numpy()
+        self.frameLock.release()
         return ret
