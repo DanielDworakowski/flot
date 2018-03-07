@@ -3,7 +3,7 @@ from debug import *
 from abc import abstractmethod
 
 class Action(object):
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.3, max_w=2.0, z=None, isReset=False): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.7, max_w=0.5, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t

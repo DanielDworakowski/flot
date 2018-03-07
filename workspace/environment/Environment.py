@@ -17,7 +17,11 @@ class EnvironmentOptions():
     # Blimp configuration options.
     def getBlimpConfig():
         import RobotObservation as obs
-        import RobotActions as act
+        import sys
+        if sys.version_info[0] < 3:
+            import RobotActionsP27 as act
+        else:
+            import RobotActions as act
         observer = obs.RobotObserver
         actionClient = act.RobotActionEngine
         return [observer, actionClient]
@@ -43,7 +47,7 @@ class EnvironmentOptions():
     }
 #
 # The environment dictates how actions are performed and the observations recieved.
-class Environment():
+class Environment(object):
     #
     # Constructor.
     def __init__(self, envType, saveDirectory, serialize):

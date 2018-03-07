@@ -110,6 +110,7 @@ class VideoStreamClient(mp.Process):
 
     def getFrame(self):
         self.frameNotifier.wait()
+        self.frameNotifier.clear()
         self.frameLock.acquire()
         ret = self.sharedFrame.clone().numpy()
         self.frameLock.release()
