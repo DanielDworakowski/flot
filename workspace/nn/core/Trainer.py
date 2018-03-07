@@ -35,7 +35,7 @@ class Trainer():
         '''
         train = FlotDataset.FlotDataset(self.conf, self.conf.dataTrainList, self.conf.transforms)
         self.dataloaders = {
-        'train': torch.utils.data.DataLoader(train, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True),
+            'train': torch.utils.data.DataLoader(train, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True),
         }
         #
         # No validation data, no need to evaluate it.
@@ -92,7 +92,7 @@ class Trainer():
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
         if isBest:
-            shutil.move(savePath, '%s/model_best.pth.tar'%(self.conf.modelSavePath))
+            shutil.move(savePath, '%s/%s_model_best.pth.tar'%(self.conf.modelSavePath, conf.experimentName))
 
     def __init__(self, conf):
         ''' Set the training criteria.

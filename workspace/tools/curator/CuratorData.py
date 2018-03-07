@@ -104,10 +104,10 @@ class CuratorData(object):
         #
         # Reduce the data to only that what was labelled to be usable.
         saveLoc = self.folder + '/labels.csv'
+        print('Saving labels to ', saveLoc)
         labelDf = self.df[self.df['usable'] == 1] # Convert to logical indexing first.
         # mask = self._prune(labelDf)
         # labelDf = labelDf[mask.astype(bool)]
-        print('savedata: uncomment when done!!')
         labelDf.to_csv(saveLoc)
 
     def setUsable(self, flag, startRange, endRange):
@@ -152,5 +152,5 @@ class CuratorData(object):
             #
             # Create the labels based on a distance threshold.
             self.df[smoothedKey] = np.squeeze(means)
-        self.df['collision_free'] = self.df[smoothedKey] > self.labelConf.distanceThreshold
-        self.df['collision_free'] = self.df['collision_free'].astype(int)
+        # self.df['collision_free'] = self.df[smoothedKey] > self.labelConf.distanceThreshold
+        # self.df['collision_free'] = self.df['collision_free'].astype(int)

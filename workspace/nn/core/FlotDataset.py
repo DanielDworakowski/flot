@@ -32,6 +32,8 @@ class FlotDataset(torch.utils.data.Dataset):
         features = []
         for idx, dataFolder in enumerate(pathList):
             feature = []
+            #
+            # This can be done better by using pytorch to concat datasets.
             self.dataList.append(DataFolder(conf, dataFolder, transform))
             feature.append(self.len)
             self.offsets.append(self.len)
@@ -60,15 +62,19 @@ class DataFolder(torch.utils.data.Dataset):
         self.transform = transform
         self.csvFrame = pd.read_csv(self.rootDir + '/' + self.csvFileName)
         self.getImNameFn = None
-        # 
-        # If the full image name is already part of the label just take the image name. 
+        #
+        # If the full image name is already part of the label just take the image name.
         try:
             self.pngColIdx = self.csvFrame.columns.get_loc('PNG')
             self.getImNameFn = self.getImgNamePNG
         except:
             self.getImNameFn = self.getImgNameIdx
-        self.imgColIdx = self.csvFrame.columns.get_loc('idx')    
-        self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
+        self.imgColIdx = self.csvFrame.columns.get_loc('idx')
+        try:
+            self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
+        except:
+            self.csvFrame['collision_free'] = (self.df[smoothedKey] > self.conf.distThreshold).astype(int)
+            self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
         self.conf = conf
         if self.__len__() < 1:
             printError('File %s has no data. This will cause issues'%conf.csvFileName)
