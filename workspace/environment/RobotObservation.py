@@ -23,4 +23,4 @@ class RobotObserver(observations.Observer):
     def observeImpl(self, obs):
         obs.valid = True
         obs.serializable['timestamp'].val = time.time()
-        obs.serializable['img'].uint8Img = self.stream.frame
+        obs.serializable['img'].uint8Img = self.stream.getFrame()

@@ -1,8 +1,8 @@
 import numpy as np
 from debug import *
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
-class Action():
+class Action(object):
     def __init__(self, array = None , v_t = None, w = None, max_v_t=0.3, max_w=2.0, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
@@ -65,9 +65,7 @@ class Action():
         elif z is None:
             printError("Incorrect format, input array XOR v_t and w")
 
-
-
-class ActionEngine():
+class ActionEngine(object):
     """ Stores information to specify an action
 
     This class is used to communicate which action to take. The Action class can take in an one-hot vector and convert to an approaportate tangential velocty and angiular velocity. Support for velocity in z is TODO for later.
@@ -104,8 +102,6 @@ class ActionEngine():
             self.w = action.max_w*action.w
         self.z = action.z
         self.isReset = action.isReset
-
-        # print(self.v_t, "   ", self.w)
 
     @abstractmethod
     def executeActionImpl(self, obs):

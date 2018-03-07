@@ -56,7 +56,7 @@ class VideoStreamClient(mp.Process):
         self.saveRoot = saveRoot
         self.frameLock = mp.Lock()
         self.frameNotifier = mp.Event()
-        self.sharedFrame = torch.ByteTensor(width, height, depth)
+        self.sharedFrame = torch.ByteTensor(height, width, depth)
         self.sharedFrame.storage().share_memory_()
 
     def getNCCommand(self):
@@ -83,21 +83,23 @@ class VideoStreamClient(mp.Process):
             if image is not None:
                 cnt += 1
                 # Convert image from BGR to RGB
-                if self.BGR2RGB:
+                if True:
                     self.frame = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 else:
                     self.frame = image
                 #
                 # Move the frame into shared memory.
                 self.frameLock.acquire()
-                self.sharedFrame.copy_(torch.from_numpy(self.frame).view_as(self.sharedFrame))
+                self.sharedFrame.copy_(torch.from_numpy(self.frame))
                 self.frameLock.release()
                 self.frameNotifier.set()
                 if self.saveRoot != None:
                     imsave('%s/%s.png'%(self.saveRoot, cnt), self.frame)
 
                 if self.VERBOSE:
-                    cv2.imshow('Video', image)
+                    pass
+                    # cv2.imshow('Video', image)
+                    cv2.imshow('Video', cv2.cvtColor(self.sharedFrame.numpy(), cv2.COLOR_BGR2RGB))
 
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
@@ -109,6 +111,6 @@ class VideoStreamClient(mp.Process):
     def getFrame(self):
         self.frameNotifier.wait()
         self.frameLock.acquire()
-        ret = torch.ByteTensor(self.sharedFrame.clone()).numpy()
+        ret = self.sharedFrame.clone().numpy()
         self.frameLock.release()
         return ret

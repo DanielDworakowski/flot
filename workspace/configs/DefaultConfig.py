@@ -1,7 +1,7 @@
 from enum import Enum
 import os
 import time
-from pathlib import Path
+from pathlib2 import Path
 #
 # Describing the supported environments.
 class EnvironmentTypes(Enum):
@@ -11,7 +11,7 @@ class EnvironmentTypes(Enum):
     Static = 3
 #
 # Default configuration that is overriden by subsequent configurations.
-class DefaultConfig():
+class DefaultConfig(object):
     #
     # The type of environment.
     envType = EnvironmentTypes.AirSim

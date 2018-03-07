@@ -16,8 +16,10 @@ def getInputArgs():
     parser.add_argument('--agent', dest='agentStr', default=None, type=str, help='Name of the agent file to import.')
     parser.add_argument('--config', dest='configStr', default='DefaultConfig', type=str, help='Name of the config file to import.')
     parser.add_argument('--serialize', dest='serialize', default=None, type=bool, help='Whether to serialize training data.')
+    parser.add_argument('--rateLimit', dest='ratelimit', default=False,  action='store_true', help='Whether to serialize training data.')
     args = parser.parse_args()
     return args
+args = getInputArgs()
 #
 # Get the configuration, override as needed.
 def getConfig(args):
@@ -31,8 +33,13 @@ def getConfig(args):
     conf.getAgentConstructor()
     return conf
 #
+# Conditional decorator.
+# https://stackoverflow.com/questions/20850571/decorate-a-function-if-condition-is-true
+def maybe_decorate(condition, decorator):
+    return decorator if condition else lambda x: x
+#
 # Rate limited stepping code limit to 30hz.
-@ratelimiter.RateLimiter(max_calls=30, period=1)
+@maybe_decorate(args.ratelimit,ratelimiter.RateLimiter(max_calls=30, period=1))
 def step(agent, env, vis):
     obs = env.observe()
     agent.giveObservation(obs)
@@ -52,7 +59,6 @@ def loop(conf):
 # Main code.
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    args = getInputArgs()
     conf = getConfig(args)
     vis = visual.Visualizer()
     loop(conf)

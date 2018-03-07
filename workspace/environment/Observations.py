@@ -1,11 +1,11 @@
 import numpy as np
 import os
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from debug import *
 import cv2
 #
 # Class defining a position vector.
-class Vec3():
+class Vec3(object):
     #
     # Constructor.
     x = np.float32(0)
@@ -21,7 +21,7 @@ class Vec3():
         return ('%s, %s, %s')%(self.x, self.y, self.z)
 #
 # Class defining a rotation with euler angles.
-class RotationEuler():
+class RotationEuler(object):
     #
     # Constructor.
     pitch = np.float32(0)
@@ -39,7 +39,7 @@ class RotationEuler():
 # Class defining a compressed image and how to:
 #   1. Expand it to a numpy array.
 #   2. Serialize it.
-class CompressedImage():
+class CompressedImage(object):
     #
     # Constructor.
     def __init__(self, name = 'front_camera', path = ''):
@@ -89,7 +89,7 @@ class CompressedImage():
         return ''
 #
 # Class defining a generic serializable object.
-class GenericObservation():
+class GenericObservation(object):
     #
     # Constructor.
     def __init__(self, name):
@@ -108,7 +108,7 @@ class GenericObservation():
         return '%s'%(self.val)
 #
 # Class defining a generic set of observations.
-class Observation():
+class Observation(object):
     #
     # Constructor.
     def __init__(self, path):
@@ -167,7 +167,7 @@ class Observation():
 
 #
 # Abstract class defining the interface of an observer.
-class Observer():
+class Observer(object):
     #
     # Initialization.
     def __init__(self, obsDir = '', serialize = True):

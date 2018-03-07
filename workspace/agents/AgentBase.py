@@ -1,9 +1,9 @@
 import Observations as obv
 from debug import *
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 #
 # Base class for agents for common interface.
-class AgentBase():
+class AgentBase(object):
     obs = None
     conf = None
     #
@@ -14,7 +14,7 @@ class AgentBase():
     # Interface to obtain an action.
     def getAction(self):
         if self.obs == None:
-        	printError("Agent's Observation is None, make sure to giveObservation to Agent before calling getAction")
+            printError("Agent's Observation is None, make sure to giveObservation to Agent before calling getAction")
         else:
             return self.getActionImpl()
     #

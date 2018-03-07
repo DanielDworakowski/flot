@@ -111,22 +111,6 @@ class Agent(base.AgentBase):
 
                 collision_free_prob.append(softmax(classActivation)[0,1].data.cpu().numpy())
 
-
-            # for cropped_img in cropped_imgs:
-            #     if self.usegpu:
-            #         img = Variable(self.toTensor(cropped_img).unsqueeze_(0).cuda())
-            #     else:
-            #         img = Variable(self.toTensor(cropped_img).unsqueeze_(0))
-            #     collision_free_pred = self.model(img).data
-            #
-            #     # print('1')
-            #     # print(collision_free_pred)
-            #     # softmax(Variable(collision_free_pred))
-            #     # print('2')
-            #     # print(softmax(Variable(collision_free_pred))[0,1].data.cpu().numpy())
-            #     collision_free_prob.append(softmax(Variable(collision_free_pred))[0,1].data.cpu().numpy())
-            #     # print('3')
-
             # collision free probability
             left_prob, center_prob, right_prob = collision_free_prob
             left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
