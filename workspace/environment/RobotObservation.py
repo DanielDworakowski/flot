@@ -16,6 +16,7 @@ class RobotObserver(observations.Observer):
 
         # Member variables.
         self.stream = RobotUtil.VideoStreamClient(BGR2RGB=True)
+        self.stream.daemon=True
         self.collInfo = None
         self.imgs = None
         self.stream.start()
@@ -24,3 +25,7 @@ class RobotObserver(observations.Observer):
         obs.valid = True
         obs.serializable['timestamp'].val = time.time()
         obs.serializable['img'].uint8Img = self.stream.getFrame()
+
+    def __del__(self):
+        self.stream.terminate()
+        self.stream.join()
