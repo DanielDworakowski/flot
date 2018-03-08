@@ -32,7 +32,7 @@ def cbfunc(gpio, level, tick):
             sonar_data.float.data = 0.0
             pub1.publish(0.0)
          pub.publish(sonar_data)
-         print("echo was {} micros long ({:.1f} m)".format(echo, distance))
+         # print("echo was {} micros long ({:.1f} m)".format(echo, distance))
    else:
       high_tick = tick
 
