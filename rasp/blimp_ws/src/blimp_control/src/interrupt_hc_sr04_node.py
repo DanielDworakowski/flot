@@ -3,12 +3,9 @@
 # Modified from:
 # https://www.raspberrypi.org/forums/viewtopic.php?t=84494
 
-import time
 import pigpio
 from rospy import Publisher, init_node, Rate, is_shutdown, get_rostime, ROSInterruptException
 from std_msgs.msg import Float64
-import RPi.GPIO as GPIO
-import time
 from blimp_control.msg import Float64WithHeader
 
 TRIGGER=23
