@@ -1,4 +1,5 @@
 import gym
+import time
 
 class Env():
 
@@ -8,15 +9,18 @@ class Env():
         self.reward = None
         self.done = False
         self.image = self.env.render("rgb_array")
+        time.sleep(0.1)
         self.observation_shape = self.image.shape
         self.action_shape = self.env.action_space.shape
 
     def step(self, action):
         self.state, self.reward, self.done, _ = self.env.step(action)
         self.image = self.env.render("rgb_array")
+        time.sleep(0.1)
         return self.image, self.reward, self.done
 
     def reset(self):
         self.env.reset()
         self.image = self.env.render("rgb_array")
+        time.sleep(0.1)
         return self.image

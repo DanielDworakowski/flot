@@ -62,6 +62,7 @@ class A2CValueNetwork(torch.nn.Module):
                 losses.append(loss.cpu().data.numpy()[0])
                 loss.backward()
                 optimizer.step()
+                torch.cuda.empty_cache()
             obs = torch.autograd.Variable(observations_batch[last_idx:,:,:,:]).type(self.dtype.FloatTensor)
             model_out = self.model(obs)
             target = torch.autograd.Variable(torch.Tensor(returns_batch[last_idx:])).type(self.dtype.FloatTensor)
@@ -71,6 +72,7 @@ class A2CValueNetwork(torch.nn.Module):
             value_network_loss = np.mean(losses)
             loss.backward()
             optimizer.step()
+            torch.cuda.empty_cache()
         else:
             model_out = self.model(torch.autograd.Variable(observations_batch).type(self.dtype.FloatTensor))
             target = torch.autograd.Variable(torch.Tensor(returns_batch)).type(self.dtype.FloatTensor)
@@ -79,6 +81,7 @@ class A2CValueNetwork(torch.nn.Module):
             value_network_loss = loss.cpu().data.numpy()[0]
             loss.backward()
             optimizer.step()
+            torch.cuda.empty_cache()
 
         return value_network_loss
   
