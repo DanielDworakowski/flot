@@ -3,12 +3,9 @@
 # Modified from:
 # https://www.raspberrypi.org/forums/viewtopic.php?t=84494
 
-import time
 import pigpio
 from rospy import Publisher, init_node, Rate, is_shutdown, get_rostime, ROSInterruptException
 from std_msgs.msg import Float64
-import RPi.GPIO as GPIO
-import time
 from blimp_control.msg import Float64WithHeader
 
 TRIGGER=23
@@ -32,7 +29,7 @@ def cbfunc(gpio, level, tick):
             sonar_data.float.data = 0.0
             pub1.publish(0.0)
          pub.publish(sonar_data)
-         print("echo was {} micros long ({:.1f} m)".format(echo, distance))
+         # print("echo was {} micros long ({:.1f} m)".format(echo, distance))
    else:
       high_tick = tick
 
