@@ -22,7 +22,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         return self.model(x)
 
     def compute(self, observation):
-        observation = torch.autograd.Variable(self.transform(observation)).type(self.dtype.FloatTensor).unsqueeze(0)
+        observation = torch.autograd.Variable(self.transform(observation),volatile=True).type(self.dtype.FloatTensor).unsqueeze(0)
         # plt.imshow(observation.data.cpu().squeeze(0).permute(1, 2, 0).numpy(),interpolation='none')        
         model_out = self.forward(observation).squeeze()
         mean, std_dev = model_out[:self.action_dim].data, torch.exp(model_out[self.action_dim:].data)
