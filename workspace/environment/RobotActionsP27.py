@@ -4,7 +4,7 @@ import RobotControlP27 as RobotControl
 from Actions import ActionEngine, Action
 
 class RobotAction(Action):
-    def __init__(self, array, v_t, w): #add teleport thing
+    def __init__(self, array, v_t, w):
         Action.__init__(self, array, v_t, w)
 
 class RobotActionEngine(ActionEngine):
@@ -21,6 +21,7 @@ class RobotActionEngine(ActionEngine):
     def executeActionImpl(self, obs):
         success = True
         try:
+            print(self.v_t)
             self.rc.setCommand(self.v_t, self.w, self.z)
         except Exception as e:
             success = False

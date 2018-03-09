@@ -3,7 +3,27 @@ from debug import *
 from abc import abstractmethod
 
 class Action(object):
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.7, max_w=0.5, z=None, isReset=False): #TODO maybe include observation
+    #
+    # function to turn an array value to tangential (v_t) and angular(w) velocities
+    def normalize(self):
+        """ setting which action to take. action is a vector of length D, where D is the dimension of the action space. action vector can be one-hot vector but this function will take the argmax. """
+        action_idx = np.argmax(self.array)
+        action_sum = np.sum(self.array)
+
+        if action_sum == 0:
+            self.v_t = 0
+            self.w =  0
+        else:
+            #
+            # action_norm is 0 when the action_idx is in the middle of the act_dim, 1 when it is (act_dim-1), and -1 when action_idx is 0
+            action_norm = 2.0*(1.*action_idx/(len(self.array)-1)-0.5)
+            action_in_rad = action_norm*np.pi/2.
+            v_t_norm = np.cos(action_in_rad)
+            w_norm = np.sin(action_in_rad)
+            self.v_t = v_t_norm*self.max_v_t
+            self.w = w_norm*self.max_w
+
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.3, max_w=0.1, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t
@@ -11,34 +31,13 @@ class Action(object):
         self.v_t = None
         self.w = None
         self.array = None
-
         self.z = z
         self.isReset = isReset
         self.meta = {}
-
         #
         # Error checking: Too many inputs
         if (array is not None and v_t is not None and w is not None and z is not None):
             printError("Only input either array xor v_t and w")
-        #
-        # function to turn an array value to tangential (v_t) and angular(w) velocities
-        def normalize(self):
-            """ setting which action to take. action is a vector of length D, where D is the dimension of the action space. action vector can be one-hot vector but this function will take the argmax. """
-            action_idx = np.argmax(self.array)
-            action_sum = np.sum(self.array)
-
-            if action_sum == 0:
-                self.v_t = 0
-                self.w =  0
-            else:
-                #
-                # action_norm is 0 when the action_idx is in the middle of the act_dim, 1 when it is (act_dim-1), and -1 when action_idx is 0
-                action_norm = 2.0*(1.*action_idx/(len(self.array)-1)-0.5)
-                action_in_rad = action_norm*np.pi/2.
-                v_t_norm = np.cos(action_in_rad)
-                w_norm = np.sin(action_in_rad)
-                self.v_t = v_t_norm*self.max_v_t
-                self.w = w_norm*self.max_w
         #
         #Check if v_t and w are the ONLY inputs
         if ( v_t is not None and w is not None and array is None):
@@ -59,7 +58,7 @@ class Action(object):
             #Check if the types are valid
             if ( isinstance(array, list) or isinstance(array, np.ndarray)):
                 self.array = array
-                normalize(self)
+                self.normalize()
             else:
                 printError("wrong type for array, use []")
         elif z is None:
@@ -98,8 +97,8 @@ class ActionEngine(object):
     # saturator function
     def setAction(self, action):
         if action.v_t is not None and action.w is not None:
-            self.v_t = action.max_v_t*action.v_t
-            self.w = action.max_w*action.w
+            self.v_t = action.v_t
+            self.w = action.w
         self.z = action.z
         self.isReset = action.isReset
 

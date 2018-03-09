@@ -5,7 +5,7 @@ class Config(DefaultConfig):
     # Where to load the model from.
     # modelLoadPath = '/home/jiwon/data/model/model_best.pth.tar'
     # modelLoadPath = '/disk1/model/model_best.pth.tar'
-    modelLoadPath = '/disk1/model/06-03-2018-20-12-55_epoch_0.pth.tar'
+    modelLoadPath = '/disk1/model/rl_data-noscale_model_best.pth.tar'
 
     # Image shape
     image_shape = (224, 224, 3)
