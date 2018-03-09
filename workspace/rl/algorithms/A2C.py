@@ -82,14 +82,12 @@ class Agent:
 
             ##### Optimization #####
 
-            value_summaries, value_stats =self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
-            value_network_loss = value_stats['value_network_loss']
-            self.add_summaries(value_summaries, total_timesteps)
+            value_network_loss =self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
+            self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
 
-            policy_summaries, policy_stats =self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
-            policy_network_loss = policy_stats['policy_network_loss']
-            kl = policy_stats['kl']
-            average_advantage = policy_stats['average_advantage']
+            policy_network_loss, kl =self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
+            self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
+            self.writer.add_scalar("data/kl", value_network_loss, total_timesteps)
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, kl, policy_network_loss, value_network_loss, average_advantage, learning_rate, batch_size)
 
@@ -213,24 +211,15 @@ class Agent:
             self.algorithm_params['learning_rate'] *= 1.5
         return self.algorithm_params['learning_rate']
 
-    # Add summaries to the writer
-    def add_summaries(self, summaries, timestep):
-        for summary in summaries:
-            # Write summary for tensorboard visualization
-            self.writer.add_summary(summary, timestep)
-
     # Train value network
     def train_value_network(self, batch_size, observations_batch, returns_batch, learning_rate):
-        summaries, stats = self.value_network.train(batch_size, observations_batch, returns_batch, learning_rate)
-        return [summaries, stats]
+        loss = self.value_network.train(batch_size, observations_batch, returns_batch, learning_rate)
+        return loss
 
     # Train policy network
     def train_policy_network(self, observations_batch, actions_batch, advantages_batch, learning_rate):
-        summaries, stats = self.policy_network.train(observations_batch, advantages_batch, actions_batch, learning_rate)
-        return [summaries, stats]
-
-    def restore_networks(self):
-        pass
+        loss = self.policy_network.train(observations_batch, actions_batch, advantages_batch, learning_rate)
+        return loss
 
     # Print stats
     def print_stats(self, total_timesteps, total_episodes, best_average_reward, average_reward, kl, policy_network_loss, value_network_loss, average_advantage, learning_rate, batch_size):

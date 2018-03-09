@@ -51,39 +51,34 @@ class A2CValueNetwork(torch.nn.Module):
         if observations_batch.shape[0] > self.mini_batch_size:
             idxs = list(range(self.mini_batch_size,observations_batch.shape[0],self.mini_batch_size))
             last_idx = 0
-            model_outs = []
-            targets = []
+            losses = []
             for i in idxs:
                 obs = torch.autograd.Variable(observations_batch[last_idx:i,:,:,:]).type(self.dtype.FloatTensor)
                 model_out = self.model(obs)
                 target = torch.autograd.Variable(torch.Tensor(returns_batch[last_idx:i])).type(self.dtype.FloatTensor)
-                model_outs.append(model_out)
-                targets.append(target)
-                del obs
-                del model_out
-                del target
-                torch.cuda.empty_cache()
                 last_idx = i
+                optimizer.zero_grad()
+                loss = self.loss_fn(model_out, target)
+                losses.append(loss.cpu().data.numpy()[0])
+                loss.backward()
+                optimizer.step()
             obs = torch.autograd.Variable(observations_batch[last_idx:,:,:,:]).type(self.dtype.FloatTensor)
-            model_out = self.model(obs)            
-            model_outs.append(model_out)
-            targets.append(target)
-            del obs
-            del model_out
-            del target
-            torch.cuda.empty_cache()
-            model_outs = torch.cat(model_outs)
-            targets = torch.cat(targets)
+            model_out = self.model(obs)
+            target = torch.autograd.Variable(torch.Tensor(returns_batch[last_idx:])).type(self.dtype.FloatTensor)
+            optimizer.zero_grad()
+            loss = self.loss_fn(model_out, target)
+            losses.append(loss.cpu().data.numpy()[0])
+            value_network_loss = np.mean(losses)
+            loss.backward()
+            optimizer.step()
         else:
-            model_outs = self.model(torch.autograd.Variable(observations_batch).type(self.dtype.FloatTensor))
-            targets = torch.autograd.Variable(torch.Tensor(returns_batch)).type(self.dtype.FloatTensor)
+            model_out = self.model(torch.autograd.Variable(observations_batch).type(self.dtype.FloatTensor))
+            target = torch.autograd.Variable(torch.Tensor(returns_batch)).type(self.dtype.FloatTensor)
+            optimizer.zero_grad()
+            loss = self.loss_fn(model_out, target)
+            value_network_loss = loss.cpu().data.numpy()[0]
+            loss.backward()
+            optimizer.step()
 
-        optimizer.zero_grad()
-        loss = self.loss_fn(model_outs, targets)
-        loss.backward()
-        optimizer.step()
-        
-        pdb.set_trace()
-
-        return True
+        return value_network_loss
   
