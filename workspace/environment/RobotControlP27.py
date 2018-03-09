@@ -66,7 +66,7 @@ class RobotControl(object):
         self.msg.data = float(self.w)
         self.w_pub.publish(self.msg)
 
-    def setCommand(self, v_t_ref, w_ref, z=0., v_z_ref=0.):
+    def setCommand(self, v_t_ref, w_ref, z=0., v_z_ref=1):
         """ Set the desired tangential velocity, angular velocity, velocity in z """
         self.v_t = v_t_ref
         self.w = w_ref
