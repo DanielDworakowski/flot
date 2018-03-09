@@ -16,6 +16,15 @@ u_scale = 32767
 u0 = 0.0
 u = 0.0
 
+def propeller_saturator(value):
+    # Saturate any commands that exceed the byte range (FFFF)
+    if value > 32768:
+        value = 32767
+    else if value < -32768:
+        value = -32768
+
+    return value
+
 def down_callback(data):
     global u
     global u0
@@ -23,7 +32,9 @@ def down_callback(data):
     u = data.data
     if u > 1:
         u = 1
-    prop.down(int((u+0.9*u0)*u_scale))
+
+    down_val = int((u+0.9*u0)*u_scale)
+    prop.down(propeller_saturator(down_val))
     #print(data)
 
 def v_callback(data):
@@ -35,8 +46,12 @@ def delta_callback(data):
     global u
     #global u_delta
     u_delta = data.data
-    prop.right(int(-1*(-u0 - u_delta-u*0.55)*u_scale))#its the right prop in the test setup
-    prop.left(int(-1*(-u0+ u_delta+u*0.55)*u_scale))# its the left set up in the test set u
+
+    left_val = int(-1*(-u0+ u_delta+u*0.55)*u_scale)
+    right_val = int(-1*(-u0 - u_delta-u*0.55)*u_scale)
+
+    prop.left(propeller_saturator(left_val))# its the left set up in the test setup
+    prop.right(propeller_saturator(right_val))#its the right prop in the test setup
 
 def propellers():
     #rospy.init_node("propellers", anonymous=True)
@@ -52,8 +67,8 @@ def propellers():
 
     # Subscribe to command values
     rospy.Subscriber("prop_down", Float64, down_callback)
-    rospy.Subscriber("cmd_v", Float64, v_callback)
-    #Subscriber("blimp_vt", Float64, v_callback)
+    # rospy.Subscriber("cmd_v", Float64, v_callback)
+    rospy.Subscriber("blimp_vt", Float64, v_callback)
     rospy.Subscriber("delta", Float64, delta_callback)
 
     # rospy.spin()

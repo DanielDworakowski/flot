@@ -120,7 +120,11 @@ class RobotCommands(object):
     # Start up daemon server for this object
     def startup(self, ns_reg = 'RobotControl.commands'):
         if not self.hasStarted:
+
+            # Find Pyro4 nameserver
             try:
+                self.ns = Pyro4.locateNS()
+            except:
                 # Start up pyro4-ns in a new thread
                 self.ns_process = Popen(['pyro4-ns'])
 
@@ -128,9 +132,20 @@ class RobotCommands(object):
                 print('Wait 5 seconds for pyro4-ns to start up...')
                 time.sleep(5)
 
+                self.ns = Pyro4.locateNS()
+
+            try:
+                # # Start up pyro4-ns in a new thread
+                # self.ns_process = Popen(['pyro4-ns'])
+                #
+                # # Hacky way to wait for start-up; should use STDOUT pipe to confirm
+                # print('Wait 5 seconds for pyro4-ns to start up...')
+                # time.sleep(5)
+                #
+                # self.ns = Pyro4.locateNS()
+
                 # Setup and register self
                 self.daemon = Pyro4.Daemon()
-                self.ns = Pyro4.locateNS()
                 self.uri = self.daemon.register(self)
                 self.ns.register(ns_reg, self.uri)
 
