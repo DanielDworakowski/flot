@@ -20,8 +20,8 @@ def propeller_saturator(value):
     # Saturate any commands that exceed the byte range (FFFF)
     if value > 32768:
         value = 32767
-    else if value < -32768:
-        value = -32768
+    elif value < -32768:
+        value = -32767
 
     return value
 
