@@ -92,7 +92,7 @@ class Trainer():
         savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
         torch.save(state, savePath)
         if isBest:
-            shutil.move(savePath, '%s/%s_model_best.pth.tar'%(self.conf.modelSavePath, conf.experimentName))
+            shutil.move(savePath, '%s/%s_model_best.pth.tar'%(self.conf.modelSavePath, self.conf.experimentName))
 
     def __init__(self, conf):
         ''' Set the training criteria.

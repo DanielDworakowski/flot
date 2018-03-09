@@ -9,7 +9,7 @@ from debug import *
 from models import GenericModel
 #
 # The hyper parameters.
-class HyperParam():
+class HyperParam(object):
     #
     # Image shape
     image_shape = (224, 224)
@@ -61,6 +61,9 @@ class DefaultConfig(object):
     # The csv file name.
     csvFileName = 'labels.csv'
     #
+    # The distance threshold for postive / negative.
+    distThreshold = 0.7
+    #
     # The image type name.
     imgName = 'front_camera'
     #
@@ -86,6 +89,9 @@ class DefaultConfig(object):
     #
     # Model save path.
     modelSavePath = ''
+    #
+    # The name of the experiment.
+    experimentName = ''
     #
     # Load a model.
     modelLoadPath = None
@@ -163,7 +169,7 @@ class Config(DefaultConfig):
         # ]
         self.dataValList = ['/disk1/rldata/20180223_220314',]
         self.dataTrainList = [
-
+        '/disk1/rldata/20180306_012910',
         '/disk1/rldata/20180304_042341'
         ]
 #

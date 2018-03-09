@@ -32,13 +32,14 @@ class Config(DefaultConfig):
         #
         # Transforms.
         self.transforms = transforms.Compose([
-            Perterbations.CenterCrop(self.hyperparam.cropShape),
-            DataUtil.Rescale(self.hyperparam.image_shape),
+            # Perterbations.CenterCrop(self.hyperparam.cropShape),
+            # DataUtil.Rescale(self.hyperparam.image_shape),
+            Perterbations.CenterCrop(self.hyperparam.image_shape),
             Perterbations.RandomHorizontalFlip(0.5),
             Perterbations.ColourJitter(0.25, 0.25, 0.25, 0.1), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
-        self.experimentName = 'rl_data'
+        self.experimentName = 'rl_data-noscale'
         self.dataValList = ['/disk1/rldata/20180223_220314',]
         self.dataTrainList = [
         '/disk1/rldata/20180306_012910',
