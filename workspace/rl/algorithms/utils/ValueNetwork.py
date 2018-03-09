@@ -41,7 +41,7 @@ class A2CValueNetwork(torch.nn.Module):
 
     def compute(self, observations):
         observations  = [self.transform(obs) for obs in observations]
-        observations = torch.autograd.Variable(torch.stack(observations)).type(self.dtype.FloatTensor) 
+        observations = torch.autograd.Variable(torch.stack(observations),volatile=True).type(self.dtype.FloatTensor) 
         return self.forward(observations)
 
     def train(self, batch_size, observations_batch, returns_batch, learning_rate):
