@@ -28,10 +28,10 @@ class Config(DefaultConfig):
         #
         # Transforms.
         self.transforms = transforms.Compose([
-            Perterbations.RandomShift(self.hyperparam.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps),
-            Perterbations.RandomHorizontalFlip(0.5),
+            Perterbations.RandomShift(self.hyperparam.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps, mode),
+            Perterbations.RandomHorizontalFlip(0.5, mode),
             DataUtil.Rescale(self.hyperparam.image_shape),
-            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5), # The effects of this must be tuned.
+            Perterbations.ColourJitter(0.7, 0.7, 0.7, 0.5, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
 

@@ -50,7 +50,10 @@ class RandomShift(object):
 
     '''
 
-    def __init__(self, outputSize, shiftBounds,  nSteps):
+    def __init__(self, outputSize, shiftBounds,  nSteps, mode = 'train'):
+        self.tform = self.randomShift
+        if mode is not 'train':
+            self.tform = CenterCrop(outputSize)
         #
         # Output size.
         if isinstance(outputSize, int):
@@ -94,10 +97,13 @@ class RandomShift(object):
         self.shiftsx[self.midIdxX] = 0
         self.shiftsy[self.midIdxY] = 0
 
+    def __call__(self, sample):
+        return self.tform(sample)
+
     def getShiftBounds(self):
         return self.shiftsx, self.shiftsy
 
-    def __call__(self, sample):
+    def randomShift(self, sample):
         image, labels = sample['img'], sample['labels']
         img_w, img_h = image.size
         bnd_x, bnd_y = self.bounds
@@ -158,56 +164,67 @@ class ColourJitter(object):
         hue(float): How much to jitter hue. hue_factor is chosen uniformly from
             [-hue, hue]. Should be >=0 and <= 0.5.
     """
-    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
-        self.brightness = brightness 
-        self.contrast = contrast 
-        self.saturation = saturation 
-        self.hue = hue 
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0, mode='train'):
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.hue = hue
+        self.train = mode == 'train'
 
     def __call__(self, sample):
-        t = transforms.ColorJitter.get_params(self.brightness, self.contrast,
-                                              self.saturation, self.hue)
-        return {'img': t(sample['img']),
+        img = sample['img']
+        if self.train:
+            t = transforms.ColorJitter.get_params(self.brightness, self.contrast,
+                                                  self.saturation, self.hue)
+            img = t(img)
+        return {'img': img,
                 'labels': sample['labels'],
                 'meta': sample['meta']}
 
 class RandomHorizontalFlip(object):
     """Randomly rotate an image between the specified angles.
-    
+
     Args:
-        flipProb (float): Probability of flipping the image horizontally. 
+        flipProb (float): Probability of flipping the image horizontally.
     """
-    def __init__(self, flipProb):
+    def __init__(self, flipProb, mode='train'):
         self.flipProb = flipProb
+        self.train = mode == 'train'
 
     def __call__(self, sample):
-        flip = random.random() < self.flipProb
-        im = ImageOps.mirror(sample['img'])
-        # 
-        # Flip the labels of the mask to match the flipped image.
-        dx, dy = sample['meta']['shift']
-        dx *= -1
-        dy *= -1 
-        sample['meta']['shift'] = (dx, dy)
         labels = sample['labels']
         mask = labels[1:]
-        mask = np.flip(mask, 0)
+        im = sample['img']
+        if self.train:
+            flip = random.random() < self.flipProb
+            im = ImageOps.mirror(im)
+            #
+            # Flip the labels of the mask to match the flipped image.
+            dx, dy = sample['meta']['shift']
+            dx *= -1
+            dy *= -1
+            sample['meta']['shift'] = (dx, dy)
+            mask = np.flip(mask, 0)
         return {'img': im,
                 'labels': np.append(labels[0], mask),
                 'meta': sample['meta']}
 
 class RandomRotation(object):
     """Randomly rotate an image between the specified angles.
-    
+
     Args:
         deg (float): Extents of the random rotation.
     """
-    def __init__(self, deg):
-        # 
+    def __init__(self, deg, mode='train'):
+        #
         # TODO: Possibly extend this to work for a larger range and choose the closest correct grid location.
         self.t = transforms.RandomRotation(deg)
+        self.train = mode == 'train'
 
     def __call__(self, sample):
-        return {'img': self.t(sample['img']),
+        img = sample['img']
+        if self.train:
+            img = self.t(img)
+        return {'img': img,
                 'labels': sample['labels'],
                 'meta': sample['meta']}

@@ -13,10 +13,10 @@ from config.DefaultNNConfig import DefaultConfig
 class Config(DefaultConfig):
     #
     # Initialize.
-    def __init__(self, type = 'train'):
+    def __init__(self, mode = 'train'):
         nSteps = (2, 0)
-        loadpath = '/Users/daniel/models/model_best.pth.tar'
-        if type == 'train':
+        loadpath = '/disk1/model/rl_data-noscale_model_best.pth.tar'
+        if mode == 'train':
             loadpath = None
         super(Config, self).__init__(loadPath = loadpath)
         #
@@ -35,8 +35,8 @@ class Config(DefaultConfig):
             # Perterbations.CenterCrop(self.hyperparam.cropShape),
             # DataUtil.Rescale(self.hyperparam.image_shape),
             Perterbations.CenterCrop(self.hyperparam.image_shape),
-            Perterbations.RandomHorizontalFlip(0.5),
-            Perterbations.ColourJitter(0.25, 0.25, 0.25, 0.1), # The effects of this must be tuned.
+            Perterbations.RandomHorizontalFlip(0.5, mode),
+            Perterbations.ColourJitter(0.25, 0.25, 0.25, 0.1, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
         self.experimentName = 'rl_data-noscale'
