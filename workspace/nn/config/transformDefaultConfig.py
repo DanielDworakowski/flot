@@ -21,6 +21,7 @@ class Config(DefaultConfig):
         #
         # How far to shift the image.
         self.hyperparam.shiftBounds = (90, 0)
+        self.hyperparam.cropShape = (448, 448)
         self.hyperparam.nSteps = nSteps
         self.hyperparam.numEpochs = 32
         self.epochSaveInterval = 1

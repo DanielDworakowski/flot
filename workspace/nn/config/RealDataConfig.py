@@ -27,19 +27,20 @@ class Config(DefaultConfig):
         self.hyperparam.shiftBounds = (0, 0)
         self.hyperparam.nSteps = nSteps
         self.hyperparam.numEpochs = 32
+        self.hyperparam.cropShape = (448, 448)
         self.epochSaveInterval = 1
         self.modelSavePath = '/disk1/model/'
         #
         # Transforms.
         self.transforms = transforms.Compose([
-            # Perterbations.CenterCrop(self.hyperparam.cropShape),
-            # DataUtil.Rescale(self.hyperparam.image_shape),
-            Perterbations.CenterCrop(self.hyperparam.image_shape),
+            Perterbations.CenterCrop(self.hyperparam.cropShape),
+            DataUtil.Rescale(self.hyperparam.image_shape),
+            # Perterbations.CenterCrop(self.hyperparam.image_shape),
             Perterbations.RandomHorizontalFlip(0.5, mode),
             Perterbations.ColourJitter(0.25, 0.25, 0.25, 0.1, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
-        self.experimentName = 'rl_data-noscale'
+        self.experimentName = 'rl_data-rescale'
         self.dataValList = ['/disk1/rldata/20180223_220314',]
         self.dataTrainList = [
         '/disk1/rldata/20180306_012910',
