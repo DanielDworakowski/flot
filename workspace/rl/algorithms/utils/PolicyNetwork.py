@@ -83,7 +83,6 @@ class A2CPolicyNetwork(torch.nn.Module):
             losses.append(loss.cpu().data.numpy()[0])
             loss.backward()
             optimizer.step()
-            torch.cuda.empty_cache()
             policy_network_loss = np.mean(losses)
 
         return policy_network_loss

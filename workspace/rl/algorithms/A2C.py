@@ -66,6 +66,9 @@ class Agent:
         # Training iterations
         while total_timesteps < self.training_params['total_timesteps']:
 
+            if total_episodes == 1:
+                pdb.set_trace()
+
             # Collect batch of data
             trajectories, returns, undiscounted_returns, advantages, batch_size, episodes = self.collect_trajs(total_timesteps)
             observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch = self.traj_to_batch(trajectories, returns, advantages) 
