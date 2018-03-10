@@ -1,12 +1,13 @@
+import os
+import torch
+import numpy as np
 from debug import *
 import AgentBase as base
-import Observations as obv
-import os
-import numpy as np
-import torch
-from torchvision import transforms
-from torch.autograd import Variable
 from Actions import Action
+import Observations as obv
+from torchvision import transforms
+import nn.util.DataUtil as DataUtil
+from torch.autograd import Variable
 #
 # Neural network agent class.
 class Agent(base.AgentBase):
@@ -25,6 +26,7 @@ class Agent(base.AgentBase):
             if self.usegpu:
                 checkpoint = torch.load(self.conf.modelLoadPath)
             else:
+                print('Running the agent on CPU!')
                 checkpoint = torch.load(self.conf.modelLoadPath, map_location={'cuda:0': 'cpu'})
             self.model = checkpoint['model']
             self.nnconf = checkpoint['conf']
@@ -39,6 +41,13 @@ class Agent(base.AgentBase):
 
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
+        self.t = transforms.Compose([transforms.ToTensor()])
+        if any(isinstance(tf, DataUtil.Rescale) for tf in self.t.transforms):
+            self.model_input_img_shape = (self.nnconf.cropshape[0],self.nnconf.cropshape[1],3)
+            self.t = transforms.Compose([
+                transforms.Rescale(conf.hyperparam.image_shape),
+                transforms.ToTensor(),
+            ])
         #
         # Heuristic Parameters
         #
@@ -98,10 +107,11 @@ class Agent(base.AgentBase):
 
             # Runs classification over each cropped image
             for idx, cropped_img in enumerate(cropped_imgs):
+                img = self.t(cropped_img)
                 if self.usegpu:
-                    img = Variable(self.toTensor(cropped_img).unsqueeze_(0).cuda())
+                    img = Variable(img.unsqueeze_(0).cuda(async=True))
                 else:
-                    img = Variable(self.toTensor(cropped_img).unsqueeze_(0))
+                    img = Variable(img.unsqueeze_(0))
 
                 classActivation = self.model(img)
                 collision_free_pred = classActivation.data
