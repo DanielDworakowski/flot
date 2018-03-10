@@ -16,7 +16,7 @@ class A2CValueNetwork(torch.nn.Module):
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 1)
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((224,224), interpolation=Image.CUBIC), transforms.ToTensor()])
         self.loss_fn = torch.nn.MSELoss()
-        self.mini_batch_size = 5
+        self.mini_batch_size = 32
   
     def forward(self, x):
         output = None
@@ -27,13 +27,9 @@ class A2CValueNetwork(torch.nn.Module):
             for i in idxs:
                 model_out = self.model(x[last_idx:i,:,:,:]).data.cpu().numpy()
                 output.append(model_out)
-                del model_out
-                torch.cuda.empty_cache()
                 last_idx = i
             model_out = self.model(x[last_idx:,:,:,:]).data.cpu().numpy()
             output.append(model_out)
-            del model_out
-            torch.cuda.empty_cache()
             output = np.concatenate(output)
         else:
             output = self.model(x).cpu().numpy()
@@ -62,7 +58,7 @@ class A2CValueNetwork(torch.nn.Module):
                 losses.append(loss.cpu().data.numpy()[0])
                 loss.backward()
                 optimizer.step()
-                torch.cuda.empty_cache()
+                last_idx = i
             obs = torch.autograd.Variable(observations_batch[last_idx:,:,:,:]).type(self.dtype.FloatTensor)
             model_out = self.model(obs)
             target = torch.autograd.Variable(torch.Tensor(returns_batch[last_idx:])).type(self.dtype.FloatTensor)
@@ -72,7 +68,6 @@ class A2CValueNetwork(torch.nn.Module):
             value_network_loss = np.mean(losses)
             loss.backward()
             optimizer.step()
-            torch.cuda.empty_cache()
         else:
             model_out = self.model(torch.autograd.Variable(observations_batch).type(self.dtype.FloatTensor))
             target = torch.autograd.Variable(torch.Tensor(returns_batch)).type(self.dtype.FloatTensor)
@@ -81,7 +76,6 @@ class A2CValueNetwork(torch.nn.Module):
             value_network_loss = loss.cpu().data.numpy()[0]
             loss.backward()
             optimizer.step()
-            torch.cuda.empty_cache()
 
         return value_network_loss
   

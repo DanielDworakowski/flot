@@ -16,7 +16,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.model = models.resnet18(pretrained=True)
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, self.action_dim*2)
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((224,224), interpolation=Image.CUBIC), transforms.ToTensor()])
-        self.mini_batch_size = 5
+        self.mini_batch_size = 32
   
     def forward(self, x):
         return self.model(x)
@@ -30,10 +30,18 @@ class A2CPolicyNetwork(torch.nn.Module):
         return distribution.sample().cpu().numpy()
   
     def train(self, observations_batch, actions_batch, advantages_batch, learning_rate):
+        optimizer = torch.optim.Adam(self.parameters(), learning_rate)
+
         advantages_batch = np.squeeze(np.array(advantages_batch))
         actions_batch = np.array(actions_batch)
-        optimizer = torch.optim.Adam(self.parameters(), learning_rate)
         observations_batch  = torch.stack([self.transform(obs) for obs in observations_batch])
+        rand_idx = np.random.permutation(observations_batch.shape[0])
+    
+        advantages_batch = advantages_batch[rand_idx]
+        actions_batch = actions_batch[rand_idx]
+        observations_batch  = observations_batch[rand_idx,:,:,:]
+        
+
         if observations_batch.shape[0] > self.mini_batch_size:
             idxs = list(range(self.mini_batch_size,observations_batch.shape[0],self.mini_batch_size))
             last_idx = 0
@@ -50,7 +58,7 @@ class A2CPolicyNetwork(torch.nn.Module):
                 losses.append(loss.cpu().data.numpy()[0])
                 loss.backward()
                 optimizer.step()
-                torch.cuda.empty_cache()
+                last_idx = i
             obs = torch.autograd.Variable(observations_batch[last_idx:,:,:,:]).type(self.dtype.FloatTensor)
             action = torch.autograd.Variable(torch.Tensor(actions_batch[last_idx:])).type(self.dtype.FloatTensor) 
             advantage = torch.autograd.Variable(torch.Tensor(advantages_batch[last_idx:])).type(self.dtype.FloatTensor) 
@@ -62,7 +70,6 @@ class A2CPolicyNetwork(torch.nn.Module):
             losses.append(loss.cpu().data.numpy()[0])
             loss.backward()
             optimizer.step()
-            torch.cuda.empty_cache()
             policy_network_loss = np.mean(losses)
         else:
             obs = torch.autograd.Variable(observations_batch).type(self.dtype.FloatTensor)
@@ -78,8 +85,6 @@ class A2CPolicyNetwork(torch.nn.Module):
             optimizer.step()
             torch.cuda.empty_cache()
             policy_network_loss = np.mean(losses)
-
-        pdb.set_trace()
 
         return policy_network_loss
   

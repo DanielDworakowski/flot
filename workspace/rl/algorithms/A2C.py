@@ -20,7 +20,7 @@ class Agent:
                                    'total_timesteps':1000000,
                                    'desired_kl':2e-3},
                  algorithm_params = {'gamma':0.99, 
-                                    'learning_rate':1e-3}):
+                                    'learning_rate':1e-6}):
 
         self.env = env
         self.dtype = torch.cuda
@@ -75,21 +75,26 @@ class Agent:
             total_episodes += episodes
 
             # Learning rate adaptation
-            learning_rate = self.update_lr(kl)
+            learning_rate = self.algorithm_params['learning_rate']
 
             # Average undiscounted return for the last data collection
             average_reward = np.mean(undiscounted_returns)
 
+            if average_reward > best_average_reward:
+                self.save()
+                best_average_reward = average_reward
+
             ##### Optimization #####
 
-            value_network_loss =self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
+            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
             self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
+            torch.cuda.empty_cache()
 
-            policy_network_loss, kl =self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
+            policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
             self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
-            self.writer.add_scalar("data/kl", value_network_loss, total_timesteps)
+            torch.cuda.empty_cache()
 
-            self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, kl, policy_network_loss, value_network_loss, average_advantage, learning_rate, batch_size)
+            self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
 
         self.writer.close()
 
@@ -172,11 +177,6 @@ class Agent:
         action = self.policy_network.compute(observation)
         return action
 
-    # Log rewards
-    def log_rewards(self, rewards, timestep):
-        reward_summary = self.sess.run([self.reward_summary], {self.average_reward:np.sum(rewards)})[0]
-        self.writer.add_summary(reward_summary, timestep)
-
     # Convert trajectories to batches
     def traj_to_batch(self, trajectories, returns, advantages):
         ##### Data Prep #####
@@ -203,14 +203,6 @@ class Agent:
 
         return [observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch]
 
-    # Update learning rate
-    def update_lr(self, kl):
-        if kl > self.training_params['desired_kl'] * 2: 
-            self.algorithm_params['learning_rate'] /= 1.5
-        elif kl < self.training_params['desired_kl'] / 2: 
-            self.algorithm_params['learning_rate'] *= 1.5
-        return self.algorithm_params['learning_rate']
-
     # Train value network
     def train_value_network(self, batch_size, observations_batch, returns_batch, learning_rate):
         loss = self.value_network.train(batch_size, observations_batch, returns_batch, learning_rate)
@@ -222,11 +214,11 @@ class Agent:
         return loss
 
     # Print stats
-    def print_stats(self, total_timesteps, total_episodes, best_average_reward, average_reward, kl, policy_network_loss, value_network_loss, average_advantage, learning_rate, batch_size):
+    def print_stats(self, total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size):
         ##### Reporting Performance #####
           
         # Printing performance progress and other useful infromation
         print("_______________________________________________________________________________________________________________________________________________________________________________________________________________")
-        print("{:>15} {:>15} {:>15} {:>15} {:>20} {:>20} {:>20} {:>20} {:>10} {:>15}".format("total_timesteps", "episodes", "best_reward", "reward", "kl_divergence", "policy_loss", "value_loss", "average_advantage", "lr", "batch_size"))
-        print("{:>15} {:>15} {:>15.2f} {:>15.2f} {:>20.5E} {:>20.2f} {:>20.2f} {:>20.2f} {:>10.2E} {:>15}".format(total_timesteps, total_episodes, best_average_reward, average_reward, kl, policy_network_loss, value_network_loss, average_advantage, learning_rate, batch_size))
+        print("{:>15} {:>15} {:>15} {:>15} {:>20} {:>20} {:>10} {:>15}".format("total_timesteps", "episodes", "best_reward", "reward", "policy_loss", "value_loss", "lr", "batch_size"))
+        print("{:>15} {:>15} {:>15.2f} {:>15.2f} {:>20.2f} {:>20.2f} {:>10.2E} {:>15}".format(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size))
 
