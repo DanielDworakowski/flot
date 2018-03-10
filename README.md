@@ -2,7 +2,7 @@
 
 Autonomous blimp project.
 
-meetfibi.com
+http://meetfibi.com
 
 # Installed Software
 
