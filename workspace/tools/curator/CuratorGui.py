@@ -5,6 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PIL.ImageQt import ImageQt
+from torchvision import transforms
 from torch.autograd import Variable
 import tools.visualization as visutil
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -82,11 +83,13 @@ class NNVis(object):
     def __init__(self, conf, model):
         self.conf = conf
         self.model = model
-        self.visModelCB = lambda img, idx: img
+        self.visModelCB = lambda img, idx: (Image.fromarray(np.zeros((1,1,3), dtype=np.uint8)), img)
         self.rgbTable = visutil.rtobTable()
         self.sm = None
         self.lIdx = -1
         self.lastImg = None
+        self.lastNet = None
+        self.toPIL = transforms.ToPILImage()
         if self.conf != None:
             import torch
             from config.DefaultNNConfig import getDefaultTransform
@@ -99,11 +102,11 @@ class NNVis(object):
         #
         # If the current image being looked at is the same as the last image, do not process.
         if self.lIdx == idx:
-            return self.lastImg
+            return self.lastNet, self.lastImg
         #
         # Process the new image.
         draw = ImageDraw.Draw(img)
-        sample = {'img': img, 'labels': np.array([0]), 'meta': np.array([0])}
+        sample = {'img': img, 'labels': np.array([0]), 'meta': {'shift':(0,0)}}
         data = self.t(sample)
         if self.conf.usegpu:
             labels = Variable(data['labels'].squeeze_()).cuda(async = True)
@@ -111,10 +114,12 @@ class NNVis(object):
         else:
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
-        visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, self.conf, posClasses)
+        visutil.drawTrajectoryDots(0, 0, 12, img.size, self.rgbTable, draw, self.conf, posClasses)
         self.lIdx = idx
+        retnet = self.toPIL(data['img'].squeeze_())
         self.lastImg = img
-        return img
+        self.lastNet = retnet
+        return retnet, img
 
     def getTrainThreshold(self):
         if self.conf != None:
@@ -149,6 +154,11 @@ class CuratorGui(QMainWindow):
         self.dispImg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.savebutton = QPushButton('Save', self)
         #
+        # Network image.
+        self.netimg = QLabel('', self)
+        self.netimg.setAlignment(QtCore.Qt.AlignCenter)
+        self.netimg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #
         # Set the indicator.
         self.labOnOff = QLabel('Status', self)
         self.curLab = QLabel('Current Label', self)
@@ -171,7 +181,10 @@ class CuratorGui(QMainWindow):
         gridLayout.addWidget(self.labelBox, 0, 0)
         gridLayout.addWidget(self.dispImg, 1, 0)
         gridLayout.addWidget(self.labelBar, 2, 0)
+        gridLayout.addWidget(self.netimg, 3, 0)
         self.labelBox.setLayout(hlayout)
+        #
+        # Size hint.
         #
         # Keyboard shortcuts.
         self.rArrow = QShortcut(QKeySequence("right"), self)
@@ -204,10 +217,15 @@ class CuratorGui(QMainWindow):
         draw = ImageDraw.Draw(img)
         #
         # Convert to Qt for presentation.
-        img = self.modelVis.visModelCB(img, self.dIdx)
+        netData, img = self.modelVis.visModelCB(img, self.dIdx)
+        #
+        # Show all images.
         imgqt = ImageQt(img)
         pix = QtGui.QPixmap.fromImage(imgqt)
         self.dispImg.setPixmap(pix)
+        imgqt = ImageQt(netData)
+        pix = QtGui.QPixmap.fromImage(imgqt)
+        self.netimg.setPixmap(pix)
         #
         # Create the distance information text.
         self.distTxt.setText('%0.2f'%dist)
@@ -292,6 +310,11 @@ class CuratorGui(QMainWindow):
 
     def setModel(self, model, conf):
         if model != None:
+            #
+            # Resize the window for the bottom.
+            self.setMinimumSize(QSize(700, 550+224))
+            #
+            # Setup visualization for the network.
             self.modelVis = NNVis(conf, model)
             thresh = self.modelVis.getTrainThreshold()
             if thresh is not None:
