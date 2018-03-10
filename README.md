@@ -1,6 +1,8 @@
 # flot
 
-Docker Enviroment for Robotics/AI Research
+Autonomous blimp project.
+
+meetfibi.com
 
 # Installed Software
 
