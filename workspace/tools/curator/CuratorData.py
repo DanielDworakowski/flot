@@ -41,6 +41,10 @@ class CuratorData(object):
             self.df = pd.read_csv(dataFile)
             self.df['usable'] = 1
             self.df['labelled'] = 0
+        try:
+            self.df = self.df.drop(['collision_free'], axis=1)
+        except:
+            pass
         self.png = self.df['PNG']
         self.size = len(self.png)
         self.df.index.name = idxcol

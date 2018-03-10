@@ -90,7 +90,8 @@ class NNVis(object):
         if self.conf != None:
             import torch
             from config.DefaultNNConfig import getDefaultTransform
-            self.t = getDefaultTransform(conf)
+            # self.t = getDefaultTransform(conf)
+            self.t = self.conf.transforms
             self.sm = torch.nn.Softmax(dim = 1)
             self.visModelCB = self.visModel
 
@@ -114,6 +115,11 @@ class NNVis(object):
         self.lIdx = idx
         self.lastImg = img
         return img
+
+    def getTrainThreshold(self):
+        if self.conf != None:
+            return self.conf.distThreshold
+        return None
 
 class CuratorGui(QMainWindow):
 
@@ -287,6 +293,10 @@ class CuratorGui(QMainWindow):
     def setModel(self, model, conf):
         if model != None:
             self.modelVis = NNVis(conf, model)
+            thresh = self.modelVis.getTrainThreshold()
+            if thresh is not None:
+                self.data.labelConf.distanceThreshold = thresh
+
 
     def saveCB(self, event):
         print('Saving data!')

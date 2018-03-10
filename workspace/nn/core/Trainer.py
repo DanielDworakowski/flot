@@ -79,7 +79,7 @@ class Trainer():
             self.logEpoch = logEpochTensorboard
             self.closeLogger = closeTensorboard
 
-    def __saveCheckpoint(self, epoch, isBest):
+    def __saveCheckpoint(self, epoch, isBest, acc):
         ''' Save a model.
         '''
         state = {
@@ -89,7 +89,7 @@ class Trainer():
                     'model': self.model,
                     'conf': self.conf
                 }
-        savePath = '%s/%s_epoch_%s.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch)
+        savePath = '%s/%s_epoch_%s_%1.2f.pth.tar'%(self.conf.modelSavePath, time.strftime('%d-%m-%Y-%H-%M-%S'), epoch, acc)
         torch.save(state, savePath)
         if isBest:
             shutil.move(savePath, '%s/%s_model_best.pth.tar'%(self.conf.modelSavePath, self.conf.experimentName))
@@ -178,7 +178,7 @@ class Trainer():
                 #
                 # Save model as needed.
                 if ((epoch % self.conf.epochSaveInterval) == 0 and phase == 'train') or isBest:
-                    self.__saveCheckpoint(epoch, isBest)
+                    self.__saveCheckpoint(epoch, isBest, epochAcc)
         #
         # Copy back the best model.
         self.model.load_state_dict(self.bestModel)

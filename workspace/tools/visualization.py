@@ -38,7 +38,7 @@ def getConfig(args):
 #
 # Generate a lookup table for a colour gradient from r -> b gradients
 def rtobTable():
-    rng = 255
+    rng = 256
     r,g,b = 255, 20, 0
     dr = -1.
     dg = 0.
@@ -265,7 +265,7 @@ def visualize(conf, args):
         plotTrajectory(args, conf, dataloader, dataset)
     if args.pltMeanTraj:
         plotMeanTraj(args, conf)
-# 
+#
 # View a tensor.
 def showTensor(tensor):
     from torchvision import transforms
