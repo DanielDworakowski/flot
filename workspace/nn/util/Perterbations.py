@@ -196,15 +196,15 @@ class RandomHorizontalFlip(object):
         mask = labels[1:]
         im = sample['img']
         if self.train:
-            flip = random.random() < self.flipProb
-            im = ImageOps.mirror(im)
-            #
-            # Flip the labels of the mask to match the flipped image.
-            dx, dy = sample['meta']['shift']
-            dx *= -1
-            dy *= -1
-            sample['meta']['shift'] = (dx, dy)
-            mask = np.flip(mask, 0)
+            if random.random() < self.flipProb:
+                im = ImageOps.mirror(im)
+                #
+                # Flip the labels of the mask to match the flipped image.
+                dx, dy = sample['meta']['shift']
+                dx *= -1
+                dy *= -1
+                sample['meta']['shift'] = (dx, dy)
+                mask = np.flip(mask, 0)
         return {'img': im,
                 'labels': np.append(labels[0], mask),
                 'meta': sample['meta']}
