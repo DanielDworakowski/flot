@@ -16,7 +16,7 @@ class A2CValueNetwork(torch.nn.Module):
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 1)
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((224,224), interpolation=Image.CUBIC), transforms.ToTensor()])
         self.loss_fn = torch.nn.MSELoss()
-        self.mini_batch_size = 32
+        self.mini_batch_size = 28
   
     def forward(self, x):
         output = None
@@ -25,20 +25,19 @@ class A2CValueNetwork(torch.nn.Module):
             idxs = list(range(self.mini_batch_size,x.shape[0],self.mini_batch_size))
             last_idx = 0
             for i in idxs:
-                model_out = self.model(x[last_idx:i,:,:,:]).data.cpu().numpy()
+                model_out = self.model(torch.autograd.Variable(x[last_idx:i,:,:,:],volatile=True).type(self.dtype.FloatTensor)).data.cpu().numpy()
                 output.append(model_out)
                 last_idx = i
-            model_out = self.model(x[last_idx:,:,:,:]).data.cpu().numpy()
+            model_out = self.model(torch.autograd.Variable(x[last_idx:,:,:,:],volatile=True).type(self.dtype.FloatTensor)).data.cpu().numpy()
             output.append(model_out)
             output = np.concatenate(output)
         else:
-            output = self.model(x).cpu().numpy()
+            output = self.model(torch.autograd.Variable(x,volatile=True).type(self.dtype.FloatTensor)).cpu().numpy()
         return output
 
     def compute(self, observations):
         observations  = [self.transform(obs) for obs in observations]
-        observations = torch.autograd.Variable(torch.stack(observations),volatile=True).type(self.dtype.FloatTensor) 
-        return self.forward(observations)
+        return self.forward(torch.stack(observations))
 
     def train(self, batch_size, observations_batch, returns_batch, learning_rate):
         returns_batch = np.squeeze(np.array(returns_batch))

@@ -22,6 +22,8 @@ class Agent:
                  algorithm_params = {'gamma':0.99, 
                                     'learning_rate':1e-6}):
 
+        torch.backends.cudnn.benchmark = True
+
         self.env = env
         self.dtype = torch.cuda
 
@@ -66,9 +68,6 @@ class Agent:
         # Training iterations
         while total_timesteps < self.training_params['total_timesteps']:
 
-            if total_episodes == 1:
-                pdb.set_trace()
-
             # Collect batch of data
             trajectories, returns, undiscounted_returns, advantages, batch_size, episodes = self.collect_trajs(total_timesteps)
             observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch = self.traj_to_batch(trajectories, returns, advantages) 
@@ -88,18 +87,22 @@ class Agent:
                 best_average_reward = average_reward
 
             ##### Optimization #####
-
-            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
-            self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
-            torch.cuda.empty_cache()
-
-            policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
-            self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
-            torch.cuda.empty_cache()
+            value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate)
+            torch.cuda.empty_cache()            
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
 
         self.writer.close()
+
+    def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate ):
+        value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
+        self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
+        torch.cuda.empty_cache()
+
+        policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
+        self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
+        torch.cuda.empty_cache()
+        return value_network_loss, policy_network_loss
 
     ##### Helper Functions #####
 
@@ -141,6 +144,7 @@ class Agent:
 
             # Compute the value estimates for the observations seen during this episode
             values = np.squeeze(self.value_network.compute(observations))
+            torch.cuda.empty_cache()
 
             # Computing the advantage estimate
             advantage = return_ - values
