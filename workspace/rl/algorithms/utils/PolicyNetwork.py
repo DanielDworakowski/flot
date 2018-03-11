@@ -16,7 +16,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.model = models.resnet18(pretrained=True)
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, self.action_dim*2)
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((224,224), interpolation=Image.CUBIC), transforms.ToTensor()])       
-        self.mini_batch_size = 28
+        self.mini_batch_size = 32
   
     def forward(self, x):
         return self.model(x)

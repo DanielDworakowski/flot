@@ -16,7 +16,7 @@ class A2CValueNetwork(torch.nn.Module):
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 1)
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((224,224), interpolation=Image.CUBIC), transforms.ToTensor()])
         self.loss_fn = torch.nn.MSELoss()
-        self.mini_batch_size = 28
+        self.mini_batch_size = 32
   
     def forward(self, x):
         output = None

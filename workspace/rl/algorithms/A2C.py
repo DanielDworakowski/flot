@@ -20,7 +20,7 @@ class Agent:
                                    'total_timesteps':1000000,
                                    'desired_kl':2e-3},
                  algorithm_params = {'gamma':0.99, 
-                                    'learning_rate':1e-6}):
+                                    'learning_rate':1e-7}):
 
         torch.backends.cudnn.benchmark = True
 
