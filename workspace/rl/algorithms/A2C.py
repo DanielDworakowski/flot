@@ -19,8 +19,8 @@ class Agent:
                  training_params = {'min_batch_size':1000,
                                    'total_timesteps':1000000,
                                    'desired_kl':2e-3},
-                 algorithm_params = {'gamma':0.99, 
-                                    'learning_rate':1e-7}):
+                 algorithm_params = {'gamma':0.97, 
+                                    'learning_rate':3e-7}):
 
         torch.backends.cudnn.benchmark = True
 
@@ -137,6 +137,8 @@ class Agent:
             total_timesteps += len(rewards)
             episodes += 1
 
+            observations.insert(1,observations[0])
+
             # Episode trajectory
             trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones)}
             trajectories.append(trajectory)
@@ -165,12 +167,13 @@ class Agent:
         done = False
 
         observations, actions, rewards, dones = [], [], [], []
+
         while not done:
             # Collect the observation
             observations.append(observation)
 
             # Sample action with current policy
-            action = self.compute_action(observation)
+            action = self.compute_action(observations)
             # Take action in environment
             observation, reward, done = self.env.step(action)
 
