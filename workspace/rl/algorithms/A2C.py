@@ -86,6 +86,8 @@ class Agent:
                 self.save()
                 best_average_reward = average_reward
 
+            self.writer.add_scalar("data/average_reward", average_reward, total_timesteps)
+
             ##### Optimization #####
             value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate)
             torch.cuda.empty_cache()            
