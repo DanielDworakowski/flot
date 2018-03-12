@@ -51,10 +51,12 @@ docker save -o <save image to path> <image name>
 docker load -i <path to image tar file>
 
 # Data collection on the rasp pi
-1. Run roscore on pi
-2. Run roslaunch blimp_control datacollect.launch on pi (check if camera_stream.sh script's IP is your ip)
-3. Copy to host
-4. Run ffmpeg -i video.h264 image_%06d.png to extract training data
+1. ```rosmaster --core``` on pi
+2. ```roslaunch blimp_control datacollect.launch``` on pi (check if camera_stream.sh script's IP is your ip)
+3. Copy data to host from ~/.ros/<date-and-time>
+4. ```ffmpeg -i video.h264 image_%06d.png``` to extract training data
+5. ```python flot/workspace/tools/blimp_data_postprocessing.py --file <new-file>```
+6. ```python flot/workspace/tools/curator/curator.py --path <new-file>```
 
 The data from step 2 will be saved in ~/.ros in a folde
 
