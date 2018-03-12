@@ -91,6 +91,7 @@ class A2CPolicyNetwork(torch.nn.Module):
                 loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1))
                 losses.append(loss.cpu().data.numpy()[0])
                 loss.backward()
+                torch.nn.utils.clip_grad_norm(self.parameters(), 40)
                 optimizer.step()
                 last_idx = i
             obs_cat = torch.cat([observations_batch[last_idx+1:,:,:,:],observations_batch[last_idx:-1,:,:,:]],1)
@@ -104,6 +105,7 @@ class A2CPolicyNetwork(torch.nn.Module):
             loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1))
             losses.append(loss.cpu().data.numpy()[0])
             loss.backward()
+            torch.nn.utils.clip_grad_norm(self.parameters(), 40)
             optimizer.step()
             policy_network_loss = np.mean(losses)
         else:

@@ -8,6 +8,6 @@ env_settings = {
                                   'total_timesteps':10000000,
                                   'desired_kl':2e-3},
                algorithm_params = {'gamma':0.97, 
-                                   'learning_rate':3e-7}               
+                                   'learning_rate':1e-4}               
                ),
 }
