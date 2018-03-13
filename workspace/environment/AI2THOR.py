@@ -4,8 +4,8 @@ import time
 import ai2thor_map
 
 class AI2THOR():
-    screen_w = 600
-    screen_h = 400
+    screen_w = 680
+    screen_h = 480
     controller = ai2thor_src.ai2thor.controller.BFSController()
     controller.start(player_screen_width=screen_w, player_screen_height=screen_h)
     
