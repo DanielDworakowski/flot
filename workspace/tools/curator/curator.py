@@ -22,7 +22,7 @@ def getConfig(args):
     if args.configStr != None:
         config_module = __import__('config.' + args.configStr)
         configuration = getattr(config_module, args.configStr)
-        conf = configuration.Config('train')
+        conf = configuration.Config('test')
         model = conf.hyperparam.model.eval()
     return conf, model
 #
