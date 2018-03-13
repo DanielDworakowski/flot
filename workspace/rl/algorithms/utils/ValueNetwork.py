@@ -29,7 +29,7 @@ class A2CValueNetwork(torch.nn.Module):
 
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((224,224), interpolation=Image.CUBIC), transforms.ToTensor()])
         self.loss_fn = torch.torch.nn.MSELoss()
-        self.mini_batch_size = 64
+        self.mini_batch_size = 32
 
     def model(self, x):
         x = self.batchnorm0(x)
@@ -50,13 +50,11 @@ class A2CValueNetwork(torch.nn.Module):
             idxs = list(range(self.mini_batch_size,x.shape[0],self.mini_batch_size))
             last_idx = 0
             for i in idxs:
-                obs_cat = torch.cat([x[last_idx+1:i+1,:,:,:],x[last_idx:i,:,:,:]],1)
-                obs = torch.autograd.Variable(obs_cat).type(self.dtype.FloatTensor)
+                obs = torch.autograd.Variable(x[last_idx:i,:,:,:]).type(self.dtype.FloatTensor)
                 model_out = self.model(obs).data.cpu().numpy()
                 output.append(model_out)
                 last_idx = i
-            obs_cat = torch.cat([x[last_idx+1:,:,:,:],x[last_idx:-1,:,:,:]],1)
-            obs = torch.autograd.Variable(obs_cat).type(self.dtype.FloatTensor)
+            obs = torch.autograd.Variable(x[last_idx:,:,:,:]).type(self.dtype.FloatTensor)
             model_out = self.model(obs).data.cpu().numpy()
             output.append(model_out)
             output = np.concatenate(output)

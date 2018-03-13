@@ -18,7 +18,6 @@ class Env():
         self.env = gym.wrappers.Monitor(self.env, "/home/rae/videos/"+self.env_name, force=True)
 
     def step(self, action, render):
-        action = np.clip(action,-1,1)
         self.state, self.reward, self.done, _ = self.env.step(action)
         self.image = self.env.render("rgb_array")
         return self.image, self.reward, self.done
