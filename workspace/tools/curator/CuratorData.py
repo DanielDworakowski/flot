@@ -16,7 +16,7 @@ def natural_keys(text):
     return [atoi(c) for c in re.split('(\d+)', text)]
 
 class AutoLabelConf(object):
-    distanceThreshold = 0.5
+    distanceThreshold = 0.7
     consecutiveZeroForPositive = 5
     medianFilterSizer = 5
     maxDistanceMarker = 9999

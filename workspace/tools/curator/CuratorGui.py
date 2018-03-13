@@ -97,7 +97,7 @@ class ForceButton(QAbstractButton):
         painter = QPainter(self)
         idx = self.parent.data.df['forcedLabel'].as_matrix().astype(np.int8)
         self.rgbMatrix[0, (idx <  0), :] = np.array([200, 19, 56]) # Bad.
-        self.rgbMatrix[0, (idx == 0), :] = np.array([60, 60, 60]) # neutral.
+        self.rgbMatrix[0, (idx == 0), :] = np.array([120, 120, 120]) # neutral.
         self.rgbMatrix[0, (idx >  0), :] = np.array([20, 200, 60]) # Good.
         #
         # Set a white line at the current index.
