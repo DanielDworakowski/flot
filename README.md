@@ -1,4 +1,4 @@
-# flot
+# flōt
 
 http://meetfibi.com
 
