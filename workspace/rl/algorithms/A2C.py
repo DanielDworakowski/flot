@@ -161,11 +161,8 @@ class Agent:
     # Run one episode
     def run_one_episode(self, total_timesteps):
 
-        render = False
-
-        if total_timesteps >1000:
-            render = True
-
+        render = True
+        
         # Restart env
         observation = self.env.reset()
 
