@@ -11,8 +11,8 @@ Given the run-time constraints and the desire for functionality in new environme
 ## The neural network navigating within an environment
 <div style="text-align:center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=KOFQP3Pj4PY
-" target="_blank"><img src="http://img.youtube.com/vi/KOFQP3Pj4PY/0.jpg" 
-alt="" width="640" height="360" border="0"  /></a>
+" target="_blank"><img src="http://img.youtube.com/vi/KOFQP3Pj4PY/maxresdefault.jpg" 
+alt="" width="640" height="360" border="0" style="text-align:center" /></a>
 </div>
 
 What as presented above is based on https://arxiv.org/abs/1704.05588
@@ -20,8 +20,8 @@ What as presented above is based on https://arxiv.org/abs/1704.05588
 ## An older version of the platform 
 <div style="text-align:center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=krgU84V8UmE
-" target="_blank"><img src="http://img.youtube.com/vi/krgU84V8UmE/0.jpg" 
-alt="" width="640" height="360" border="0" /></a>
+" target="_blank"><img src="http://img.youtube.com/vi/krgU84V8UmE/maxresdefault.jpg" 
+alt="" width="640" height="360" border="0" style="text-align:center" /></a>
 </div>
 
 # Installed Software
