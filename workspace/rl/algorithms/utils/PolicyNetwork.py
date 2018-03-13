@@ -30,7 +30,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.fc3 = torch.nn.Linear(128, self.action_dim*2)
 
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((150,150), interpolation=Image.CUBIC), transforms.ToTensor()])       
-        self.mini_batch_size = 128
+        self.mini_batch_size = 64
 
     def model(self, x):
         x = self.batchnorm0(x)
