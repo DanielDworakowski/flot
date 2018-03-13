@@ -1,22 +1,28 @@
 import gym
+import numpy as np
 
 class Env():
 
     def __init__(self):
-        self.env = gym.make("MountainCarContinuous-v0")
+        self.env = gym.make("RoboschoolInvertedPendulum-v0")
         self.state = self.env.reset()
         self.reward = None
         self.done = False
         self.image = self.env.render("rgb_array").copy()
-        self.observation_shape = self.image.shape
+        self.observation_shape = self.env.observation_space.shape
+        # self.observation_shape = self.image.shape
         self.action_shape = self.env.action_space.shape
 
-    def step(self, action):
+    def step(self, action, render):
+        action = np.clip(action,-1,1)
         self.state, self.reward, self.done, _ = self.env.step(action)
-        self.image = self.env.render("rgb_array").copy()
+        if render:
+            self.image = self.env.render("rgb_array").copy()
+        self.image = self.state
         return self.image, self.reward, self.done
 
     def reset(self):
-        self.env.reset()
-        self.image = self.env.render("rgb_array").copy()
+        self.state = self.env.reset()
+        # self.image = self.env.render("rgb_array").copy()
+        self.image = self.state
         return self.image
