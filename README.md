@@ -9,12 +9,13 @@ Compared to other autonomous platforms, a blimp provides excellent maneuverabili
 Given the run-time constraints and the desire for functionality in new environments with minimal labeling approaches involving algorithms like SLAM, or scene segmentation were avoided. On the other hand, the end-to-end learning approach allows for automatically labeled training data based on inputs at the time of collection, along with more expressive and generalized features. An interesting aspect of the project is the use of simulated data to first pre-train the network to reduce the need of real data. Given the nature of the problem, the DAGGER algorithm works well to alleviate distribution mismatches and helps to improve the learned policy. In the future we plan to implement deep reinforcement learning methods to tackle the problem with methods similar to CAD2RL and Cognitive Mapping and Planning for Visual Navigation.
 
 ## The neural network navigating within an environment
-
 <div style="text-align:center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=KOFQP3Pj4PY
 " target="_blank"><img src="http://img.youtube.com/vi/KOFQP3Pj4PY/0.jpg" 
 alt="" width="1280" height="720" border="0"  /></a>
 </div>
+
+What as presented above is based on https://arxiv.org/abs/1704.05588
 
 ## An older version of the platform 
 <div style="text-align:center">
