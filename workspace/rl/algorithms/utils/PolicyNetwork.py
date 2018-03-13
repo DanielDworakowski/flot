@@ -108,7 +108,6 @@ class A2CPolicyNetwork(torch.nn.Module):
             loss = torch.mean(distribution.log_prob(action)*advantage.unsqueeze(1))
             losses.append(loss.cpu().data.numpy()[0])
             loss.backward()
-            torch.nn.utils.clip_grad_norm(self.parameters(), 40)
             optimizer.step()
             policy_network_loss = np.mean(losses)
         else:
@@ -117,7 +116,6 @@ class A2CPolicyNetwork(torch.nn.Module):
             advantage = torch.autograd.Variable(torch.Tensor(advantages_batch)).type(self.dtype.FloatTensor) 
             model_out = self.model(obs)
             mean, std_dev = model_out[:,:self.action_dim], torch.exp(model_out[:,self.action_dim:])
-            std_dev = std_dev*0 + 0.2
             distribution = torch.distributions.Normal(mean, std_dev)
             optimizer.zero_grad()
             loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1))

@@ -164,7 +164,7 @@ class Agent:
 
         render = False
 
-        if total_timesteps >10000000:
+        if total_timesteps >300000:
             render = True
 
         # Restart env

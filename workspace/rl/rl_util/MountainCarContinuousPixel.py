@@ -1,10 +1,12 @@
+from OpenGL import GLU
 import gym
+import roboschool
 import numpy as np
 
 class Env():
 
     def __init__(self):
-        self.env = gym.make("RoboschoolInvertedPendulum-v0")
+        self.env = gym.make("RoboschoolInvertedPendulum-v1")
         self.state = self.env.reset()
         self.reward = None
         self.done = False
