@@ -38,7 +38,7 @@ class Env():
 
         im = ax.imshow(self.video_imgs[0],cmap='gray',interpolation='nearest')
         im.set_clim([0,1])
-        fig.set_size_inches([5,5])
+        fig.set_size_inches([6.8,4.8])
 
         tight_layout()
 
