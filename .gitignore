@@ -6,6 +6,7 @@ workspace/ai2thor/
 rasp/ros_ws/
 rasp/blimp_ws/build/
 rasp/blimp_ws/devel/
+workspace/rl/saved/
 .*~
 # Ignore client workspace
 workspace/client_ws/build/

@@ -13,8 +13,7 @@ class Env():
         self.reward = None
         self.done = False
         self.image = self.env.render("rgb_array")
-        self.observation_shape = self.env.observation_space.shape
-        # self.observation_shape = self.image.shape
+        self.observation_shape = self.image.shape
         self.action_shape = self.env.action_space.shape
         self.env = gym.wrappers.Monitor(self.env, "/home/rae/videos/"+self.env_name)
 
