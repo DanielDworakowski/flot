@@ -42,10 +42,10 @@ class LedIndicator(QAbstractButton):
         painter.setBrush(QBrush(self.colour))
         painter.drawEllipse(QPointF(0, 0), 400, 400)
 
-class PicButton(QAbstractButton):
+class UsableButton(QAbstractButton):
 
     def __init__(self, parent=None, width = 700, height = 20):
-        super(PicButton, self).__init__(parent)
+        super(UsableButton, self).__init__(parent)
         self.parent = parent
         self.data = np.zeros((height, width, 3), dtype=np.uint8)
         self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.data)))
@@ -63,6 +63,42 @@ class PicButton(QAbstractButton):
         self.rgbMatrix[0, (idx < 1), :] = np.array([200, 19, 56]) # Bad.
         self.rgbMatrix[0, (idx > 0), :] = np.array([20, 200, 60]) # Good.
         self.rgbMatrix[0, :, :] = self.rgbMatrix[0, :] * mask[:, np.newaxis] # Mask everything out that was not labeled.
+        #
+        # Set a white line at the current index.
+        self.rgbMatrix[0, max(0, self.curIdx - self.lineWidth):min(self.maxIdx - 1, self.curIdx + self.lineWidth), :] = 255
+        self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.rgbMatrix)))
+        painter.drawPixmap(event.rect(), self.pix)
+
+    def setCurIdx(self, idx):
+        self.curIdx = idx
+
+    def sizeHint(self):
+        return self.pix.size()
+
+    def mousePressEvent(self, e):
+        relLoc = e.x() / (self.width + 1)
+        self.parent.setIdx(relLoc)
+
+class ForceButton(QAbstractButton):
+
+    def __init__(self, parent=None, width = 700, height = 20):
+        super(ForceButton, self).__init__(parent)
+        self.parent = parent
+        self.data = np.zeros((height, width, 3), dtype=np.uint8)
+        self.pix = QtGui.QPixmap.fromImage(ImageQt(Image.fromarray(self.data)))
+        self.width = width
+        self.curIdx = 0
+        self.maxIdx = self.parent.data.getSize() - 1
+        self.lineWidth = int(0.001 * self.maxIdx)
+        idx = self.parent.data.df['forcedLabel'].as_matrix().astype(np.int8)
+        self.rgbMatrix = np.zeros((1 ,idx.shape[0], 3)).astype(np.uint8)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        idx = self.parent.data.df['forcedLabel'].as_matrix().astype(np.int8)
+        self.rgbMatrix[0, (idx <  0), :] = np.array([200, 19, 56]) # Bad.
+        self.rgbMatrix[0, (idx == 0), :] = np.array([60, 60, 60]) # neutral.
+        self.rgbMatrix[0, (idx >  0), :] = np.array([20, 200, 60]) # Good.
         #
         # Set a white line at the current index.
         self.rgbMatrix[0, max(0, self.curIdx - self.lineWidth):min(self.maxIdx - 1, self.curIdx + self.lineWidth), :] = 255
@@ -175,8 +211,8 @@ class CuratorGui(QMainWindow):
         self.distTxt = QLabel('tx', self)
         #
         # Create the data scroller.
-        self.usableBar = PicButton(self, 700, 20)
-        self.forceBar = PicButton(self, 700, 20)
+        self.usableBar = UsableButton(self, 700, 20)
+        self.forceBar = ForceButton(self, 700, 20)
         #
         # Setup the top bar.
         hlayout.addWidget(self.labOnOff)
@@ -272,7 +308,10 @@ class CuratorGui(QMainWindow):
     def setIdx(self, relIdx):
         oldVal = self.dIdx
         self.dIdx = int(self.data.getSize() * relIdx)
-        self.data.setUsable(self.usableImageFlag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
+        #
+        # Set Flags.
+        if self.usableOnOffFlag:
+            self.data.setUsable(self.usableImageFlag, min(oldVal, self.dIdx), max(self.dIdx, oldVal))
 
     def skipCB(self):
         oldVal = self.dIdx
@@ -285,6 +324,8 @@ class CuratorGui(QMainWindow):
         # Label data as requested.
         if self.usableOnOffFlag:
             self.data.setUsable(self.usableImageFlag, oldVal, self.dIdx)
+        if self.forceOnOffFlag:
+            self.data.setForce(self.forceLab, oldVal, self.dIdx)
 
     def skipBackCB(self):
         oldVal = self.dIdx
@@ -297,6 +338,9 @@ class CuratorGui(QMainWindow):
         # Label data as requested.
         if self.usableOnOffFlag:
             self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
+        if self.forceOnOffFlag:
+            self.data.setForce(self.forceLab, self.dIdx, oldVal)
+
 
     def forwardOneCV(self):
         oldVal = self.dIdx
@@ -309,6 +353,8 @@ class CuratorGui(QMainWindow):
         # Label data as requested.
         if self.usableOnOffFlag:
             self.data.setUsable(self.usableImageFlag, oldVal, self.dIdx)
+        if self.forceOnOffFlag:
+            self.data.setForce(self.forceLab, oldVal, self.dIdx)
 
     def backOneCB(self):
         oldVal = self.dIdx
@@ -321,6 +367,9 @@ class CuratorGui(QMainWindow):
         # Label data as requested.
         if self.usableOnOffFlag:
             self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
+        if self.forceOnOffFlag:
+            self.data.setForce(self.forceLab, self.dIdx, oldVal)
+
 
     def usableFlagCB(self):
         self.usableImageFlag = not self.usableImageFlag
