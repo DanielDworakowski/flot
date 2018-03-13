@@ -12,13 +12,13 @@ Given the run-time constraints and the desire for functionality in new environme
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=KOFQP3Pj4PY
 " target="_blank"><img src="http://img.youtube.com/vi/KOFQP3Pj4PY/0.jpg" 
-alt="" width="1920" height="1280" border="10" /></a>
+alt="" width="1280" height="720" border="10" /></a>
 
 ## An older version of the platform 
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=krgU84V8UmE
 " target="_blank"><img src="http://img.youtube.com/vi/krgU84V8UmE/0.jpg" 
-alt="" width="1920" height="1280" border="10" /></a>
+alt="" width="1280" height="720" border="10" /></a>
 
 
 # Installed Software
