@@ -15,7 +15,7 @@ Given the run-time constraints and the desire for functionality in new environme
 alt="" width="640" height="360" border="0" style="text-align:center" /></a>
 </div>
 
-What as presented above is based on https://arxiv.org/abs/1704.05588
+Data collected based on https://arxiv.org/abs/1704.05588
 
 ## An older version of the platform 
 <div style="text-align:center">
