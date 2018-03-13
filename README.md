@@ -12,7 +12,7 @@ Given the run-time constraints and the desire for functionality in new environme
 <div style="text-align:center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=KOFQP3Pj4PY
 " target="_blank"><img src="http://img.youtube.com/vi/KOFQP3Pj4PY/0.jpg" 
-alt="" width="1280" height="720" border="0"  /></a>
+alt="" width="640" height="360" border="0"  /></a>
 </div>
 
 What as presented above is based on https://arxiv.org/abs/1704.05588
@@ -21,7 +21,7 @@ What as presented above is based on https://arxiv.org/abs/1704.05588
 <div style="text-align:center">
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=krgU84V8UmE
 " target="_blank"><img src="http://img.youtube.com/vi/krgU84V8UmE/0.jpg" 
-alt="" width="1280" height="720" border="0" /></a>
+alt="" width="640" height="360" border="0" /></a>
 </div>
 
 # Installed Software
