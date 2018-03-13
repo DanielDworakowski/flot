@@ -2,7 +2,7 @@ import importlib
 
 env_settings = {
     'A2C':dict(agent_class=importlib.import_module('algorithms.A2C'),
-               env_name='MountainCar',
+               env_name='Roboschool',
                seed=2,
                training_params = {'min_batch_size':500,
                                   'min_episodes':10,
