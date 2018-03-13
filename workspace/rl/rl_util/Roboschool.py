@@ -15,17 +15,15 @@ class Env():
         self.image = self.env.render("rgb_array")
         self.observation_shape = self.image.shape
         self.action_shape = self.env.action_space.shape
-        self.env = gym.wrappers.Monitor(self.env, "/home/rae/videos/"+self.env_name)
+        self.env = gym.wrappers.Monitor(self.env, "/home/rae/videos/"+self.env_name, force=True)
 
     def step(self, action, render):
         action = np.clip(action,-1,1)
         self.state, self.reward, self.done, _ = self.env.step(action)
         self.image = self.env.render("rgb_array")
-        self.image = self.state
         return self.image, self.reward, self.done
 
     def reset(self):
         self.state = self.env.reset()
         self.image = self.env.render("rgb_array")
-        self.image = self.state
         return self.image

@@ -152,7 +152,6 @@ class Agent:
             values = np.squeeze(self.value_network.compute(observations))
             torch.cuda.empty_cache()
             # Computing the advantage estimate
-            # advantage = return_ #- return_.mean()
             advantage = return_ - values
             returns.append(return_)
             advantages.append(advantage)
