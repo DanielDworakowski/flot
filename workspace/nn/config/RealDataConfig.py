@@ -15,10 +15,10 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self, mode = 'train'):
         nSteps = (2, 0)
-        loadpath = '/disk1/model/rl_data-colour3_model_best.pth.tar'
+        loadpath = '/disk1/model/rl_newDataFixedLabel_model_best.pth.tar'
         if mode == 'train':
             loadpath = None
-        super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet18(pretrained=True), True), loadPath = loadpath)
+        super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet18(pretrained=True)), loadPath = loadpath)
         #
         # The distance threshold for postive / negative.
         self.distThreshold = 0.7
@@ -40,9 +40,14 @@ class Config(DefaultConfig):
             Perterbations.ColourJitter(0.3, 0.3, 0.3, 0.25, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
-        self.experimentName = 'rl_data-dist'
-        self.dataValList = ['/disk1/rldata/20180306_012910',]
+        self.experimentName = 'rl_moremoremorenewData'
+        # self.dataValList = ['/disk1/rldata/20180306_012910',]
+        self.dataValList = ['/disk1/rldata/20180304_042341',]
         self.dataTrainList = [
-            '/disk1/rldata/20180304_042341',
-            '/disk1/rldata/20180310_215333'
+            '/disk1/rldata/20180306_012910',
+            '/disk1/rldata/20180310_215333',
+            '/disk1/rldata/20180313_191316',
+            '/disk1/rldata/20180314_001703',
+            '/disk1/rldata/20180314_155329',
+            '/disk1/rldata/20180314_172112',
         ]
