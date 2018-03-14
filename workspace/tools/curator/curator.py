@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QApplication
 def getInputArgs():
     parser = argparse.ArgumentParser('Tool used to mark usable and unusable data.')
     parser.add_argument('--path', dest='curationPath', default=None, type=str, help='Where to read data from for curation.')
-    parser.add_argument('--conf', dest='configStr', default=None, type=str, help='Configuration used to load a model.')
+    parser.add_argument('--config', dest='configStr', default=None, type=str, help='Configuration used to load a model.')
     args = parser.parse_args()
     return args
 #

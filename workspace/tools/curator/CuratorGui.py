@@ -177,6 +177,10 @@ class CuratorGui(QMainWindow):
         self.usableOnOffFlag = False
         self.forceOnOffFlag = False
         self.forceLab = 0
+        self.colour = {
+            False: -1,
+            True: 1
+        }
         self.modelVis = NNVis(None, None)
         #
         # Create central widget + layout.
@@ -199,14 +203,14 @@ class CuratorGui(QMainWindow):
         self.netimg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         #
         # Set the indicator.
-        self.labOnOff = QLabel('Usable Status', self)
+        self.labOnOff = QLabel('Labeling Usable', self)
         self.usableLab = QLabel('Usable Label', self)
-        self.forceOnOffLab = QLabel('Forced status', self)
+        self.forceOnOffLab = QLabel('Labeling Forced', self)
         self.forceText = QLabel('Forced Label', self)
         self.dist = QLabel('Distance:', self)
-        self.labelOnOffIndicator = LedIndicator(self, self.usableOnOffFlag)
-        self.usableLabelIndicator = LedIndicator(self, self.usableImageFlag)
-        self.forceOnOffIndicator = LedIndicator(self, self.forceOnOffFlag)
+        self.labelOnOffIndicator = LedIndicator(self, self.colour[self.usableOnOffFlag])
+        self.usableLabelIndicator = LedIndicator(self, self.colour[self.usableImageFlag])
+        self.forceOnOffIndicator = LedIndicator(self, self.colour[self.forceOnOffFlag])
         self.forceLabelIndicator = LedIndicator(self, self.forceLab)
         self.distTxt = QLabel('tx', self)
         #
@@ -373,11 +377,11 @@ class CuratorGui(QMainWindow):
 
     def usableFlagCB(self):
         self.usableImageFlag = not self.usableImageFlag
-        self.usableLabelIndicator.setColour(int(self.usableImageFlag))
+        self.usableLabelIndicator.setColour(self.colour[self.usableImageFlag])
 
     def labelOnOffCB(self):
         self.usableOnOffFlag = not self.usableOnOffFlag
-        self.labelOnOffIndicator.setColour(int(self.usableOnOffFlag))
+        self.labelOnOffIndicator.setColour(self.colour[self.usableOnOffFlag])
 
     def forceNegativeCB(self):
         self.forceLab = -1
@@ -393,7 +397,7 @@ class CuratorGui(QMainWindow):
 
     def forceOnOffCB(self):
         self.forceOnOffFlag = not self.forceOnOffFlag
-        self.forceOnOffIndicator.setColour(int(self.forceOnOffFlag))
+        self.forceOnOffIndicator.setColour(self.colour[self.forceOnOffFlag])
 
     def setModel(self, model, conf):
         if model != None:
