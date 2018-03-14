@@ -15,16 +15,16 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.obs_dim = obs_dim
 
         self.batchnorm0 = torch.nn.BatchNorm2d(12)
-        self.conv1 = torch.nn.Conv2d(3, 24, 8, stride=4)
+        self.conv1 = torch.nn.Conv2d(12, 24, 8, stride=4)
         self.pool1 = torch.nn.AvgPool2d(8,4)
         self.batchnorm1 = torch.nn.BatchNorm2d(24)
         self.conv2 = torch.nn.Conv2d(24, 48, 4, stride=2)
         self.pool2 = torch.nn.AvgPool2d(4,2)
-        self.batchnorm2 = torch.nn.BatchNorm2d(30)
+        self.batchnorm2 = torch.nn.BatchNorm2d(48)
         self.conv3 = torch.nn.Conv2d(48, 48, 4, stride=2)
         self.pool3 = torch.nn.AvgPool2d(4,2)
         self.batchnorm3 = torch.nn.BatchNorm2d(48)
-        self.fc1 = torch.nn.Linear(1470, 128)
+        self.fc1 = torch.nn.Linear(2352, 128)
         self.fc2 = torch.nn.Linear(128, 128)
         self.fc3 = torch.nn.Linear(128, self.action_dim*2)
 
@@ -36,7 +36,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
-        x = x.view(-1, int(1470))
+        x = x.view(-1, int(2352))
         x = torch.nn.functional.relu(self.fc1(x))
         x = torch.nn.functional.relu(self.fc2(x))
         x = self.fc3(x)
@@ -46,9 +46,24 @@ class A2CPolicyNetwork(torch.nn.Module):
     def forward(self, x):
         return self.model(x)
 
-    def compute(self, observations):
+    def multi_frame(self, obs_batch, num_frame=4):
+        new_obs_batch = []
+        for i in range(len(obs_batch)):
+            new_obs_batch.append(torch.cat(list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)))
+        return new_obs_batch
 
-        observation = torch.autograd.Variable(self.transform(observations[-1]),volatile=True).type(torch.FloatTensor).unsqueeze(0)
+    def compute(self, obs_batch):
+
+        num_frame = 4
+        i = len(obs_batch)-1
+
+        stacked_obs = list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)
+
+        observation  = [self.transform(obs) for obs in stacked_obs]
+
+        observation = torch.cat(observation)
+
+        observation = torch.autograd.Variable(observation,volatile=True).type(torch.FloatTensor).unsqueeze(0)
 
         # plt.imshow(observation.data.cpu().squeeze(0).permute(1, 2, 0).numpy(),interpolation='none')        
         model_out = self.forward(observation).squeeze()
