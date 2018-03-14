@@ -26,7 +26,8 @@ class Agent:
         torch.backends.cudnn.benchmark = True
 
         self.env = env
-        self.dtype = torch.cuda
+        # self.dtype = torch.cuda
+        self.dtype = None
 
         # Getting the shape of observation space and action space of the environment
         self.observation_shape = self.env.observation_shape
@@ -39,9 +40,8 @@ class Agent:
         ##### Networks #####
         self.value_network = A2CValueNetwork(self.dtype, self.observation_shape[0])
         self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0], self.observation_shape[0])
-
-        self.value_network.cuda()
-        self.policy_network.cuda()
+        # self.value_network.cuda()
+        # self.policy_network.cuda()
 
         ##### Logging #####
         self.writer = SummaryWriter()
@@ -91,7 +91,7 @@ class Agent:
 
             ##### Optimization #####
             value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate)
-            torch.cuda.empty_cache()            
+            # torch.cuda.empty_cache()            
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
 
@@ -100,11 +100,11 @@ class Agent:
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate ):
         value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
 
         policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
         # return 0, policy_network_loss
         return value_network_loss, policy_network_loss
 
@@ -150,7 +150,7 @@ class Agent:
 
             # Compute the value estimates for the observations seen during this episode
             values = np.squeeze(self.value_network.compute(observations))
-            torch.cuda.empty_cache()
+            # torch.cuda.empty_cache()
             # Computing the advantage estimate
             advantage = return_ - values
             returns.append(return_)
@@ -161,11 +161,8 @@ class Agent:
     # Run one episode
     def run_one_episode(self, total_timesteps):
 
-        render = False
-
-        if total_timesteps >1000:
-            render = True
-
+        render = True
+        
         # Restart env
         observation = self.env.reset()
 
