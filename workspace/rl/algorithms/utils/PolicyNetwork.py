@@ -14,16 +14,16 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.action_dim = action_dim
         self.obs_dim = obs_dim
 
-        self.batchnorm0 = torch.nn.BatchNorm2d(3)
-        self.conv1 = torch.nn.Conv2d(3, 15, 8, stride=4)
+        self.batchnorm0 = torch.nn.BatchNorm2d(12)
+        self.conv1 = torch.nn.Conv2d(3, 24, 8, stride=4)
         self.pool1 = torch.nn.AvgPool2d(8,4)
-        self.batchnorm1 = torch.nn.BatchNorm2d(15)
-        self.conv2 = torch.nn.Conv2d(15, 30, 4, stride=2)
+        self.batchnorm1 = torch.nn.BatchNorm2d(24)
+        self.conv2 = torch.nn.Conv2d(24, 48, 4, stride=2)
         self.pool2 = torch.nn.AvgPool2d(4,2)
         self.batchnorm2 = torch.nn.BatchNorm2d(30)
-        self.conv3 = torch.nn.Conv2d(30, 30, 4, stride=2)
+        self.conv3 = torch.nn.Conv2d(48, 48, 4, stride=2)
         self.pool3 = torch.nn.AvgPool2d(4,2)
-        self.batchnorm3 = torch.nn.BatchNorm2d(30)
+        self.batchnorm3 = torch.nn.BatchNorm2d(48)
         self.fc1 = torch.nn.Linear(1470, 128)
         self.fc2 = torch.nn.Linear(128, 128)
         self.fc3 = torch.nn.Linear(128, self.action_dim*2)
@@ -33,7 +33,7 @@ class A2CPolicyNetwork(torch.nn.Module):
 
     def model(self, x):
         x = self.batchnorm0(x)
-        x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*5,1) ))
+        x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
         x = x.view(-1, int(1470))
@@ -62,7 +62,10 @@ class A2CPolicyNetwork(torch.nn.Module):
 
         advantages_batch = np.squeeze(np.array(advantages_batch))
         actions_batch = np.array(actions_batch)
-        observations_batch  = torch.stack([self.transform(obs) for obs in observations_batch])
+        observations_batch  = [self.transform(obs) for obs in observations_batch]
+        observations_batch = self.multi_frame(observations_batch)
+        observations_batch = torch.stack(observations_batch)
+
         # rand_idx = np.random.permutation(observations_batch.shape[0])
     
         # advantages_batch = advantages_batch[rand_idx]

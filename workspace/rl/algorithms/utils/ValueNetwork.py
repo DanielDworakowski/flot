@@ -12,14 +12,14 @@ class A2CValueNetwork(torch.nn.Module):
     def __init__(self, dtype, obs_dim):
         super(A2CValueNetwork, self).__init__()
 
-        self.batchnorm0 = torch.nn.BatchNorm2d(3)
-        self.conv1 = torch.nn.Conv2d(3, 15, 8, stride=4)
+        self.batchnorm0 = torch.nn.BatchNorm2d(12)
+        self.conv1 = torch.nn.Conv2d(3, 24, 8, stride=4)
         self.pool1 = torch.nn.AvgPool2d(8,4)
-        self.batchnorm1 = torch.nn.BatchNorm2d(15)
-        self.conv2 = torch.nn.Conv2d(15, 30, 4, stride=2)
+        self.batchnorm1 = torch.nn.BatchNorm2d(24)
+        self.conv2 = torch.nn.Conv2d(24, 48, 4, stride=2)
         self.pool2 = torch.nn.AvgPool2d(4,2)
         self.batchnorm2 = torch.nn.BatchNorm2d(30)
-        self.conv3 = torch.nn.Conv2d(30, 30, 4, stride=2)
+        self.conv3 = torch.nn.Conv2d(48, 48, 4, stride=2)
         self.pool3 = torch.nn.AvgPool2d(4,2)
         self.batchnorm3 = torch.nn.BatchNorm2d(30)
         self.fc1 = torch.nn.Linear(1470, 128)
@@ -32,7 +32,7 @@ class A2CValueNetwork(torch.nn.Module):
 
     def model(self, x):
         x = self.batchnorm0(x)
-        x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*5,1) ))
+        x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
         x = x.view(-1, int(1470))
@@ -61,14 +61,24 @@ class A2CValueNetwork(torch.nn.Module):
             output = self.model(torch.autograd.Variable(x,volatile=True).type(torch.FloatTensor)).data.cpu().numpy()
         return output
 
+    def multi_frame(self, obs_batch, num_frame=4):
+        new_obs_batch = []
+        for i in range(len(obs_batch)):
+            new_obs_batch.append(torch.cat(list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)))
+        return new_obs_batch
+
     def compute(self, observations):
         observations  = [self.transform(obs) for obs in observations]
+        observations = self.multi_frame(observations)
         return self.forward(torch.stack(observations))
 
     def train(self, batch_size, observations_batch, returns_batch, learning_rate):
         returns_batch = np.squeeze(np.array(returns_batch))
         optimizer = torch.optim.Adam(self.parameters(), learning_rate)
-        observations_batch  = torch.stack([self.transform(obs) for obs in observations_batch])
+        observations_batch  = [self.transform(obs) for obs in observations_batch]
+        observations_batch = self.multi_frame(observations_batch)
+        observations_batch = torch.stack(observations_batch)
+
         if observations_batch.shape[0] > self.mini_batch_size:
             idxs = list(range(self.mini_batch_size,observations_batch.shape[0],self.mini_batch_size))
             last_idx = 0
