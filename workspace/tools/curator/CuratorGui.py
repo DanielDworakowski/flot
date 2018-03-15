@@ -1,6 +1,7 @@
 import sys
 import numpy as np
 from util.debug import *
+from util.visualBackProp import VisualBackProp
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -127,6 +128,7 @@ class NNVis(object):
         self.lastImg = None
         self.lastNet = None
         self.toPIL = transforms.ToPILImage()
+        self.visualbackprop = VisualBackProp(model)
         if self.conf != None:
             import torch
             from config.DefaultNNConfig import getDefaultTransform
@@ -150,6 +152,7 @@ class NNVis(object):
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0).cuda(async = True))
         else:
             out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
+        img = self.visualbackprop(img)
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 12, img.size, self.rgbTable, draw, self.conf, posClasses)
         self.lIdx = idx
