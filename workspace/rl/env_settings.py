@@ -2,8 +2,8 @@ import importlib
 
 env_settings = {
     'A2C':dict(agent_class=importlib.import_module('algorithms.A2C'),
-               env_name='AI2THOR',
-               seed=3,
+               env_name='Roboschool',
+               seed=4,
                training_params = {'min_batch_size':500,
                                   'min_episodes':10,
                                   'total_timesteps':100000000,
