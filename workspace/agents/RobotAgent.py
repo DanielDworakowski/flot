@@ -42,12 +42,16 @@ class Agent(base.AgentBase):
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
         self.t = transforms.Compose([transforms.ToTensor()])
-        if any(isinstance(tf, DataUtil.Rescale) for tf in self.t.transforms):
-            self.model_input_img_shape = (self.nnconf.cropshape[0],self.nnconf.cropshape[1],3)
+        tnn = self.nnconf.transforms
+        if any(isinstance(tf, DataUtil.Rescale) for tf in tnn.transforms):
+            self.model_input_img_shape = (self.nnconf.hyperparam.cropShape[0],self.nnconf.hyperparam.cropShape[1],3)
+            print(self.model_input_img_shape)
             self.t = transforms.Compose([
-                transforms.Rescale(conf.hyperparam.image_shape),
+                transforms.Resize(self.nnconf.hyperparam.image_shape),
                 transforms.ToTensor(),
             ])
+        else:
+            print('there is no rescale')
         #
         # Heuristic Parameters
         #
