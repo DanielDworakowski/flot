@@ -42,12 +42,16 @@ class Agent(base.AgentBase):
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
         self.t = transforms.Compose([transforms.ToTensor()])
-        if any(isinstance(tf, DataUtil.Rescale) for tf in self.t.transforms):
-            self.model_input_img_shape = (self.nnconf.cropshape[0],self.nnconf.cropshape[1],3)
+        tnn = self.nnconf.transforms
+        if any(isinstance(tf, DataUtil.Rescale) for tf in tnn.transforms):
+            self.model_input_img_shape = (self.nnconf.hyperparam.cropShape[0],self.nnconf.hyperparam.cropShape[1],3)
+            print(self.model_input_img_shape)
             self.t = transforms.Compose([
-                transforms.Rescale(conf.hyperparam.image_shape),
+                transforms.Resize(self.nnconf.hyperparam.image_shape),
                 transforms.ToTensor(),
             ])
+        else:
+            print('there is no rescale')
         #
         # Heuristic Parameters
         #
@@ -64,7 +68,7 @@ class Agent(base.AgentBase):
         self.turn_min_prob = 0.70
         #
         #
-        self.back_min_prob = 0.20
+        self.back_min_prob = 0.05
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
         self.max_v_t = action_.max_v_t
@@ -128,14 +132,15 @@ class Agent(base.AgentBase):
             left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
             action_array = np.zeros(self.action_array_dim)
             if center_prob > self.straight_min_prob:
-                action_array[int(self.action_array_dim/2)] = 1
-                action = Action(action_array)
+                #action_array[int(self.action_array_dim/2)] = 1
+                #action = Action(action_array)
+                action = Action(v_t=self.max_v_t,w=0)
 
             elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
                 action = Action(action_array)
 
             elif center_prob < self.back_min_prob:
-                action = Action(v_t=-1*self.max_v_t,w=0)
+                action = Action(v_t=-1.25*self.max_v_t,w=0)
 
             elif left_prob > right_prob and left_prob < self.turn_min_prob:
                 action_array[0] = 1
