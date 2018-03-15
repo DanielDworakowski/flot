@@ -64,7 +64,7 @@ class Agent(base.AgentBase):
         self.turn_min_prob = 0.70
         #
         #
-        self.back_min_prob = 0.05
+        self.back_min_prob = 0.07
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
         self.max_v_t = action_.max_v_t
