@@ -1,0 +1,13 @@
+welcome: Hello, my name is fibi! How can I help you?
+
+prompt: You can ask me to take a picture!
+
+selfie_ok: Okay, I took one and saved it! Do you want take another one?
+
+selfie_fail: Sorry, I can't take one right now! Try again later!
+
+yes_retake: Okay, I'll take another picture!
+
+no_retake: Okay, I won't take another picture then!
+
+stop: Goodbye!
