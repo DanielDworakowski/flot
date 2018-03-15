@@ -63,6 +63,12 @@ class DataFolder(torch.utils.data.Dataset):
         self.csvFrame = pd.read_csv(self.rootDir + '/' + self.csvFileName)
         self.getImNameFn = None
         self.conf = conf
+        self._prepareData()
+        if self.__len__() < 1:
+            printError('File %s has no data. This will cause issues'%conf.csvFileName)
+            raise ValueError
+
+    def _prepareData(self):
         #
         # If the full image name is already part of the label just take the image name.
         try:
@@ -78,9 +84,11 @@ class DataFolder(torch.utils.data.Dataset):
         except:
             self.csvFrame['collision_free'] = (self.csvFrame['Sonar:Smoothed'] > self.conf.distThreshold).astype(int)
             self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
-        if self.__len__() < 1:
-            printError('File %s has no data. This will cause issues'%conf.csvFileName)
-            raise ValueError
+        #
+        # Check if there are any label corrections.
+        if 'forcedLabel' in self.csvFrame:
+            self.csvFrame.loc[self.csvFrame['forcedLabel'] == -1, ('collision_free')] = 0
+            self.csvFrame.loc[self.csvFrame['forcedLabel'] == 1, ('collision_free')] = 1
 
     def getImgNameIdx(self, labels):
         return os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))
