@@ -4,7 +4,6 @@ from torch.autograd import Variable
 from torchvision import models,transforms
 import os
 from skimage import io 
-from data_loader import imageandlabel
 import torchvision.utils as vutils
 import pdb
 
