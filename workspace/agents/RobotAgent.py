@@ -156,9 +156,9 @@ class Agent(base.AgentBase):
             else:
                 action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)
             # action = Action(action_array)
-            print('_____________________________________________________________________________________________________________________________________')
-            print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
-            print("Linear Velocity: {:.2f} Angular Velocity: {:.2f}".format(action.v_t,action.w))
+            # print('_____________________________________________________________________________________________________________________________________')
+            # print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
+            # print("Linear Velocity: {:.2f} Angular Velocity: {:.2f}".format(action.v_t,action.w))
 
             # Place the activations for visualization.
             action.meta['activations'] = probs.cpu().numpy()[0]

@@ -58,12 +58,13 @@ def loop(conf):
     with Environment.Environment(conf.envType, conf.getFullSavePath(conf.serialize), conf.serialize) as env:
 
         # Share VideoStreamClient from observer with flotapp
-        flotapp.client = env.observer.stream.sharedFrame
-        alexa_app = flotapp.flotapp()
+        # flotapp.client = env.observer.stream.sharedFrame
+        alexa_app = flotapp.flotapp(env.observer.stream.sharedFrame)
         alexa_app.start()
 
         while not exitNow.exit:
             step(agent, env, vis)
+            alexa_app.updateImage(env.observer.stream.getFrame())
 #
 # Main code.
 if __name__ == "__main__":

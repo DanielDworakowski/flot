@@ -21,7 +21,7 @@ class RobotActionEngine(ActionEngine):
     def executeActionImpl(self, obs):
         success = True
         try:
-            print(self.v_t)
+            # print(self.v_t)
             self.rc.setCommand(self.v_t, self.w, self.z)
         except Exception as e:
             success = False

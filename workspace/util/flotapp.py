@@ -10,13 +10,14 @@ from PIL import Image
 import cv2
 
 # Other libraries
-import datetime
+import datetime, time
 import threading
 
 import torch.multiprocessing as mp
 import torch
 
 client = None
+image = None
 
 class flotapp(mp.Process):
 
@@ -24,8 +25,10 @@ class flotapp(mp.Process):
     ask = Ask(app, "/")
     logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
-    def __init__(self):
+    def __init__(self, cl):
         super(flotapp, self).__init__()
+        global client
+        client = cl
 
     @ask.launch
     def welcome():
@@ -40,12 +43,16 @@ class flotapp(mp.Process):
 
         # Grab frames from VideoStreamClient.sharedFrame
         global client
-        if client is not None:
-            image = client.clone().numpy()
+        # if client is not None:
+        #     image = client.clone().numpy()
+        global image
 
         if image is not None:
+            Image.fromarray(image).show()
+
+            ts = time.time()
             cur_stamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H%M%S')
-            Image.fromarray(image).save(cur_stamp + ".jpeg")
+            Image.fromarray(image).save(cur_stamp + ".png")
 
             msg = render_template('selfie_ok')
         else:
@@ -68,6 +75,11 @@ class flotapp(mp.Process):
     def stop():
         msg = render_template('stop')
         return statement(msg)
+
+    def updateImage(self, img):
+        self.image = img
+        global image
+        image = img
 
     def run(self):
         self.app.run(debug=True)
