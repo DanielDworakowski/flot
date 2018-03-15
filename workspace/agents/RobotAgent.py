@@ -45,8 +45,8 @@ class Agent(base.AgentBase):
         tnn = self.nnconf.transforms
         if any(isinstance(tf, DataUtil.Rescale) for tf in tnn.transforms):
             self.model_input_img_shape = (self.nnconf.hyperparam.cropShape[0],self.nnconf.hyperparam.cropShape[1],3)
-            print(self.model_input_img_shape)
             self.t = transforms.Compose([
+                transforms.ToPILImage(),
                 transforms.Resize(self.nnconf.hyperparam.image_shape),
                 transforms.ToTensor(),
             ])
@@ -103,7 +103,6 @@ class Agent(base.AgentBase):
     def getActionImpl(self):
         obs = self.obs
         npimg = obs['img'].uint8Img
-
         # If image is available
         if npimg is not None:
             cropped_imgs = self.cropImageToThree(npimg)
@@ -114,6 +113,7 @@ class Agent(base.AgentBase):
             # Runs classification over each cropped image
             for idx, cropped_img in enumerate(cropped_imgs):
                 img = self.t(cropped_img)
+
                 if self.usegpu:
                     img = Variable(img.unsqueeze_(0).cuda(async=True))
                 else:
