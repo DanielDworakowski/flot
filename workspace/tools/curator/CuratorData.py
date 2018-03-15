@@ -16,7 +16,7 @@ def natural_keys(text):
     return [atoi(c) for c in re.split('(\d+)', text)]
 
 class AutoLabelConf(object):
-    distanceThreshold = 0.5
+    distanceThreshold = 0.7
     consecutiveZeroForPositive = 5
     medianFilterSizer = 5
     maxDistanceMarker = 9999
@@ -41,6 +41,10 @@ class CuratorData(object):
             self.df = pd.read_csv(dataFile)
             self.df['usable'] = 1
             self.df['labelled'] = 0
+        #
+        # Set label forcing.
+        if 'forcedLabel' not in self.df:
+            self.df['forcedLabel'] = 0
         try:
             self.df = self.df.drop(['collision_free'], axis=1)
         except:
@@ -125,6 +129,18 @@ class CuratorData(object):
         # Write the data.
         self.df.loc[startRange:endRange, ('usable')] = int(flag)
         self.df.loc[startRange:endRange, ('labelled')] = 1
+        self.touched = True
+
+    def setForce(self, flag, startRange, endRange):
+        #
+        # Ensure that the bounds are respected.
+        if startRange < 0:
+            startRange = 0
+        if endRange > self.size:
+            endRange = self.size - 1
+        #
+        # Write the data.
+        self.df.loc[startRange:endRange, ('forcedLabel')] = int(flag)
         self.touched = True
 
     @staticmethod

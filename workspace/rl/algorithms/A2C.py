@@ -17,15 +17,17 @@ class Agent:
     def __init__(self,
                  env,
                  training_params = {'min_batch_size':1000,
+                                   'min_episodes':1,
                                    'total_timesteps':1000000,
                                    'desired_kl':2e-3},
-                 algorithm_params = {'gamma':0.97, 
-                                    'learning_rate':1e-4}):
+                 algorithm_params = {'gamma':0.99, 
+                                    'learning_rate':1e-5}):
 
         torch.backends.cudnn.benchmark = True
 
         self.env = env
-        self.dtype = torch.cuda
+        # self.dtype = torch.cuda
+        self.dtype = None
 
         # Getting the shape of observation space and action space of the environment
         self.observation_shape = self.env.observation_shape
@@ -36,11 +38,10 @@ class Agent:
         self.algorithm_params = algorithm_params
         
         ##### Networks #####
-        self.value_network = A2CValueNetwork(self.dtype)
-        self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0])
-
-        self.value_network.cuda()
-        self.policy_network.cuda()
+        self.value_network = A2CValueNetwork(self.dtype, self.observation_shape[0])
+        self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0], self.observation_shape[0])
+        # self.value_network.cuda()
+        # self.policy_network.cuda()
 
         ##### Logging #####
         self.writer = SummaryWriter()
@@ -90,20 +91,22 @@ class Agent:
 
             ##### Optimization #####
             value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate)
-            torch.cuda.empty_cache()            
+            # torch.cuda.empty_cache()            
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
 
         self.writer.close()
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate ):
-        value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
+        for i in range(3):
+            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*100)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
 
         policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
+        # return 0, policy_network_loss
         return value_network_loss, policy_network_loss
 
     ##### Helper Functions #####
@@ -125,7 +128,7 @@ class Agent:
             ##### Episode #####
 
             # Run one episode
-            observations, actions, rewards, dones = self.run_one_episode()
+            observations, actions, rewards, dones = self.run_one_episode(total_timesteps)
 
             ##### Data Appending #####
 
@@ -137,7 +140,7 @@ class Agent:
             total_timesteps += len(rewards)
             episodes += 1
 
-            observations.insert(1,observations[0])
+            # observations.insert(1,observations[0])
 
             # Episode trajectory
             trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones)}
@@ -148,8 +151,7 @@ class Agent:
 
             # Compute the value estimates for the observations seen during this episode
             values = np.squeeze(self.value_network.compute(observations))
-            torch.cuda.empty_cache()
-
+            # torch.cuda.empty_cache()
             # Computing the advantage estimate
             advantage = return_ - values
             returns.append(return_)
@@ -158,8 +160,10 @@ class Agent:
         return [trajectories, returns, undiscounted_returns, advantages, batch_size, episodes]
 
     # Run one episode
-    def run_one_episode(self):
+    def run_one_episode(self, total_timesteps):
 
+        render = True
+        
         # Restart env
         observation = self.env.reset()
 
@@ -175,7 +179,7 @@ class Agent:
             # Sample action with current policy
             action = self.compute_action(observations)
             # Take action in environment
-            observation, reward, done = self.env.step(action)
+            observation, reward, done = self.env.step(action,render)
 
             # Collect reward and action
             rewards.append(reward)

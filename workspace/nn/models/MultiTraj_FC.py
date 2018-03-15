@@ -40,8 +40,9 @@ class Resnet_Multifc(nn.Module):
         for row in range(self.rangeY):
             for col in range(self.rangeX):
                 idx = row * self.rangeX + col
-                out.append(self.fc[idx](feat.squeeze()))
-        outTensor = torch.cat(out, dim=1)
+                # out.append(self.fc[idx](feat.squeeze()))
+                out.append(self.fc[idx](feat.squeeze()).view(-1).unsqueeze_(0))
+        outTensor = torch.cat(out, dim=0)
         return outTensor
 
     def getActivations(self, netOut, labels):

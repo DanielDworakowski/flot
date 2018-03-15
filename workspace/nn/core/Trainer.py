@@ -41,7 +41,7 @@ class Trainer():
         # No validation data, no need to evaluate it.
         if self.conf.dataValList != None and len(self.conf.dataValList) > 0:
             test = FlotDataset.FlotDataset(self.conf, self.conf.dataValList, self.conf.transforms)
-            self.dataloaders['val'] = torch.utils.data.DataLoader(test, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = True,  pin_memory = True)
+            self.dataloaders['val'] = torch.utils.data.DataLoader(test, batch_size = self.conf.hyperparam.batchSize, num_workers = self.conf.numWorkers, shuffle = False,  pin_memory = True)
 
     def __setupLogging(self):
         ''' Configuration for logging the training process.

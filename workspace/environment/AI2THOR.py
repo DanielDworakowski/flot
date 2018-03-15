@@ -4,8 +4,8 @@ import time
 import ai2thor_map
 
 class AI2THOR():
-    screen_w = 600
-    screen_h = 400
+    screen_w = 680
+    screen_h = 480
     controller = ai2thor_src.ai2thor.controller.BFSController()
     controller.start(player_screen_width=screen_w, player_screen_height=screen_h)
     
@@ -33,6 +33,17 @@ class AI2THOR():
         self.floor_plan = scene
         self.occup_maps = {}
         self.rawMaptoOccupGrid()
+        self.episodes = 0
+
+    def reset(self):
+        self.v = 0.
+        self.w = 0.
+        if (grid_x, grid_z) in self.occup_maps[self.floor_plan]:            
+            self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
+            success = True
+        self.update()
+        return self.getRGBImage()
+
 
     def rawMaptoOccupGrid(self):
         for floor_plan_name, floor_plan in self.raw_maps.items():
@@ -80,6 +91,7 @@ class AI2THOR():
         return int(round(int(round(position*self.grid_scale))/(self.grid_size*self.grid_scale))*(self.grid_size*self.grid_scale))
 
     def step(self, action):
+        action = np.clip(action, -1, 1)
         v_ref, w_ref = action[0], action[1]
         self.update()
         self.v = (1-self.v_rate)*self.v + self.v_rate*v_ref
@@ -97,4 +109,7 @@ class AI2THOR():
             success = True
         self.update()
         self.collided = not success
-        return success
+        return_list = [self.getRGBImage(), self.v, self.collided]
+        if self.collided:
+            self.episodes += 1
+        return return_list
