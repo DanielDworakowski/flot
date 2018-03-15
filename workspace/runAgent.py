@@ -8,6 +8,9 @@ from debug import *
 import environment.Observations as Observations
 import util.AgentVisualization as visual
 from PyQt5.QtWidgets import QApplication
+
+import util.flotapp as flotapp
+
 #
 # Parse the input arguments.
 def getInputArgs():
@@ -53,6 +56,12 @@ def loop(conf):
     # vis = visual.Visualizer()
     exitNow = SigHandler.SigHandler()
     with Environment.Environment(conf.envType, conf.getFullSavePath(conf.serialize), conf.serialize) as env:
+
+        # Share VideoStreamClient from observer with flotapp
+        flotapp.client = env.observer.stream.sharedFrame
+        alexa_app = flotapp.flotapp()
+        alexa_app.start()
+
         while not exitNow.exit:
             step(agent, env, vis)
 #
@@ -61,4 +70,5 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     conf = getConfig(args)
     vis = visual.Visualizer()
+
     loop(conf)
