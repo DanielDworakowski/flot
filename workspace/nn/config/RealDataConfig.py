@@ -15,7 +15,8 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self, mode = 'train'):
         nSteps = (2, 0)
-        loadpath = '/disk1/model/rl_moremoremorenewData_model_best.pth.tar'
+        loadpath = '/home/tommy/code/vbp/07-03-2018_model_best.pth.tar'
+        # loadpath = '/disk1/model/rl_newDataFixedLabel_model_best.pth.tar'
         if mode == 'train':
             loadpath = None
         super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet18(pretrained=True)), loadPath = loadpath)

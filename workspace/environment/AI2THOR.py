@@ -10,7 +10,7 @@ class AI2THOR():
     controller = ai2thor_src.ai2thor.controller.BFSController()
     controller.start(player_screen_width=screen_w, player_screen_height=screen_h)
     
-    def __init__(self, scene='FloorPlan201', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.4):
+    def __init__(self, scene='FloorPlan1', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.4):
         # Member variables.
         self.observation_shape = (self.screen_h, self.screen_w, 3)
         self.action_shape = (2,)
