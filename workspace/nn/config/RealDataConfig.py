@@ -51,4 +51,5 @@ class Config(DefaultConfig):
             '/disk1/rldata/20180314_001703',
             '/disk1/rldata/20180314_155329',
             '/disk1/rldata/20180314_172112',
+            '/disk1/rldata/20180315_020652',
         ]
