@@ -39,7 +39,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         torch.nn.init.xavier_uniform(self.fc2.weight)
         torch.nn.init.uniform(self.fc3.weight, -3e-4, 3e-4)
 
-        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((150,150), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])       
+        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((64,64), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])       
         self.mini_batch_size = 999999
 
     def model(self, x):
@@ -47,7 +47,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*6,1) ))
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
-        x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
+        # x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
         x = x.view(-1, int(192))
         x = torch.nn.functional.relu(self.fc1(x))
         x = torch.nn.functional.relu(self.fc2(x))
@@ -79,7 +79,7 @@ class A2CPolicyNetwork(torch.nn.Module):
 
         # plt.imshow(observation.data.cpu().squeeze(0).permute(1, 2, 0).numpy(),interpolation='none')        
         model_out = self.forward(observation).squeeze()
-        mean, std_dev = model_out[:self.action_dim].data, torch.exp(model_out[self.action_dim:].data)
+        mean, std_dev = model_out[:self.action_dim].data, torch.nn.Softplus(model_out[self.action_dim:].data)
         distribution = torch.distributions.Normal(mean, std_dev)
 
         return distribution.sample().cpu().numpy()
@@ -107,7 +107,7 @@ class A2CPolicyNetwork(torch.nn.Module):
                 action = torch.autograd.Variable(torch.Tensor(actions_batch[last_idx:i])).type(torch.FloatTensor) 
                 advantage = torch.autograd.Variable(torch.Tensor(advantages_batch[last_idx:i])).type(torch.FloatTensor) 
                 model_out = self.model(obs)
-                mean, std_dev = model_out[:,:self.action_dim], torch.exp(model_out[:,self.action_dim:])
+                mean, std_dev = model_out[:,:self.action_dim], torch.nn.Softplus(model_out[:,self.action_dim:])
                 distribution = torch.distributions.Normal(mean, std_dev)
                 optimizer.zero_grad()
                 loss = torch.mean(distribution.log_prob(action)*advantage.unsqueeze(1))
@@ -122,7 +122,7 @@ class A2CPolicyNetwork(torch.nn.Module):
             action = torch.autograd.Variable(torch.Tensor(actions_batch[last_idx:])).type(torch.FloatTensor) 
             advantage = torch.autograd.Variable(torch.Tensor(advantages_batch[last_idx:])).type(torch.FloatTensor) 
             model_out = self.model(obs)
-            mean, std_dev = model_out[:,:self.action_dim], torch.exp(model_out[:,self.action_dim:])
+            mean, std_dev = model_out[:,:self.action_dim], torch.nn.Softplus(model_out[:,self.action_dim:])
             distribution = torch.distributions.Normal(mean, std_dev)
             optimizer.zero_grad()
             loss = torch.mean(distribution.log_prob(action)*advantage.unsqueeze(1))
@@ -137,7 +137,7 @@ class A2CPolicyNetwork(torch.nn.Module):
             action = torch.autograd.Variable(torch.Tensor(actions_batch)).type(torch.FloatTensor) 
             advantage = torch.autograd.Variable(torch.Tensor(advantages_batch)).type(torch.FloatTensor) 
             model_out = self.model(obs)
-            mean, std_dev = model_out[:,:self.action_dim], torch.exp(model_out[:,self.action_dim:])
+            mean, std_dev = model_out[:,:self.action_dim], torch.nn.Softplus(model_out[:,self.action_dim:])
             distribution = torch.distributions.Normal(mean, std_dev)
             optimizer.zero_grad()
             loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1))

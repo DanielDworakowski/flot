@@ -37,7 +37,7 @@ class A2CValueNetwork(torch.nn.Module):
         torch.nn.init.xavier_uniform(self.fc2.weight)
         torch.nn.init.uniform(self.fc3.weight, -3e-4, 3e-4)
 
-        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((150,150), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])
+        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((64,64), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])
         self.loss_fn = torch.torch.nn.MSELoss()
         self.mini_batch_size = 9999999
 
@@ -46,7 +46,7 @@ class A2CValueNetwork(torch.nn.Module):
         x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*6,1) ))
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
-        x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
+        # x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
         x = x.view(-1, int(192))
         x = torch.nn.functional.relu(self.fc1(x))
         x = torch.nn.functional.relu(self.fc2(x))
