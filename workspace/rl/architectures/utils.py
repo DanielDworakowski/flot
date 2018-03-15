@@ -1,5 +1,5 @@
 import numpy as np 
-import tensorflow as tf
+# import tensorflow as tf
 import itertools
 
 def dense(x, shape, name, initializer=tf.random_uniform_initializer(-1.0,1.0)):
