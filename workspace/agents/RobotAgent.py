@@ -68,7 +68,7 @@ class Agent(base.AgentBase):
         self.turn_min_prob = 0.70
         #
         #
-        self.back_min_prob = 0.20
+        self.back_min_prob = 0.05
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
         self.max_v_t = action_.max_v_t
@@ -132,14 +132,15 @@ class Agent(base.AgentBase):
             left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
             action_array = np.zeros(self.action_array_dim)
             if center_prob > self.straight_min_prob:
-                action_array[int(self.action_array_dim/2)] = 1
-                action = Action(action_array)
+                #action_array[int(self.action_array_dim/2)] = 1
+                #action = Action(action_array)
+                action = Action(v_t=self.max_v_t,w=0)
 
             elif left_prob<self.stop_min_prob and center_prob<self.stop_min_prob and right_prob<self.stop_min_prob:
                 action = Action(action_array)
 
             elif center_prob < self.back_min_prob:
-                action = Action(v_t=-1*self.max_v_t,w=0)
+                action = Action(v_t=-1.25*self.max_v_t,w=0)
 
             elif left_prob > right_prob and left_prob < self.turn_min_prob:
                 action_array[0] = 1
