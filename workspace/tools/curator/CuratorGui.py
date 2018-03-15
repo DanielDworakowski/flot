@@ -81,7 +81,7 @@ class UsableButton(QAbstractButton):
 
 class ForceButton(QAbstractButton):
 
-    def __init__(self, parent=None, width = 700, height = 20):
+    def __init__(self, parent=None, width = 800, height = 20):
         super(ForceButton, self).__init__(parent)
         self.parent = parent
         self.data = np.zeros((height, width, 3), dtype=np.uint8)
@@ -168,7 +168,7 @@ class CuratorGui(QMainWindow):
     def __init__(self, data):
         QMainWindow.__init__(self)
         self.running = True
-        self.setMinimumSize(QSize(700, 550))
+        self.setMinimumSize(QSize(800, 550))
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.setWindowTitle('Curator')
         self.data = data
@@ -204,14 +204,16 @@ class CuratorGui(QMainWindow):
         #
         # Set the indicator.
         self.labOnOff = QLabel('Labeling Usable', self)
-        self.usableLab = QLabel('Usable Label', self)
-        self.forceOnOffLab = QLabel('Labeling Forced', self)
+        self.usableText = QLabel('Usable Label', self)
+        self.forceOnOffText = QLabel('Labeling Forced', self)
         self.forceText = QLabel('Forced Label', self)
+        self.curlabelText = QLabel('Current Label', self)
         self.dist = QLabel('Distance:', self)
         self.labelOnOffIndicator = LedIndicator(self, self.colour[self.usableOnOffFlag])
         self.usableLabelIndicator = LedIndicator(self, self.colour[self.usableImageFlag])
         self.forceOnOffIndicator = LedIndicator(self, self.colour[self.forceOnOffFlag])
         self.forceLabelIndicator = LedIndicator(self, self.forceLab)
+        self.curLabelIndicator = LedIndicator(self, 0)
         self.distTxt = QLabel('tx', self)
         #
         # Create the data scroller.
@@ -219,14 +221,16 @@ class CuratorGui(QMainWindow):
         self.forceBar = ForceButton(self, 700, 20)
         #
         # Setup the top bar.
-        hlayout.addWidget(self.labOnOff)
         hlayout.addWidget(self.labelOnOffIndicator)
-        hlayout.addWidget(self.usableLab)
+        hlayout.addWidget(self.labOnOff)
         hlayout.addWidget(self.usableLabelIndicator)
-        hlayout.addWidget(self.forceOnOffLab)
+        hlayout.addWidget(self.usableText)
         hlayout.addWidget(self.forceOnOffIndicator)
-        hlayout.addWidget(self.forceText)
+        hlayout.addWidget(self.forceOnOffText)
         hlayout.addWidget(self.forceLabelIndicator)
+        hlayout.addWidget(self.forceText)
+        hlayout.addWidget(self.curLabelIndicator)
+        hlayout.addWidget(self.curlabelText)
         hlayout.addWidget(self.dist)
         hlayout.addWidget(self.distTxt)
         hlayout.addWidget(self.savebutton)
@@ -302,6 +306,8 @@ class CuratorGui(QMainWindow):
         #
         # Process all draw events.
         QApplication.processEvents()
+        self.curLabelIndicator.setColour(self.data.getLabel(self.dIdx))
+        self.curLabelIndicator.update()
         self.labelOnOffIndicator.update()
         self.usableLabelIndicator.update()
         self.forceOnOffIndicator.update()
@@ -344,7 +350,6 @@ class CuratorGui(QMainWindow):
             self.data.setUsable(self.usableImageFlag, self.dIdx, oldVal)
         if self.forceOnOffFlag:
             self.data.setForce(self.forceLab, self.dIdx, oldVal)
-
 
     def forwardOneCV(self):
         oldVal = self.dIdx
@@ -403,7 +408,7 @@ class CuratorGui(QMainWindow):
         if model != None:
             #
             # Resize the window for the bottom.
-            self.setMinimumSize(QSize(700, 550+224))
+            self.setMinimumSize(QSize(800, 550+224))
             #
             # Setup visualization for the network.
             self.modelVis = NNVis(conf, model)

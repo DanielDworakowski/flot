@@ -53,6 +53,18 @@ class CuratorData(object):
         self.size = len(self.png)
         self.df.index.name = idxcol
         self.labelConf = AutoLabelConf()
+        self.remap = {
+            False: -1,
+            True: 1
+        }
+
+    def getLabel(self, idx):
+        idx = min(self.size - 1, max(0, idx))
+        lab = self.df['forcedLabel'][idx]
+        if lab == 0: # Case for no forced label.
+            dist = self.df['Sonar:Smoothed'][idx]
+            lab = self.remap[dist > self.labelConf.distanceThreshold]
+        return lab
 
     def getData(self, idx):
         idx = min(self.size - 1, max(0, idx))

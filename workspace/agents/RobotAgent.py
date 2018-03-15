@@ -42,12 +42,16 @@ class Agent(base.AgentBase):
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
         self.t = transforms.Compose([transforms.ToTensor()])
-        if any(isinstance(tf, DataUtil.Rescale) for tf in self.t.transforms):
-            self.model_input_img_shape = (self.nnconf.cropshape[0],self.nnconf.cropshape[1],3)
+        tnn = self.nnconf.transforms
+        if any(isinstance(tf, DataUtil.Rescale) for tf in tnn.transforms):
+            self.model_input_img_shape = (self.nnconf.hyperparam.cropShape[0],self.nnconf.hyperparam.cropShape[1],3)
             self.t = transforms.Compose([
-                transforms.Rescale(conf.hyperparam.image_shape),
+                transforms.ToPILImage(),
+                transforms.Resize(self.nnconf.hyperparam.image_shape),
                 transforms.ToTensor(),
             ])
+        else:
+            print('there is no rescale')
         #
         # Heuristic Parameters
         #
@@ -99,7 +103,6 @@ class Agent(base.AgentBase):
     def getActionImpl(self):
         obs = self.obs
         npimg = obs['img'].uint8Img
-
         # If image is available
         if npimg is not None:
             cropped_imgs = self.cropImageToThree(npimg)
@@ -110,6 +113,7 @@ class Agent(base.AgentBase):
             # Runs classification over each cropped image
             for idx, cropped_img in enumerate(cropped_imgs):
                 img = self.t(cropped_img)
+
                 if self.usegpu:
                     img = Variable(img.unsqueeze_(0).cuda(async=True))
                 else:
