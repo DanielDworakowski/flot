@@ -18,12 +18,12 @@ class Action(object):
             # action_norm is 0 when the action_idx is in the middle of the act_dim, 1 when it is (act_dim-1), and -1 when action_idx is 0
             action_norm = 2.0*(1.*action_idx/(len(self.array)-1)-0.5)
             action_in_rad = action_norm*np.pi/2.
-            v_t_norm = np.cos(action_in_rad)
+            v_t_norm = np.cos(action_in_rad)*np.sign(action_in_rad)
             w_norm = np.sin(action_in_rad)
             self.v_t = v_t_norm*self.max_v_t
             self.w = w_norm*self.max_w
 
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.2, max_w=0.1, z=None, isReset=False): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.12, max_w=0.1, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t

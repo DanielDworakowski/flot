@@ -98,11 +98,13 @@ class Agent:
         self.writer.close()
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate ):
-        value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate)
+        for i in range(1):
+            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*100)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 
-        policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
+        for i in range(1):
+            policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
         # return 0, policy_network_loss

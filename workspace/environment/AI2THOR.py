@@ -2,6 +2,7 @@ import ai2thor_src.ai2thor.controller
 import numpy as np
 import time
 import ai2thor_map
+import random
 
 class AI2THOR():
     screen_w = 680
@@ -9,9 +10,9 @@ class AI2THOR():
     controller = ai2thor_src.ai2thor.controller.BFSController()
     controller.start(player_screen_width=screen_w, player_screen_height=screen_h)
     
-    def __init__(self, scene='FloorPlan224', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.2):
+    def __init__(self, scene='FloorPlan201', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.4):
         # Member variables.
-        self.observation_shape = (screen_h, screen_w, 3)
+        self.observation_shape = (self.screen_h, self.screen_w, 3)
         self.action_shape = (2,)
         self.controller.reset(scene)
         self.event = self.controller.step(dict(action='Initialize', gridSize=grid_size))
@@ -33,14 +34,19 @@ class AI2THOR():
         self.floor_plan = scene
         self.occup_maps = {}
         self.rawMaptoOccupGrid()
+        print(self.occup_maps.keys())
         self.episodes = 0
+        self.timestep = 0
 
     def reset(self):
         self.v = 0.
         self.w = 0.
-        if (grid_x, grid_z) in self.occup_maps[self.floor_plan]:            
-            self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
-            success = True
+        self.update()
+        # self.floor_plan = random.choice(list(self.occup_maps.keys()))
+        grid_x, grid_z = random.choice(list(self.occup_maps[self.floor_plan]))       
+        self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
+        new_yaw = random.random()*2*3.14
+        self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
         self.update()
         return self.getRGBImage()
 
@@ -103,13 +109,16 @@ class AI2THOR():
         grid_z = self.positionToGrid(new_z)
         success = False
         self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
-        print((grid_x, grid_z))
         if (grid_x, grid_z) in self.occup_maps[self.floor_plan]:            
             self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
             success = True
         self.update()
         self.collided = not success
-        return_list = [self.getRGBImage(), self.v, self.collided]
+        self.timestep += 1
+        if self.timestep > 500:
+            self.collided = True
         if self.collided:
             self.episodes += 1
+            self.timestep = 0
+        return_list = [self.getRGBImage(), self.v, self.collided]
         return return_list

@@ -23,7 +23,7 @@ def train(agent_class, env_name, seed, training_params, algorithm_params):
         env = roboschool.Env()
     else:
         import rl_util.AI2THOREnv as ai2thor
-        env = ai2thor.AI2THOR(env_name)
+        env = ai2thor.Env()
     np.random.seed(seed)
     torch.manual_seed(seed)
     agent = agent_class.Agent(env, training_params, algorithm_params)
