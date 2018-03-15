@@ -99,7 +99,7 @@ class Agent:
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate ):
         for i in range(5):
-            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*100)
+            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*10)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 

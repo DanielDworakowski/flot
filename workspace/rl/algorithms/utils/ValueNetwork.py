@@ -29,6 +29,14 @@ class A2CValueNetwork(torch.nn.Module):
         self.fc2 = torch.nn.Linear(128, 128)
         self.fc3 = torch.nn.Linear(128, 1)
 
+        torch.nn.init.xavier_uniform(conv1)
+        torch.nn.init.xavier_uniform(conv2)
+        torch.nn.init.xavier_uniform(conv3)
+        torch.nn.init.xavier_uniform(conv4)
+        torch.nn.init.xavier_uniform(fc1)
+        torch.nn.init.xavier_uniform(fc2)
+        torch.nn.init.uniform(fc3, -3e-4, 3e-4)
+
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((150,150), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])
         self.loss_fn = torch.torch.nn.MSELoss()
         self.mini_batch_size = 9999999

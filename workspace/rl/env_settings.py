@@ -8,7 +8,7 @@ env_settings = {
                                   'min_episodes':10,
                                   'total_timesteps':100000000,
                                   'desired_kl':2e-3},
-               algorithm_params = {'gamma':0.97, 
-                                   'learning_rate':1e-5}               
+               algorithm_params = {'gamma':0.99 
+                                   'learning_rate':1e-4}               
                ),
 }
