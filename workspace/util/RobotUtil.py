@@ -9,7 +9,7 @@ from scipy.misc import imsave
 import torch.multiprocessing as mp
 import torch
 
-import Pyro4
+#import Pyro4
 
 class VideoStreamClient(mp.Process):
 
