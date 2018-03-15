@@ -30,6 +30,14 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.fc1 = torch.nn.Linear(192, 128)
         self.fc2 = torch.nn.Linear(128, 128)
         self.fc3 = torch.nn.Linear(128, self.action_dim*2)
+        
+        torch.nn.init.xavier_uniform(self.conv1.weight)
+        torch.nn.init.xavier_uniform(self.conv2.weight)
+        torch.nn.init.xavier_uniform(self.conv3.weight)
+        torch.nn.init.xavier_uniform(self.conv4.weight)
+        torch.nn.init.xavier_uniform(self.fc1.weight)
+        torch.nn.init.xavier_uniform(self.fc2.weight)
+        torch.nn.init.uniform(self.fc3.weight, -3e-4, 3e-4)
 
         self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((150,150), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])       
         self.mini_batch_size = 999999

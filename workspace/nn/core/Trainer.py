@@ -138,7 +138,6 @@ class Trainer():
                 for data in self.dataloaders[phase]:
                     inputs, labels_cpu = data['img'], data['labels']
                     if self.conf.usegpu:
-                        labels_cpu.squeeze_()
                         inputs, labels = Variable(inputs).cuda(async = True), Variable(labels_cpu).cuda(async = True)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels_cpu)
