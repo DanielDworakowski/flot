@@ -49,5 +49,5 @@ class Env():
         ani = animation.FuncAnimation(fig,update_img,len(self.video_imgs),interval=20)
         writer = animation.writers['ffmpeg'](fps=20)
 
-        ani.save(self.vid_dir+str(self.env.episodes),writer=writer,dpi=100)
+        ani.save(self.vid_dir+"episode_"+str(self.env.episodes)+".mp4",writer=writer,dpi=100)
         return ani
