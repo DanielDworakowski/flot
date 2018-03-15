@@ -39,10 +39,14 @@ class Config(DefaultConfig):
             Perterbations.ColourJitter(0.25, 0.25, 0.25, 0.1, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
         ])
-        self.experimentName = 'rl_multiconv-400x400'
+        self.experimentName = 'rl_multiconv-400x400-newdata'
         self.dataValList = ['/disk1/rldata/20180304_042341',]
         self.dataTrainList = [
-        # '/disk1/rldata/20180304_042341',
-        '/disk1/rldata/20180306_012910',
-        '/disk1/rldata/20180310_215333/'
+            '/disk1/rldata/20180306_012910',
+            '/disk1/rldata/20180310_215333',
+            '/disk1/rldata/20180313_191316',
+            '/disk1/rldata/20180314_001703',
+            '/disk1/rldata/20180314_155329',
+            '/disk1/rldata/20180314_172112',
+            '/disk1/rldata/20180315_020652',
         ]
