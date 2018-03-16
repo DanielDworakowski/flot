@@ -9,8 +9,6 @@ import environment.Observations as Observations
 import util.AgentVisualization as visual
 from PyQt5.QtWidgets import QApplication
 
-# import util.flotapp as flotapp
-
 # Image uploading
 import cv2
 import numpy as np
@@ -64,19 +62,12 @@ def loop(conf):
     # vis = visual.Visualizer()
     exitNow = SigHandler.SigHandler()
 
-    # alexa_app = flotapp.flotapp()
-    # alexa_app.start()
-
     with Environment.Environment(conf.envType, conf.getFullSavePath(conf.serialize), conf.serialize) as env:
-
-        # Share VideoStreamClient from observer with flotapp
-        # flotapp.client = env.observer.stream.sharedFrame
-        # alexa_app = flotapp.flotapp(env.observer.stream.sharedFrame)
-        # alexa_app.start()
 
         while not exitNow.exit:
             step(agent, env, vis)
 
+            # Streaming to server endpoint via POST requests
             try:
                 frame = env.observer.stream.getFrame()
                 if frame is not None:
