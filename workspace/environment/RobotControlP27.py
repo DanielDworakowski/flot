@@ -72,5 +72,5 @@ class RobotControl(object):
         self.w = w_ref
         self.v_z = v_z_ref
         self.z = z
-        print('setting commands')
+        # print('setting commands')
         self._executeCommand()

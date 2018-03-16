@@ -14,17 +14,18 @@ class Config(DefaultConfig):
     #
     # Initialize.
     def __init__(self, mode = 'train'):
-        nSteps = (2, 0)
-        loadpath = '/disk1/model/rl_moremoremorenewData_model_best.pth.tar'
+        nSteps = (0, 0)
+        loadpath = '/disk1/model/rl_moremoremorenewData-fix_model_best.pth.tar'
+        # loadpath = '/disk1/model/rl_newDataFixedLabel_model_best.pth.tar'
         if mode == 'train':
             loadpath = None
-        super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet18(pretrained=True)), loadPath = loadpath)
+        super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet34(pretrained=True)), loadPath = loadpath)
         #
         # The distance threshold for postive / negative.
         self.distThreshold = 0.7
         #
         # How far to shift the image.
-        self.hyperparam.shiftBounds = (0, 0)
+        self.hyperparam.shiftBounds = (30, 0)
         self.hyperparam.nSteps = nSteps
         self.hyperparam.numEpochs = 32
         self.hyperparam.cropShape = (448, 448)
@@ -33,21 +34,26 @@ class Config(DefaultConfig):
         #
         # Transforms.
         self.transforms = transforms.Compose([
-            Perterbations.CenterCrop(self.hyperparam.cropShape),
+            Perterbations.RandomShift(self.hyperparam.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps, mode),
+            # Perterbations.CenterCrop(self.hyperparam.cropShape),
             DataUtil.Rescale(self.hyperparam.image_shape),
             # Perterbations.CenterCrop(self.hyperparam.image_shape),
             Perterbations.RandomHorizontalFlip(0.5, mode),
-            Perterbations.ColourJitter(0.3, 0.3, 0.3, 0.25, mode), # The effects of this must be tuned.
+            Perterbations.ColourJitter(0.05, 0.05, 0.05, 0.05, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
+            DataUtil.Normalize([ 0.31102816, 0.30806204, 0.290305], [0.19752153, 0.19664317, 0.20129602]),
         ])
-        self.experimentName = 'rl_moremoremorenewData-fix'
+        self.experimentName = 'rl_normalized-rnet34'
         # self.dataValList = ['/disk1/rldata/20180306_012910',]
-        self.dataValList = ['/disk1/rldata/20180304_042341',]
-        self.dataTrainList = [
+        self.dataValList = [
+            '/disk1/rldata/20180304_042341',
             '/disk1/rldata/20180306_012910',
+        ]
+        self.dataTrainList = [
             '/disk1/rldata/20180310_215333',
             '/disk1/rldata/20180313_191316',
             '/disk1/rldata/20180314_001703',
             '/disk1/rldata/20180314_155329',
             '/disk1/rldata/20180314_172112',
+            '/disk1/rldata/20180315_020652',
         ]

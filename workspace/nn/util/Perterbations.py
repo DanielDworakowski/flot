@@ -140,6 +140,8 @@ class RandomShift(object):
         locY = self.midIdxY - iy
         idx = 2 * (locY * self.nBinsX + locX)
         mask[idx:idx+2] = 1
+        if self.nSteps == (0,0):
+            mask = np.array([], dtype='int_')
         sample['meta']['shift'] = (dx,dy)
         #
         # Create the label dict, placing the mask within the label as the second

@@ -1,0 +1,31 @@
+welcome: Hello, my name is fibi! How can I help you?
+
+prompt: You can ask me to take a picture!
+
+selfie_ok: Okay, I just took one! Do you want to see it? Or post it on Twitter?
+
+selfie_fail: Sorry, I can't take one right now! Try again later!
+
+show_image: Okay, I've brought it up on the screen!
+
+find_fail: Sorry, I couldn't find the image.
+
+name_image: Okay, I've named it as {{ name }}! You can find it in your home folder!
+
+name_none: You haven't taken a picture yet! Would you like to take one?
+
+name_no: I couldn't recognize the name you gave me. Please try another name!
+
+name_fail: Sorry, I can't save the picture as {{ name }}! Please try another name!
+
+tweet_ok: Okay! I've posted the image on Twitter! Take a look! What else do you want me to do?
+
+tweet_msg: Okay! I've posted your message on Twitter!
+
+tweet_fail: Sorry, I can't tweet right now.
+
+yes_retake: Okay, I'll take another picture!
+
+no_retake: Okay, I won't take another picture then!
+
+stop: Goodbye!

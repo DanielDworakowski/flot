@@ -135,15 +135,6 @@ class RobotCommands(object):
                 self.ns = Pyro4.locateNS()
 
             try:
-                # # Start up pyro4-ns in a new thread
-                # self.ns_process = Popen(['pyro4-ns'])
-                #
-                # # Hacky way to wait for start-up; should use STDOUT pipe to confirm
-                # print('Wait 5 seconds for pyro4-ns to start up...')
-                # time.sleep(5)
-                #
-                # self.ns = Pyro4.locateNS()
-
                 # Setup and register self
                 self.daemon = Pyro4.Daemon()
                 self.uri = self.daemon.register(self)
@@ -170,13 +161,6 @@ class RobotCommands(object):
         try:
             print('Connecting to nameserver for ' + ns_reg + '...')
             self.proxy = Pyro4.Proxy('PYRONAME:' + ns_reg)
-
-            # if obj is not None:
-            #     print('Object found; returning Pyro4 Proxy object...')
-            #     hasStarted = True
-            #     return obj
-            # else:
-            #     print('Failed to find ' + ns_reg)
         except:
             print('Failed to connect to nameserver! Check if it is running.')
 
