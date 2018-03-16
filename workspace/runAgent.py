@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QApplication
 import cv2
 import numpy as np
 import requests
-addr = 'http://localhost:5000/updateImage'
+addr = 'http://10.0.1.49:5000/updateImage'
 content_type = 'image/jpeg'
 headers = {'content-type': content_type}
 
@@ -25,7 +25,7 @@ def getInputArgs():
     parser = argparse.ArgumentParser('General running environment for simulation and real hardware.')
     parser.add_argument('--path', dest='dataColPath', default=None, type=str, help='Where to save the data.')
     parser.add_argument('--agent', dest='agentStr', default=None, type=str, help='Name of the agent file to import.')
-    parser.add_argument('--config', dest='configStr', default='DefaultConfig', type=str, help='Name of the config file to import.')
+    parser.add_argument('--config', dest='configStr', default='RobotConfig', type=str, help='Name of the config file to import.')
     parser.add_argument('--serialize', dest='serialize', default=None, type=bool, help='Whether to serialize training data.')
     parser.add_argument('--rateLimit', dest='ratelimit', default=False,  action='store_true', help='Whether to serialize training data.')
     args = parser.parse_args()
@@ -82,7 +82,7 @@ def loop(conf):
                 if frame is not None:
                     _, img_encoded = cv2.imencode('.jpg', frame)
                     response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
-            except:
+            except Exception as e:
                 pass
 #
 # Main code.
