@@ -14,8 +14,8 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.action_dim = action_dim
         self.obs_dim = obs_dim
 
-        self.batchnorm0 = torch.nn.BatchNorm2d(4)
-        self.conv1 = torch.nn.Conv2d(4, 24, 8, stride=4)
+        self.batchnorm0 = torch.nn.BatchNorm2d(3)
+        self.conv1 = torch.nn.Conv2d(3, 24, 8, stride=4)
         self.pool1 = torch.nn.AvgPool2d(8,4)
         self.batchnorm1 = torch.nn.BatchNorm2d(24)
         self.conv2 = torch.nn.Conv2d(24, 48, 4, stride=2)
@@ -27,8 +27,9 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.conv4 = torch.nn.Conv2d(48, 48, 4, stride=2)
         self.pool4 = torch.nn.AvgPool2d(4,2)
         self.batchnorm4 = torch.nn.BatchNorm2d(48)
+        self.lstm1 = torch.nn.LSTM(192, 128, 1)
         self.fc1 = torch.nn.Linear(192, 128)
-        self.fc2 = torch.nn.Linear(128, 128)
+        self.fc2 = torch.nn.Linear(192, 128)
         self.fc3 = torch.nn.Linear(128, self.action_dim*2)
         
         torch.nn.init.xavier_uniform(self.conv1.weight)
@@ -44,12 +45,13 @@ class A2CPolicyNetwork(torch.nn.Module):
 
     def model(self, x):
         x = self.batchnorm0(x)
-        x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*6,1) ))
+        x = torch.nn.functional.relu(self.batchnorm1( self.conv1(x) + torch.cat([self.pool1(x)]*8,1) ))
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
         # x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
         x = x.view(-1, int(192))
-        x = torch.nn.functional.relu(self.fc1(x))
+        # x = self.lstm1(x)[0]
+        # x = torch.nn.functional.relu(self.fc1(x))
         x = torch.nn.functional.relu(self.fc2(x))
         x = self.fc3(x)
 
@@ -58,7 +60,7 @@ class A2CPolicyNetwork(torch.nn.Module):
     def forward(self, x):
         return self.model(x)
 
-    def multi_frame(self, obs_batch, num_frame=4):
+    def multi_frame(self, obs_batch, num_frame=3):
         new_obs_batch = []
         for i in range(len(obs_batch)):
             new_obs_batch.append(torch.cat(list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)))
@@ -66,7 +68,7 @@ class A2CPolicyNetwork(torch.nn.Module):
 
     def compute(self, obs_batch):
 
-        num_frame = 4
+        num_frame = 3
         i = len(obs_batch)-1
 
         stacked_obs = list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)
@@ -79,7 +81,8 @@ class A2CPolicyNetwork(torch.nn.Module):
 
         # plt.imshow(observation.data.cpu().squeeze(0).permute(1, 2, 0).numpy(),interpolation='none')        
         model_out = self.forward(observation).squeeze()
-        mean, std_dev = model_out[:self.action_dim].data, torch.nn.Softplus(model_out[self.action_dim:].data)
+        mean, std_dev = model_out[:self.action_dim].data, torch.log(torch.exp(model_out[self.action_dim:])+1).data
+
         distribution = torch.distributions.Normal(mean, std_dev)
 
         return distribution.sample().cpu().numpy()
@@ -107,7 +110,7 @@ class A2CPolicyNetwork(torch.nn.Module):
                 action = torch.autograd.Variable(torch.Tensor(actions_batch[last_idx:i])).type(torch.FloatTensor) 
                 advantage = torch.autograd.Variable(torch.Tensor(advantages_batch[last_idx:i])).type(torch.FloatTensor) 
                 model_out = self.model(obs)
-                mean, std_dev = model_out[:,:self.action_dim], torch.nn.Softplus(model_out[:,self.action_dim:])
+                mean, std_dev = model_out[:,:self.action_dim], torch.log(torch.exp(model_out[:,self.action_dim:])+1)
                 distribution = torch.distributions.Normal(mean, std_dev)
                 optimizer.zero_grad()
                 loss = torch.mean(distribution.log_prob(action)*advantage.unsqueeze(1))
@@ -122,7 +125,7 @@ class A2CPolicyNetwork(torch.nn.Module):
             action = torch.autograd.Variable(torch.Tensor(actions_batch[last_idx:])).type(torch.FloatTensor) 
             advantage = torch.autograd.Variable(torch.Tensor(advantages_batch[last_idx:])).type(torch.FloatTensor) 
             model_out = self.model(obs)
-            mean, std_dev = model_out[:,:self.action_dim], torch.nn.Softplus(model_out[:,self.action_dim:])
+            mean, std_dev = model_out[:,:self.action_dim], torch.log(torch.exp(model_out[:,self.action_dim:])+1)
             distribution = torch.distributions.Normal(mean, std_dev)
             optimizer.zero_grad()
             loss = torch.mean(distribution.log_prob(action)*advantage.unsqueeze(1))
@@ -137,7 +140,7 @@ class A2CPolicyNetwork(torch.nn.Module):
             action = torch.autograd.Variable(torch.Tensor(actions_batch)).type(torch.FloatTensor) 
             advantage = torch.autograd.Variable(torch.Tensor(advantages_batch)).type(torch.FloatTensor) 
             model_out = self.model(obs)
-            mean, std_dev = model_out[:,:self.action_dim], torch.nn.Softplus(model_out[:,self.action_dim:])
+            mean, std_dev = model_out[:,:self.action_dim], torch.log(torch.exp(model_out[:,self.action_dim:])+1)
             distribution = torch.distributions.Normal(mean, std_dev)
             optimizer.zero_grad()
             loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1))
