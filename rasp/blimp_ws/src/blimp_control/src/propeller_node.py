@@ -33,7 +33,7 @@ def down_callback(data):
     if u > 1:
         u = 1
 
-    down_val = int((u+0.9*u0)*u_scale)
+    down_val = int((u+1.5*u0)*u_scale)
     prop.down(propeller_saturator(down_val))
     #print(data)
 
@@ -67,7 +67,6 @@ def propellers():
 
     # Subscribe to command values
     rospy.Subscriber("prop_down", Float64, down_callback)
-    # rospy.Subscriber("cmd_v", Float64, v_callback)
     rospy.Subscriber("blimp_vt", Float64, v_callback)
     rospy.Subscriber("delta", Float64, delta_callback)
 
