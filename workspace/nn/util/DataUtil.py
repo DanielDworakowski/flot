@@ -1,9 +1,10 @@
-import matplotlib.pyplot as plt
 import torch
+import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
+from skimage import io, transform
 from torchvision import transforms, utils
 from torchvision.transforms import functional
-from skimage import io, transform
-from PIL import Image
 
 def plotSample(sample):
     ''' Plot an image batch.
@@ -34,7 +35,7 @@ class Rescale(object):
     def __call__(self, sample):
         image, labels = sample['img'], sample['labels']
         w, h = image.size
-        # 
+        #
         # Check input params.
         if isinstance(self.output_size, int):
             if h > w:
@@ -89,6 +90,14 @@ class RandomCrop(object):
                 'labels': labels,
                 'meta': sample['meta']}
 
+class ToPIL(object):
+
+    def __init__(self):
+        self.tp = transforms.ToPILImage()
+
+    def __call__(self, sample):
+        sample['img'] = self.tp(sample['img'])
+        return sample
 
 class ToTensor(object):
 

@@ -81,6 +81,9 @@ class DefaultConfig(object):
     # Number of workers for loading data.
     numWorkers = 8
     #
+    # Drop every nth frame from dataset < 1 to disable.
+    dropFrame = 2
+    #
     # Resize the network as needed.
     networkModification = None
     #
