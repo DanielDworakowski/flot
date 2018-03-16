@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 from util.debug import *
-from util.visualBackProp import VisualBackProp
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -11,6 +10,7 @@ from torch.autograd import Variable
 import tools.visualization as visutil
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PIL import Image, ImageFont, ImageDraw
+from util.visualBackProp import VisualBackProp
 
 class LedIndicator(QAbstractButton):
     scaledSize = 1000.0
@@ -128,11 +128,11 @@ class NNVis(object):
         self.lastImg = None
         self.lastNet = None
         self.toPIL = transforms.ToPILImage()
-        self.visualbackprop = VisualBackProp(model)
         if self.conf != None:
             import torch
             from config.DefaultNNConfig import getDefaultTransform
             # self.t = getDefaultTransform(conf)
+            self.visualbackprop = VisualBackProp(model)
             self.t = self.conf.transforms
             self.sm = torch.nn.Softmax(dim = 1)
             self.visModelCB = self.visModel
@@ -148,11 +148,12 @@ class NNVis(object):
         sample = {'img': img, 'labels': np.array([0]), 'meta': {'shift':(0,0)}}
         data = self.t(sample)
         if self.conf.usegpu:
-            labels = Variable(data['labels'].squeeze_()).cuda(async = True)
-            out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0).cuda(async = True))
+            var_img = Variable(data['img']).unsqueeze_(0).cuda(async = True)
         else:
-            out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
-        img = self.visualbackprop(img)
+            var_img = Variable(data['img']).unsqueeze_(0)
+        out = self.model(var_img)
+        img = self.visualbackprop(var_img)
+        img = self.toPIL(img)
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 12, img.size, self.rgbTable, draw, self.conf, posClasses)
         self.lIdx = idx
