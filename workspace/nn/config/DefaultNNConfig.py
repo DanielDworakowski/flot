@@ -101,6 +101,10 @@ class DefaultConfig(object):
     #
     # The starting epoch for training (cosmetic).
     startingEpoch = 0
+    #
+    # Denormalize transform (default to do nothing).
+    denormalize = DataUtil.UnNormalize((0,0,0), (1,1,1))
+    normalize = DataUtil.Normalize((0,0,0), (1,1,1))
     ###########################################################################
     # Initialization that may be different across configurations.
     ###########################################################################

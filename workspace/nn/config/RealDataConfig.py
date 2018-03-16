@@ -15,11 +15,11 @@ class Config(DefaultConfig):
     # Initialize.
     def __init__(self, mode = 'train'):
         nSteps = (0, 0)
-        loadpath = '/disk1/model/rl_moremoremorenewData-fix_model_best.pth.tar'
+        loadpath = '/disk1/model/rl_normalized-randomshift-lesscolour_model_best.pth.tar'
         # loadpath = '/disk1/model/rl_newDataFixedLabel_model_best.pth.tar'
         if mode == 'train':
             loadpath = None
-        super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet34(pretrained=True)), loadPath = loadpath)
+        super(Config, self).__init__(model = GenericModel.GenericModel(models.resnet18(pretrained=True)), loadPath = loadpath)
         #
         # The distance threshold for postive / negative.
         self.distThreshold = 0.7
@@ -33,6 +33,10 @@ class Config(DefaultConfig):
         self.modelSavePath = '/disk1/model/'
         #
         # Transforms.
+        mean = [ 0.31102816, 0.30806204, 0.290305]
+        std = [0.19752153, 0.19664317, 0.20129602]
+        self.denormalize = DataUtil.UnNormalize(mean, std)
+        self.normalize = DataUtil.Normalize(mean, std)
         self.transforms = transforms.Compose([
             Perterbations.RandomShift(self.hyperparam.cropShape, self.hyperparam.shiftBounds, self.hyperparam.nSteps, mode),
             # Perterbations.CenterCrop(self.hyperparam.cropShape),
@@ -41,9 +45,9 @@ class Config(DefaultConfig):
             Perterbations.RandomHorizontalFlip(0.5, mode),
             Perterbations.ColourJitter(0.05, 0.05, 0.05, 0.05, mode), # The effects of this must be tuned.
             DataUtil.ToTensor(),
-            DataUtil.Normalize([ 0.31102816, 0.30806204, 0.290305], [0.19752153, 0.19664317, 0.20129602]),
+            self.normalize,
         ])
-        self.experimentName = 'rl_normalized-rnet34'
+        self.experimentName = 'rl_normalized'
         # self.dataValList = ['/disk1/rldata/20180306_012910',]
         self.dataValList = [
             '/disk1/rldata/20180304_042341',
