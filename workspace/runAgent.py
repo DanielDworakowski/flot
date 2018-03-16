@@ -77,10 +77,13 @@ def loop(conf):
         while not exitNow.exit:
             step(agent, env, vis)
 
-            frame = env.observer.stream.getFrame()
-            if frame is not None:
-                _, img_encoded = cv2.imencode('.jpg', frame)
-                response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
+            try:
+                frame = env.observer.stream.getFrame()
+                if frame is not None:
+                    _, img_encoded = cv2.imencode('.jpg', frame)
+                    response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
+            except:
+                pass
 #
 # Main code.
 if __name__ == "__main__":
