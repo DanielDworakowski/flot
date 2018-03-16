@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torchvision import models,transforms
 import os
-from skimage import io 
+from skimage import io
 import torchvision.utils as vutils
 import pdb
 
@@ -12,7 +12,7 @@ import cv2
 from scipy.misc import imsave
 
 
-#Since pytorch does not save intermediate outputs unlike torch/lua, 
+#Since pytorch does not save intermediate outputs unlike torch/lua,
 #a new class is created with a newly defined forward function
 
 def normalization(tensor):
@@ -76,7 +76,7 @@ class myFeatureExtractor(resnet.ResNet):
             output[i] = x.data.clone()
             i+=1
 
-        return x,output 
+        return x,output
 
     def forward(self, x):
         outputs = {}
@@ -113,6 +113,10 @@ class VisualBackProp(object):
 
     # name='24-02-2018-model_best.pth.tar'
     # model = myFeatureExtractor(name)
+
+    def __call__(self, img):
+        o = self.visualize(img)
+        return o
 
     def vismask_res(self, img):
         output = self.model(img)
@@ -190,11 +194,6 @@ class VisualBackProp(object):
         vismask = self.vismask_res(imgRaw)
         img = imgRaw
 
-        img[i,0].data.mul_(0.229).add_(0.485)
-        img[i,1].data.mul_(0.224).add_(0.456)
-        img[i,2].data.mul_(0.225).add_(0.406)
-
-        img = img[i].data*255.0
         mask = vismask[i]
         mask = mask*255.0/torch.max(mask)
         mask = mask.type(torch.LongTensor)
@@ -202,14 +201,22 @@ class VisualBackProp(object):
         d, w, h = mask.size()
         mask = mask.view(mask.numel())
         mask = mask.unsqueeze(1)
+        imMask = (mask > 25).cuda()
+        img[i,0].data[imMask].mul_(0.229).add_(0.485)
+        img[i,2].data[imMask].mul_(0.225).add_(0.406)
+        img[i,1].data[imMask].mul_(0.224).add_(0.456)
+
+        img = img[i].data*255.0
 
         ret = torch.LongTensor(w*h, 3).zero_()
         ret[:,:] = self.rgbtable[mask,:]
         colored_mask = ret.view(w,h,d*3).type(torch.FloatTensor)
+        colored_mask[colored_mask < 30] = 0
 
         img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
 
         out = torch.add(img, 0.4, colored_mask)
+        out = out.permute(2,0,1) / 255
         return out
         # imsave(save + path[i].split('.')[0] + str('final') + '.png', out)
 

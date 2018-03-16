@@ -32,14 +32,15 @@ class Agent:
         # Getting the shape of observation space and action space of the environment
         self.observation_shape = self.env.observation_shape
         self.action_shape = self.env.action_shape
-        
+        self.aux_shape = self.env.aux_shape
+
         # Hyper Parameters
         self.training_params = training_params
         self.algorithm_params = algorithm_params
         
         ##### Networks #####
-        self.value_network = A2CValueNetwork(self.dtype, self.observation_shape[0])
-        self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0], self.observation_shape[0])
+        self.value_network = A2CValueNetwork(self.dtype, self.observation_shape[0], self.aux_shape[0])
+        self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0], self.observation_shape[0], self.aux_shape[0])
         # self.value_network.cuda()
         # self.policy_network.cuda()
 
@@ -71,7 +72,7 @@ class Agent:
 
             # Collect batch of data
             trajectories, returns, undiscounted_returns, advantages, batch_size, episodes = self.collect_trajs(total_timesteps)
-            observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch = self.traj_to_batch(trajectories, returns, advantages) 
+            observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch, auxs_batch = self.traj_to_batch(trajectories, returns, advantages) 
 
             # update total timesteps and total episodes
             total_timesteps += batch_size
@@ -90,21 +91,21 @@ class Agent:
             self.writer.add_scalar("data/average_reward", average_reward, total_timesteps)
 
             ##### Optimization #####
-            value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate)
+            value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
             # torch.cuda.empty_cache()            
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
 
         self.writer.close()
 
-    def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate ):
+    def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch):
         for i in range(5):
-            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*100)
+            value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*10, auxs_batch)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 
         for i in range(1):
-            policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate)
+            policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
         # return 0, policy_network_loss
@@ -129,7 +130,7 @@ class Agent:
             ##### Episode #####
 
             # Run one episode
-            observations, actions, rewards, dones = self.run_one_episode(total_timesteps)
+            observations, actions, rewards, dones, auxs = self.run_one_episode(total_timesteps)
 
             ##### Data Appending #####
 
@@ -144,7 +145,7 @@ class Agent:
             # observations.insert(1,observations[0])
 
             # Episode trajectory
-            trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones)}
+            trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones), "auxs":np.array(auxs)}
             trajectories.append(trajectory)
 
             # Computing the discounted return for this episode (NOT A SINGLE NUMBER, FOR EACH OBSERVATION)
@@ -171,7 +172,7 @@ class Agent:
         # Flag that env is in terminal state
         done = False
 
-        observations, actions, rewards, dones = [], [], [], []
+        observations, actions, rewards, dones, auxs = [], [], [], [], []
 
         while not done:
             # Collect the observation
@@ -180,14 +181,15 @@ class Agent:
             # Sample action with current policy
             action = self.compute_action(observations)
             # Take action in environment
-            observation, reward, done = self.env.step(action,render)
+            observation, reward, done, aux = self.env.step(action,render)
 
             # Collect reward and action
             rewards.append(reward)
             actions.append(action)
             dones.append(done)
+            auxs.append(aux)
 
-        return [observations, actions, rewards, dones]
+        return [observations, actions, rewards, dones, auxs]
 
     # Compute action using policy network
     def compute_action(self, observation):
@@ -200,6 +202,7 @@ class Agent:
           
         # Observations for this batch
         observations_batch = np.concatenate([trajectory["observations"] for trajectory in trajectories])
+        auxs_batch = np.concatenate([trajectory["auxs"] for trajectory in trajectories])
         next_observations_batch = np.roll(observations_batch, 1, axis=0)
         next_observations_batch[0,:] = observations_batch[0,:]
 
@@ -218,16 +221,16 @@ class Agent:
         # Advantages for this batch. itertool used to make batch into long np array
         advantages_batch = np.array(list(itertools.chain.from_iterable(advantages))).flatten().reshape([-1,1])
 
-        return [observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch]
+        return [observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch, auxs_batch]
 
     # Train value network
-    def train_value_network(self, batch_size, observations_batch, returns_batch, learning_rate):
-        loss = self.value_network.train(batch_size, observations_batch, returns_batch, learning_rate)
+    def train_value_network(self, batch_size, observations_batch, returns_batch, learning_rate, auxs_batch):
+        loss = self.value_network.train(batch_size, observations_batch, returns_batch, learning_rate, auxs_batch)
         return loss
 
     # Train policy network
-    def train_policy_network(self, observations_batch, actions_batch, advantages_batch, learning_rate):
-        loss = self.policy_network.train(observations_batch, actions_batch, advantages_batch, learning_rate)
+    def train_policy_network(self, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch):
+        loss = self.policy_network.train(observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
         return loss
 
     # Print stats
