@@ -14,6 +14,10 @@ class RobotObserver(observations.Observer):
     def __init__(self, obsDir, serialize):
         observations.Observer.__init__(self, obsDir, serialize)
 
+        # Connect to camera feed on Pyro4
+        # feed = RobotUtil.RobotCameraFeed()
+        # feed.connect()
+
         # Member variables.
         self.stream = RobotUtil.VideoStreamClient(BGR2RGB=True)
         self.stream.daemon=True

@@ -9,7 +9,15 @@ import environment.Observations as Observations
 import util.AgentVisualization as visual
 from PyQt5.QtWidgets import QApplication
 
-import util.flotapp as flotapp
+# import util.flotapp as flotapp
+
+# Image uploading
+import cv2
+import numpy as np
+import requests
+addr = 'http://localhost:5000/updateImage'
+content_type = 'image/jpeg'
+headers = {'content-type': content_type}
 
 #
 # Parse the input arguments.
@@ -55,16 +63,27 @@ def loop(conf):
     agent = conf.agentConstructor(conf)
     # vis = visual.Visualizer()
     exitNow = SigHandler.SigHandler()
+
+    # alexa_app = flotapp.flotapp()
+    # alexa_app.start()
+
     with Environment.Environment(conf.envType, conf.getFullSavePath(conf.serialize), conf.serialize) as env:
 
         # Share VideoStreamClient from observer with flotapp
         # flotapp.client = env.observer.stream.sharedFrame
-        alexa_app = flotapp.flotapp(env.observer.stream.sharedFrame)
-        alexa_app.start()
+        # alexa_app = flotapp.flotapp(env.observer.stream.sharedFrame)
+        # alexa_app.start()
 
         while not exitNow.exit:
             step(agent, env, vis)
-            alexa_app.updateImage(env.observer.stream.getFrame())
+
+            try:
+                frame = env.observer.stream.getFrame()
+                if frame is not None:
+                    _, img_encoded = cv2.imencode('.jpg', frame)
+                    response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
+            except:
+                pass
 #
 # Main code.
 if __name__ == "__main__":
