@@ -29,7 +29,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.batchnorm4 = torch.nn.BatchNorm2d(48)
         self.lstm1 = torch.nn.LSTM(192, 128, 1)
         self.fc1 = torch.nn.Linear(192, 128)
-        self.fc2 = torch.nn.Linear(192, 128)
+        self.fc2 = torch.nn.Linear(128, 128)
         self.fc3 = torch.nn.Linear(128, self.action_dim*2)
         
         torch.nn.init.xavier_uniform(self.conv1.weight)
@@ -50,7 +50,9 @@ class A2CPolicyNetwork(torch.nn.Module):
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
         # x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
         x = x.view(-1, int(192))
-        # x = self.lstm1(x)[0]
+        x = x.unsqueeze(1)
+        x = self.lstm1(x)[0]
+        x = x.view(-1, int(128))
         # x = torch.nn.functional.relu(self.fc1(x))
         x = torch.nn.functional.relu(self.fc2(x))
         x = self.fc3(x)
