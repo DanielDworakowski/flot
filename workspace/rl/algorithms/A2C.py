@@ -59,7 +59,7 @@ class Agent:
         
         self.experiences = []
 
-        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(8)]
+        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(6)]
 
         for thread in threads:
             thread.daemon = True
