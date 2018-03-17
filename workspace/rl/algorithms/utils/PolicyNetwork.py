@@ -82,6 +82,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         # plt.imshow(observation.data.cpu().squeeze(0).permute(1, 2, 0).numpy(),interpolation='none')
         model_out = self.forward(observation).squeeze()
         mean, std_dev = model_out[:self.action_dim].data, torch.log(torch.exp(model_out[self.action_dim:2*self.action_dim])+1).data
+        # std_dev = std_dev*0 + 0.3
 
         distribution = torch.distributions.Normal(mean, std_dev)
 
@@ -97,21 +98,22 @@ class A2CPolicyNetwork(torch.nn.Module):
         # observations_batch = self.multi_frame(observations_batch)
         observations_batch = torch.stack(observations_batch)
 
-        rand_idx = np.random.permutation(observations_batch.shape[0])
-        advantages_batch = advantages_batch[rand_idx]
-        actions_batch = actions_batch[rand_idx]
-        observations_batch  = observations_batch[rand_idx,:,:,:]
-        auxs_batch  = auxs_batch[rand_idx,:]
+        # rand_idx = np.random.permutation(observations_batch.shape[0])
+        # advantages_batch = advantages_batch[rand_idx]
+        # actions_batch = actions_batch[rand_idx]
+        # observations_batch  = observations_batch[rand_idx,:,:,:]
+        # auxs_batch  = auxs_batch[rand_idx,:]
 
         obs = torch.autograd.Variable(observations_batch).type(torch.FloatTensor)
         action = torch.autograd.Variable(torch.Tensor(actions_batch)).type(torch.FloatTensor) 
         advantage = torch.autograd.Variable(torch.Tensor(advantages_batch)).type(torch.FloatTensor) 
         model_out = self.model(obs)
         mean, std_dev = model_out[:,:self.action_dim], torch.log(torch.exp(model_out[:,self.action_dim:2*self.action_dim])+1)
+        # std_dev = std_dev*0 + 0.3
         distribution = torch.distributions.Normal(mean, std_dev)
         optimizer.zero_grad()
         aux_target = torch.autograd.Variable(torch.Tensor(auxs_batch)).type(torch.FloatTensor)
-        loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1)) + self.loss_fn_aux(model_out[:,2*self.action_dim:], aux_target)
+        loss = torch.mean(-distribution.log_prob(action)*advantage.unsqueeze(1)) + 10*self.loss_fn_aux(model_out[:,2*self.action_dim:], aux_target)
         loss.backward()
         optimizer.step()
         policy_network_loss = loss.cpu().data.numpy()[0]

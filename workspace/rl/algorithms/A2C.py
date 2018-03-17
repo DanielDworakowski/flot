@@ -23,6 +23,8 @@ class Agent:
                  algorithm_params = {'gamma':0.99, 
                                     'learning_rate':1e-5}):
 
+        load_model = True
+
         torch.backends.cudnn.benchmark = True
 
         self.env = env
@@ -41,6 +43,10 @@ class Agent:
         ##### Networks #####
         self.value_network = A2CValueNetwork(self.dtype, self.observation_shape[0], self.aux_shape[0])
         self.policy_network = A2CPolicyNetwork(self.dtype, self.action_shape[0], self.observation_shape[0], self.aux_shape[0])
+
+        if load_model:
+            self.value_network.load_state_dict(torch.load('/home/rae/flot/workspace/rl/value_network.pt'))
+            self.policy_network.load_state_dict(torch.load('/home/rae/flot/workspace/rl/policy_network.pt'))
         # self.value_network.cuda()
         # self.policy_network.cuda()
 
@@ -99,12 +105,12 @@ class Agent:
         self.writer.close()
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch):
-        for i in range(5):
+        for i in range(10):
             value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*10, auxs_batch)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 
-        for i in range(1):
+        for i in range(5):
             policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
         # torch.cuda.empty_cache()

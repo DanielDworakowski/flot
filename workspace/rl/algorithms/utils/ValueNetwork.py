@@ -81,17 +81,17 @@ class A2CValueNetwork(torch.nn.Module):
         # observations_batch = self.multi_frame(observations_batch)
 
         observations_batch = torch.stack(observations_batch)
-        rand_idx = np.random.permutation(returns_batch.shape[0])
-        returns_batch = returns_batch[rand_idx]
-        observations_batch  = observations_batch[rand_idx,:,:,:]
-        auxs_batch  = auxs_batch[rand_idx,:]
+        # rand_idx = np.random.permutation(returns_batch.shape[0])
+        # returns_batch = returns_batch[rand_idx]
+        # observations_batch  = observations_batch[rand_idx,:,:,:]
+        # auxs_batch  = auxs_batch[rand_idx,:]
 
         obs = torch.autograd.Variable(observations_batch).type(torch.FloatTensor)
         model_out = self.model(obs)
         target = torch.autograd.Variable(torch.Tensor(returns_batch)).type(torch.FloatTensor)
         aux_target = torch.autograd.Variable(torch.Tensor(auxs_batch)).type(torch.FloatTensor)
         optimizer.zero_grad()
-        loss = self.loss_fn(model_out[:,0], target) + self.loss_fn_aux(model_out[:,1:], aux_target)
+        loss = self.loss_fn(model_out[:,0], target) + 10*self.loss_fn_aux(model_out[:,1:], aux_target)
         value_network_loss = loss.cpu().data.numpy()[0]
         loss.backward()
         optimizer.step()
