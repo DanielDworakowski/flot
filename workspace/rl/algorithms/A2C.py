@@ -59,7 +59,7 @@ class Agent:
         
         self.experiences = []
 
-        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(6)]
+        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(8)]
 
         for thread in threads:
             thread.daemon = True
@@ -130,7 +130,7 @@ class Agent:
         self.writer.close()
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch):
-        for i in range1(8):
+        for i in range(8):
             value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*10, auxs_batch)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
