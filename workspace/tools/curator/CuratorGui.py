@@ -152,12 +152,10 @@ class NNVis(object):
         else:
             var_img = Variable(data['img']).unsqueeze_(0)
         out = self.model(var_img)
-        img = self.visualbackprop(var_img)
-        img = self.toPIL(img)
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 12, img.size, self.rgbTable, draw, self.conf, posClasses)
         self.lIdx = idx
-        retnet = self.toPIL(data['img'].squeeze_())
+        retnet = self.toPIL(self.visualbackprop(var_img, self.conf.denormalize))
         self.lastImg = img
         self.lastNet = retnet
         return retnet, img

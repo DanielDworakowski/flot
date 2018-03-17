@@ -70,6 +70,21 @@ class DataFolder(torch.utils.data.Dataset):
 
     def _prepareData(self):
         #
+        # Check if we need to setup our own labels.
+        if 'collision_free' not in self.csvFrame:
+            self.csvFrame['collision_free'] = (self.csvFrame['Sonar:Smoothed'] > self.conf.distThreshold).astype(int)
+        #
+        # Check if there are any label corrections.
+        if 'forcedLabel' in self.csvFrame:
+            self.csvFrame.loc[self.csvFrame['forcedLabel'] == -1, ('collision_free')] = 0
+            self.csvFrame.loc[self.csvFrame['forcedLabel'] == 1, ('collision_free')] = 1
+        #
+        # Drop frames as requested.
+        assert isinstance(self.conf.dropFrame, int)
+        if self.conf.dropFrame > 1:
+            self.csvFrame = self.csvFrame.iloc[::self.conf.dropFrame, :]
+            self.csvFrame.reset_index(inplace=True)
+        #
         # If the full image name is already part of the label just take the image name.
         try:
             self.pngColIdx = self.csvFrame.columns.get_loc('PNG')
@@ -77,18 +92,7 @@ class DataFolder(torch.utils.data.Dataset):
         except:
             self.getImNameFn = self.getImgNameIdx
         self.imgColIdx = self.csvFrame.columns.get_loc('idx')
-        #
-        # Check if we need to setup our own labels.
-        try:
-            self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
-        except:
-            self.csvFrame['collision_free'] = (self.csvFrame['Sonar:Smoothed'] > self.conf.distThreshold).astype(int)
-            self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
-        #
-        # Check if there are any label corrections.
-        if 'forcedLabel' in self.csvFrame:
-            self.csvFrame.loc[self.csvFrame['forcedLabel'] == -1, ('collision_free')] = 0
-            self.csvFrame.loc[self.csvFrame['forcedLabel'] == 1, ('collision_free')] = 1
+        self.labelIdx = self.csvFrame.columns.get_loc('collision_free')
 
     def getImgNameIdx(self, labels):
         return os.path.join(self.rootDir, '%s_%s.png'%(self.conf.imgName, int(labels[self.imgColIdx])))

@@ -66,7 +66,10 @@ class myFeatureExtractor(resnet.ResNet):
 
     def __init__(self,model):
         super(myFeatureExtractor, self).__init__(resnet.BasicBlock, [2, 2, 2, 2])
-        self = model.model
+        if hasattr(model, 'model'):
+            self = model.model
+        else:
+            self = model
 
     def handlesequential(self,x,module,output):
         i = len(output)
@@ -114,8 +117,8 @@ class VisualBackProp(object):
     # name='24-02-2018-model_best.pth.tar'
     # model = myFeatureExtractor(name)
 
-    def __call__(self, img):
-        o = self.visualize(img)
+    def __call__(self, img, dn):
+        o = self.visualize(img, dn)
         return o
 
     def vismask_res(self, img):
@@ -188,11 +191,10 @@ class VisualBackProp(object):
 
         return out
 
-    def visualize(self, imgRaw):
+    def visualize(self, img, denormalize):
 
         i=0
-        vismask = self.vismask_res(imgRaw)
-        img = imgRaw
+        vismask = self.vismask_res(img)
 
         mask = vismask[i]
         mask = mask*255.0/torch.max(mask)
@@ -202,9 +204,12 @@ class VisualBackProp(object):
         mask = mask.view(mask.numel())
         mask = mask.unsqueeze(1)
         imMask = (mask > 25).cuda()
-        img[i,0].data[imMask].mul_(0.229).add_(0.485)
-        img[i,2].data[imMask].mul_(0.225).add_(0.406)
-        img[i,1].data[imMask].mul_(0.224).add_(0.456)
+        denormalize(img[0].data)
+        # [0.31102816, 0.30806204, 0.290305]
+        # [0.19752153, 0.19664317, 0.20129602]
+        # img[i,0].data.mul_(0.19752153).add_(0.19752153)
+        # img[i,1].data.mul_(0.1966431).add_(0.1966431)
+        # img[i,2].data.mul_(0.20129602).add_(0.20129602)
 
         img = img[i].data*255.0
 
