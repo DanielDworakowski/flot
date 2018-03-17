@@ -11,23 +11,29 @@ class Env():
         self.reward = None
         self.done = False
         self.image = self.env.getRGBImage()
+        self.last_image = self.image
+        self.state = self.env.getState()
+        self.aux_shape = self.state.shape
         self.observation_shape = self.image.shape
         self.action_shape = (2,)
         self.video_imgs = []
         self.vid_dir = "/home/rae/videos/AI2THOR/"
 
+
     def step(self, action, render):
-        self.image, self.reward, self.done = self.env.step(action)
+        self.last_image = self.image
+        self.image, self.reward, self.done, self.state = self.env.step(action)
         if np.sqrt(self.env.episodes).is_integer():
             self.video_imgs.append(self.image)
             if self.done:
                 self.save_video()
                 self.video_imgs = []
-        return self.image, self.reward, self.done
+        return (self.image - self.last_image), self.reward, self.done, self.state
 
     def reset(self):
         self.image = self.env.reset()
-        return self.image
+        self.last_image = self.image
+        return self.image - self.last_image
 
     def save_video(self):
         fig = plt.figure()

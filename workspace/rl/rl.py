@@ -34,7 +34,14 @@ if __name__ == "__main__":
     env_setting = env_settings[args.algorithm]
     
     if args.phase == 'train':
-        train(**env_setting)
+        while True:
+            try:
+                print("Start!")
+                train(**env_setting)
+            except:
+                pass
+            else:
+                break
 
     else:
         print("ERROR: INVALID ARGUMENT Please choose train or test for phase argument")
