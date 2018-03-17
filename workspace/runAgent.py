@@ -75,7 +75,6 @@ def loop(conf):
             #         response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
             # except Exception as e:
             #     pass
-#
 # Main code.
 if __name__ == "__main__":
     app = QApplication(sys.argv)
