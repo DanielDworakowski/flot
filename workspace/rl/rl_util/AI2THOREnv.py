@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.animation as animation
 from pylab import *
 import environment.AI2THOR as ai2thor
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 class Env():
 

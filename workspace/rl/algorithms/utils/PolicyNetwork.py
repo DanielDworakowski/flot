@@ -68,14 +68,14 @@ class A2CPolicyNetwork(torch.nn.Module):
             new_obs_batch.append(torch.cat(list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)))
         return new_obs_batch
 
-    def compute(self, obs_batch):
+    def compute(self, observation):
 
         # num_frame = 3
         # i = len(obs_batch)-1
 
         # stacked_obs = list(reversed(obs_batch[max(i+1-num_frame,0):i+1])) + [obs_batch[0]]*max(0,num_frame-i-1)
 
-        observation  = self.transform(obs_batch[-1])
+        observation  = self.transform(observation)
 
         observation = torch.autograd.Variable(observation,volatile=True).type(torch.FloatTensor).unsqueeze(0)
 

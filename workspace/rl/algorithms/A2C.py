@@ -8,6 +8,7 @@ from tensorboardX import SummaryWriter
 import itertools
 import threading
 import time
+import copy
 
 import pdb
 
@@ -25,7 +26,7 @@ class Agent:
                  algorithm_params = {'gamma':0.99, 
                                     'learning_rate':1e-5}):
 
-        load_model = False
+        load_model = True
 
         torch.backends.cudnn.benchmark = True
 
@@ -55,15 +56,21 @@ class Agent:
         ##### Logging #####
         self.writer = SummaryWriter()
         self.save()
-
-        self.observations, self.actions, self.rewards, self.dones, self.auxs = [], [], [], [], []
         
-        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(4)]
+        self.experiences = []
+
+        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(6)]
 
         for thread in threads:
             thread.daemon = True
             thread.start()
             time.sleep(1)
+
+        self.current_batch_size = 0
+        self.current_episodes = 0
+        self.value_net_flag = False
+
+
 
     def save(self):
         torch.save(self.value_network.state_dict(), "value_network.pt")
@@ -86,6 +93,7 @@ class Agent:
 
         # Training iterations
         while total_timesteps < self.training_params['total_timesteps']:
+            start = time.time()
 
             # Collect batch of data
             trajectories, returns, undiscounted_returns, advantages, batch_size, episodes = self.collect_trajs(total_timesteps)
@@ -113,15 +121,21 @@ class Agent:
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
 
+            end = time.time()
+            hours, rem = divmod(end-start, 3600)
+            minutes, seconds = divmod(rem, 60)
+            print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
+
+
         self.writer.close()
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch):
-        for i in range(5):
+        for i in range1(8):
             value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*10, auxs_batch)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 
-        for i in range(3):
+        for i in range(4):
             policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
@@ -142,44 +156,32 @@ class Agent:
         ##### Collect Batch #####
 
         # Collecting minium batch size or minimum episodes of experience
-        while batch_size < self.training_params['min_batch_size']:
                           
-            ##### Episode #####
+        ##### Episode #####
 
-            while len(self.observations) < self.training_params['min_batch_size']:
-                pass
+        while self.current_batch_size < self.training_params['min_batch_size']:
+            pass
 
-            # Run one episode
-            observations, actions, rewards, dones, auxs = self.observations, self.actions, self.rewards, self.dones, self.auxs
+        # Run one episode
+        observations, actions, rewards, dones, auxs, undiscounted_returns, return_, advantage = copy.deepcopy(zip(*self.experiences))
+        self.experiences = []
+        self.current_batch_size = 0
+        observations, rewards, actions, dones, auxs, undiscounted_returns, returns, advantages = list(observations), list(rewards), list(actions), list(dones), list(auxs), list(undiscounted_returns), list(return_), list(advantage)
 
-            ##### Data Appending #####
+        observations, rewards, actions, dones, auxs= list(itertools.chain(*observations)), list(itertools.chain(*rewards)), list(itertools.chain(*actions)), list(itertools.chain(*dones)), list(itertools.chain(*auxs))
+        ##### Data Appending #####
 
-            # Get sum of reward for this episode
-            undiscounted_returns.append(np.sum(rewards))
+        # Update the counters
+        batch_size += len(rewards)
+        total_timesteps += len(rewards)
+        episodes += self.current_episodes
+        self.current_episodes = 0
 
-            # Update the counters
-            batch_size += len(rewards)
-            total_timesteps += len(rewards)
-            episodes += 1
+        # observations.insert(1,observations[0])
 
-            # observations.insert(1,observations[0])
-
-            # Episode trajectory
-            trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones), "auxs":np.array(auxs)}
-            trajectories.append(trajectory)
-
-            # Computing the discounted return for this episode (NOT A SINGLE NUMBER, FOR EACH OBSERVATION)
-            return_ = discount(trajectory["rewards"], self.algorithm_params['gamma'])
-
-            # Compute the value estimates for the observations seen during this episode
-            values = np.squeeze(self.value_network.compute(observations))
-            # torch.cuda.empty_cache()
-            # Computing the advantage estimate
-            advantage = return_ - values
-            returns.append(return_)
-            advantages.append(advantage)
-
-        self.observations, self.actions, self.rewards, self.dones, self.auxs = [], [], [], [], []
+        # Episode trajectory
+        trajectory = {"observations":np.array(observations), "actions":np.array(actions), "rewards":np.array(rewards), "dones":np.array(dones), "auxs":np.array(auxs)}
+        trajectories.append(trajectory)
 
         return [trajectories, returns, undiscounted_returns, advantages, batch_size, episodes]
 
@@ -187,29 +189,43 @@ class Agent:
     def run_one_episode(self, env):
 
         while True:
-
             render = True
             
             # Restart env
-            observation = env.reset()
+            observation = self.env.reset()
 
             # Flag that env is in terminal state
             done = False
 
+            observations, actions, rewards, dones, auxs = [], [], [], [], []
+
             while not done:
                 # Collect the observation
-                self.observations.append(observation)
+                observations.append(observation)
 
                 # Sample action with current policy
-                action = self.compute_action(self.observations)
+                action = self.compute_action(observation)
                 # Take action in environment
-                observation, reward, done, aux = env.step(action,render)
+                observation, reward, done, aux = self.env.step(action,render)
 
                 # Collect reward and action
-                self.rewards.append(reward)
-                self.actions.append(action)
-                self.dones.append(done)
-                self.auxs.append(aux)
+                rewards.append(reward)
+                actions.append(action)
+                dones.append(done)
+                auxs.append(aux)
+
+            undiscounted_return = np.sum(rewards)
+            timesteps = len(rewards)
+            return_ = discount(rewards, self.algorithm_params['gamma'])
+            values = np.squeeze(self.value_network.compute(observations))
+            advantage = return_ - values
+
+            experience = [observations, actions, rewards, dones, auxs, undiscounted_return, return_, advantage]
+
+            self.current_batch_size += timesteps
+
+            self.experiences.append(experience)
+            self.current_episodes += 1
 
     # Compute action using policy network
     def compute_action(self, observation):
