@@ -38,7 +38,7 @@ class A2CValueNetwork(torch.nn.Module):
         torch.nn.init.xavier_uniform(self.fc2.weight)
         torch.nn.init.uniform(self.fc3.weight, -3e-4, 3e-4)
 
-        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((64,64), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])
+        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((64,64)), transforms.Grayscale(1), transforms.ToTensor()])
         self.loss_fn = torch.torch.nn.MSELoss()
         self.loss_fn_aux = torch.torch.nn.MSELoss()
 

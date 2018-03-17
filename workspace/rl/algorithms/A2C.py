@@ -6,6 +6,8 @@ from algorithms.utils.PolicyNetwork import A2CPolicyNetwork
 from algorithms.utils.ValueNetwork import A2CValueNetwork
 from tensorboardX import SummaryWriter
 import itertools
+import threading
+import time
 
 import pdb
 
@@ -15,7 +17,7 @@ class Agent:
 
     """
     def __init__(self,
-                 env,
+                 envs,
                  training_params = {'min_batch_size':1000,
                                    'min_episodes':1,
                                    'total_timesteps':1000000,
@@ -27,7 +29,7 @@ class Agent:
 
         torch.backends.cudnn.benchmark = True
 
-        self.env = env
+        self.env = envs[0]
         # self.dtype = torch.cuda
         self.dtype = None
 
@@ -53,6 +55,15 @@ class Agent:
         ##### Logging #####
         self.writer = SummaryWriter()
         self.save()
+
+        self.observations, self.actions, self.rewards, self.dones, self.auxs = [], [], [], [], []
+        
+        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(4)]
+
+        for thread in threads:
+            thread.daemon = True
+            thread.start()
+            time.sleep(1)
 
     def save(self):
         torch.save(self.value_network.state_dict(), "value_network.pt")
@@ -110,7 +121,7 @@ class Agent:
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 
-        for i in range(1):
+        for i in range(3):
             policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
@@ -135,8 +146,11 @@ class Agent:
                           
             ##### Episode #####
 
+            while len(self.observations) < self.training_params['min_batch_size']:
+                pass
+
             # Run one episode
-            observations, actions, rewards, dones, auxs = self.run_one_episode(total_timesteps)
+            observations, actions, rewards, dones, auxs = self.observations, self.actions, self.rewards, self.dones, self.auxs
 
             ##### Data Appending #####
 
@@ -165,37 +179,37 @@ class Agent:
             returns.append(return_)
             advantages.append(advantage)
 
+        self.observations, self.actions, self.rewards, self.dones, self.auxs = [], [], [], [], []
+
         return [trajectories, returns, undiscounted_returns, advantages, batch_size, episodes]
 
     # Run one episode
-    def run_one_episode(self, total_timesteps):
+    def run_one_episode(self, env):
 
-        render = True
-        
-        # Restart env
-        observation = self.env.reset()
+        while True:
 
-        # Flag that env is in terminal state
-        done = False
+            render = True
+            
+            # Restart env
+            observation = env.reset()
 
-        observations, actions, rewards, dones, auxs = [], [], [], [], []
+            # Flag that env is in terminal state
+            done = False
 
-        while not done:
-            # Collect the observation
-            observations.append(observation)
+            while not done:
+                # Collect the observation
+                self.observations.append(observation)
 
-            # Sample action with current policy
-            action = self.compute_action(observations)
-            # Take action in environment
-            observation, reward, done, aux = self.env.step(action,render)
+                # Sample action with current policy
+                action = self.compute_action(self.observations)
+                # Take action in environment
+                observation, reward, done, aux = env.step(action,render)
 
-            # Collect reward and action
-            rewards.append(reward)
-            actions.append(action)
-            dones.append(done)
-            auxs.append(aux)
-
-        return [observations, actions, rewards, dones, auxs]
+                # Collect reward and action
+                self.rewards.append(reward)
+                self.actions.append(action)
+                self.dones.append(done)
+                self.auxs.append(aux)
 
     # Compute action using policy network
     def compute_action(self, observation):
