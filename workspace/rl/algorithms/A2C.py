@@ -23,7 +23,7 @@ class Agent:
                  algorithm_params = {'gamma':0.99, 
                                     'learning_rate':1e-5}):
 
-        load_model = True
+        load_model = False
 
         torch.backends.cudnn.benchmark = True
 
@@ -105,12 +105,12 @@ class Agent:
         self.writer.close()
 
     def train_networks(self, total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch):
-        for i in range(10):
+        for i in range(5):
             value_network_loss = self.train_value_network(batch_size, observations_batch, returns_batch, learning_rate*10, auxs_batch)
         self.writer.add_scalar("data/value_network_loss", value_network_loss, total_timesteps)
         # torch.cuda.empty_cache()
 
-        for i in range(5):
+        for i in range(1):
             policy_network_loss = self.train_policy_network(observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
         self.writer.add_scalar("data/policy_network_loss", policy_network_loss, total_timesteps)
         # torch.cuda.empty_cache()

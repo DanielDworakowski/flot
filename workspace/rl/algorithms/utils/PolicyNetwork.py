@@ -27,8 +27,8 @@ class A2CPolicyNetwork(torch.nn.Module):
         self.conv4 = torch.nn.Conv2d(48, 48, 4, stride=2)
         self.pool4 = torch.nn.AvgPool2d(4,2)
         self.batchnorm4 = torch.nn.BatchNorm2d(48)
-        self.lstm1 = torch.nn.LSTM(768, 128, 1)
-        self.fc1 = torch.nn.Linear(768, 128)
+        self.lstm1 = torch.nn.LSTM(192, 128, 1)
+        self.fc1 = torch.nn.Linear(192, 128)
         self.fc2 = torch.nn.Linear(128, 128)
         self.fc3 = torch.nn.Linear(128, self.action_dim*2+aux_dim)
         
@@ -40,7 +40,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         torch.nn.init.xavier_uniform(self.fc2.weight)
         torch.nn.init.uniform(self.fc3.weight, -3e-4, 3e-4)
 
-        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((100,100), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])
+        self.transform = transforms.Compose([transforms.ToPILImage(), transforms.Resize((64,64), interpolation=Image.CUBIC), transforms.Grayscale(1), transforms.ToTensor()])
         self.loss_fn_aux = torch.torch.nn.MSELoss()       
 
     def model(self, x):
@@ -49,7 +49,7 @@ class A2CPolicyNetwork(torch.nn.Module):
         x = torch.nn.functional.relu(self.batchnorm2( self.conv2(x) + torch.cat([self.pool2(x)]*2,1) ))
         x = torch.nn.functional.relu(self.batchnorm3( self.conv3(x) + torch.cat([self.pool3(x)]*1,1) ))
         # x = torch.nn.functional.relu(self.batchnorm4( self.conv4(x) + torch.cat([self.pool4(x)]*1,1) ))
-        x = x.view(-1, int(768))
+        x = x.view(-1, int(192))
         x = x.unsqueeze(1)
         x = self.lstm1(x)[0]
         x = x.view(-1, int(128))
