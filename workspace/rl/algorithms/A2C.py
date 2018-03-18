@@ -59,6 +59,7 @@ class Agent:
         self.episodes = 0
         self.current_batch_size = 0
         self.current_episodes = 0
+        self.training = False
 
         
         self.experiences = []
@@ -117,7 +118,9 @@ class Agent:
             self.writer.add_scalar("data/average_reward", average_reward, total_timesteps)
 
             ##### Optimization #####
+            self.training = True
             value_network_loss, policy_network_loss = self.train_networks(total_timesteps, batch_size, returns_batch, observations_batch, actions_batch, advantages_batch, learning_rate, auxs_batch)
+            self.training = False
             # torch.cuda.empty_cache()            
 
             self.print_stats(total_timesteps, total_episodes, best_average_reward, average_reward, policy_network_loss, value_network_loss, learning_rate, batch_size)
@@ -189,13 +192,15 @@ class Agent:
 
         return [trajectories, returns, undiscounted_returns, advantages, batch_size, episodes]
 
-    def is_power2(num):
+    def is_power2(self, num):
         return num != 0 and ((num & (num-1))==0)
 
     # Run one episode
     def run_one_episode(self, env):
 
         while True:
+            while self.training:
+                time.sleep(1)
             render = self.is_power2(self.episodes)
             
             # Restart env
@@ -213,7 +218,7 @@ class Agent:
                 # Sample action with current policy
                 action = self.compute_action(observation)
                 # Take action in environment
-                observation, reward, done, aux = env.step(action,render)
+                observation, reward, done, aux = env.step(action,render,self.episodes)
 
                 # Collect reward and action
                 rewards.append(reward)
