@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 from torchvision import models,transforms
 import os
-from skimage import io 
+from skimage import io
 import torchvision.utils as vutils
 import pdb
 
@@ -14,7 +14,7 @@ from scipy.misc import imsave
 from PIL import Image, ImageFile, BmpImagePlugin, PngImagePlugin, _binary
 
 
-#Since pytorch does not save intermediate outputs unlike torch/lua, 
+#Since pytorch does not save intermediate outputs unlike torch/lua,
 #a new class is created with a newly defined forward function
 
 def normalization(tensor):
@@ -68,7 +68,10 @@ class myFeatureExtractor(resnet.ResNet):
 
     def __init__(self,model):
         super(myFeatureExtractor, self).__init__(resnet.BasicBlock, [2, 2, 2, 2])
-        self = model.model
+        if hasattr(model, 'model'):
+            self = model.model
+        else:
+            self = model
 
     def handlesequential(self,x,module,output):
         i = len(output)
@@ -78,7 +81,7 @@ class myFeatureExtractor(resnet.ResNet):
             output[i] = x.data.clone()
             i+=1
 
-        return x,output 
+        return x,output
 
     def forward(self, x):
         outputs = {}
@@ -179,6 +182,10 @@ class VisualBackProp(object):
 
         return out
 
+    def __call__(self, img, dn):
+        o = self.visualize(img, dn)
+        return o
+
     def vismask_res(self, img):
         output = self.model(img)
 
@@ -249,6 +256,38 @@ class VisualBackProp(object):
 
         return out
 
+    def visualize(self, img, denormalize):
+
+        i=0
+        vismask = self.vismask_res(img)
+
+        mask = vismask[i]
+        mask = mask*255.0/torch.max(mask)
+        mask = mask.type(torch.LongTensor)
+
+        d, w, h = mask.size()
+        mask = mask.view(mask.numel())
+        mask = mask.unsqueeze(1)
+        imMask = (mask > 25).cuda()
+        denormalize(img[0].data)
+        # [0.31102816, 0.30806204, 0.290305]
+        # [0.19752153, 0.19664317, 0.20129602]
+        # img[i,0].data.mul_(0.19752153).add_(0.19752153)
+        # img[i,1].data.mul_(0.1966431).add_(0.1966431)
+        # img[i,2].data.mul_(0.20129602).add_(0.20129602)
+
+        img = img[i].data*255.0
+
+        ret = torch.LongTensor(w*h, 3).zero_()
+        ret[:,:] = self.rgbtable[mask,:]
+        colored_mask = ret.view(w,h,d*3).type(torch.FloatTensor)
+        colored_mask[colored_mask < 30] = 0
+
+        img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
+
+        out = torch.add(img, 0.4, colored_mask)
+        out = out.permute(2,0,1) / 255
+        return out
         # imsave(save + path[i].split('.')[0] + str('final') + '.png', out)
 
 # Scaling and normalizing the images to required sizes (mean and std deviation are values required by trained VGG model)

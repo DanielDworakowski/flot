@@ -41,14 +41,22 @@ class Agent(base.AgentBase):
 
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
-        self.t = transforms.Compose([transforms.ToTensor()])
+        norm = DataUtil.Normalize([0,0,0], [1,1,1])
         tnn = self.nnconf.transforms
+        for tf in tnn.transforms:
+            if isinstance(tf, DataUtil.Normalize):
+                norm = tf.norm
+                break
+        self.t = transforms.Compose([transforms.ToTensor(), norm])
+        #
+        # Rescale transforms.
         if any(isinstance(tf, DataUtil.Rescale) for tf in tnn.transforms):
             self.model_input_img_shape = (self.nnconf.hyperparam.cropShape[0],self.nnconf.hyperparam.cropShape[1],3)
             self.t = transforms.Compose([
                 transforms.ToPILImage(),
                 transforms.Resize(self.nnconf.hyperparam.image_shape),
                 transforms.ToTensor(),
+                norm,
             ])
         else:
             print('there is no rescale')
@@ -68,7 +76,7 @@ class Agent(base.AgentBase):
         self.turn_min_prob = 0.70
         #
         #
-        self.back_min_prob = 0.05
+        self.back_min_prob = 0.07
         # max vt w
         action_ = Action(np.zeros(self.action_array_dim))
         self.max_v_t = action_.max_v_t
@@ -155,7 +163,7 @@ class Agent(base.AgentBase):
 
             else:
                 action = Action(v_t=right_prob*self.max_v_t,w=right_prob*self.max_w)
-            # action = Action(action_array)
+            #action = Action(action_array)
             print('_____________________________________________________________________________________________________________________________________')
             print("Collsion Free Prob: left:{} center:{} right:{}".format(collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]))
             print("Linear Velocity: {:.2f} Angular Velocity: {:.2f}".format(action.v_t,action.w))

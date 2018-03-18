@@ -81,6 +81,9 @@ class DefaultConfig(object):
     # Number of workers for loading data.
     numWorkers = 8
     #
+    # Drop every nth frame from dataset < 1 to disable.
+    dropFrame = 2
+    #
     # Resize the network as needed.
     networkModification = None
     #
@@ -98,6 +101,10 @@ class DefaultConfig(object):
     #
     # The starting epoch for training (cosmetic).
     startingEpoch = 0
+    #
+    # Denormalize transform (default to do nothing).
+    denormalize = DataUtil.UnNormalize((0,0,0), (1,1,1))
+    normalize = DataUtil.Normalize((0,0,0), (1,1,1))
     ###########################################################################
     # Initialization that may be different across configurations.
     ###########################################################################

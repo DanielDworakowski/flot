@@ -9,6 +9,7 @@ import time
 import torch
 import rl_util.Roboschool as roboschool
 import rl_util.MountainCarContinuousPixel as mountain_env
+import time
 
 # Parse the input arguments.
 def getInputArgs():
@@ -23,10 +24,15 @@ def train(agent_class, env_name, seed, training_params, algorithm_params):
         env = roboschool.Env()
     else:
         import rl_util.AI2THOREnv as ai2thor
-        env = ai2thor.Env()
+        envs = []
+        for i in range(6):
+            envs.append(ai2thor.Env())
+            time.sleep(3)
+        
+
     np.random.seed(seed)
     torch.manual_seed(seed)
-    agent = agent_class.Agent(env, training_params, algorithm_params)
+    agent = agent_class.Agent(envs, training_params, algorithm_params)
     agent.train()
 
 if __name__ == "__main__":
@@ -35,6 +41,15 @@ if __name__ == "__main__":
     
     if args.phase == 'train':
         train(**env_setting)
+
+        # while True:
+        #     try:
+        #         print("Start!")
+        #         train(**env_setting)
+        #     except:
+        #         pass
+        #     else:
+        #         break
 
     else:
         print("ERROR: INVALID ARGUMENT Please choose train or test for phase argument")

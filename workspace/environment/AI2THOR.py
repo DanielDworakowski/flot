@@ -1,18 +1,17 @@
-import ai2thor_src.ai2thor.controller
+import ai2thor.controller
 import numpy as np
 import time
 import ai2thor_map
 import random
 
 class AI2THOR():
-    screen_w = 680
-    screen_h = 480
-    controller = ai2thor_src.ai2thor.controller.BFSController()
-    controller.start(player_screen_width=screen_w, player_screen_height=screen_h)
     
-    def __init__(self, scene='FloorPlan201', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.4):
+    def __init__(self, scene='FloorPlan1', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.4):
         # Member variables.
-        self.observation_shape = (self.screen_h, self.screen_w, 3)
+        self.controller = ai2thor.controller.BFSController()
+        self.controller.docker_enabled = True
+        self.controller.start(player_screen_width=300, player_screen_height=300)
+        self.observation_shape = (300, 300, 3)
         self.action_shape = (2,)
         self.controller.reset(scene)
         self.event = self.controller.step(dict(action='Initialize', gridSize=grid_size))
@@ -61,6 +60,10 @@ class AI2THOR():
                 self.occup_maps[floor_plan_name].add((grid_x, grid_z))
         if not(self.floor_plan in self.floor_plans):
             print("Scene not available")
+
+    def getState(self):
+        self.update()
+        return np.array([self.position['x'],self.position['z'],self.v,self.w])
 
     def getPosition(self):
         self.update()
@@ -120,5 +123,5 @@ class AI2THOR():
         if self.collided:
             self.episodes += 1
             self.timestep = 0
-        return_list = [self.getRGBImage(), self.v, self.collided]
+        return_list = [self.getRGBImage(), self.v, self.collided, self.getState()]
         return return_list

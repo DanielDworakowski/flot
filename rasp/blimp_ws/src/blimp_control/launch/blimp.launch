@@ -5,7 +5,7 @@
   <node name="imu" pkg="blimp_control" type="mpu6050_node.py" /> 
   
   <node name="altitude_pid" pkg="pid" type="controller" output="screen" >
-    <param name="Kp" value="0.355555" />
+    <param name="Kp" value="0.35" />
     <param name="Ki" value="0.0" />
     <param name="Kd" value="0.0" />
     <param name="upper_limit" value="1.0" />

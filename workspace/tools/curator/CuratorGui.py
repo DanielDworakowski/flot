@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 from util.debug import *
-from util.visualBackProp import VisualBackProp
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -11,6 +10,7 @@ from torch.autograd import Variable
 import tools.visualization as visutil
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PIL import Image, ImageFont, ImageDraw
+from util.visualBackProp import VisualBackProp
 
 class LedIndicator(QAbstractButton):
     scaledSize = 1000.0
@@ -137,6 +137,7 @@ class NNVis(object):
             import torch
             from config.DefaultNNConfig import getDefaultTransform
             # self.t = getDefaultTransform(conf)
+            self.visualbackprop = VisualBackProp(model)
             self.t = self.conf.transforms
             self.sm = torch.nn.Softmax(dim = 1)
             self.visModelCB = self.visModel
@@ -153,21 +154,15 @@ class NNVis(object):
         data = self.t(sample)
 
         if self.conf.usegpu:
-            labels = Variable(data['labels'].squeeze_()).cuda(async = True)
-            out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0).cuda(async = True))
+            var_img = Variable(data['img']).unsqueeze_(0).cuda(async = True)
         else:
-            out = self.conf.hyperparam.model(Variable(data['img']).unsqueeze_(0))
+            var_img = Variable(data['img']).unsqueeze_(0)
 
-        draw = ImageDraw.Draw(img)
-        if self.visualbackprop:
-            img_test = self.toPIL(self.visualbackprop.visualize(data['img']).squeeze_())
-            draw = ImageDraw.Draw(img_test)
-            img = img_test
-
+        out = self.model(var_img)
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 12, img.size, self.rgbTable, draw, self.conf, posClasses)
         self.lIdx = idx
-        retnet = self.toPIL(data['img'].squeeze_())
+        retnet = self.toPIL(self.visualbackprop(var_img, self.conf.denormalize))
         self.lastImg = img
         self.lastNet = retnet
         return retnet, img
