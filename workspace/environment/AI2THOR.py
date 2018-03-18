@@ -16,6 +16,7 @@ class AI2THOR():
         self.controller.reset(scene)
         self.event = self.controller.step(dict(action='Initialize', gridSize=grid_size))
         self.grid_size = grid_size
+        self.start_position = self.getPosition()
         self.position = None
         self.rotation = None
         self.yaw = None
@@ -42,9 +43,11 @@ class AI2THOR():
         self.w = 0.
         self.update()
         # self.floor_plan = random.choice(list(self.occup_maps.keys()))
-        grid_x, grid_z = random.choice(list(self.occup_maps[self.floor_plan]))       
+        # grid_x, grid_z = random.choice(list(self.occup_maps[self.floor_plan]))       
+        grid_x, grid_z = [self.start_position['x'],self.start_position['z']]
         self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
-        new_yaw = random.random()*2*3.14
+        # new_yaw = random.random()*2*3.14
+        new_yaw = 3.14
         self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
         return self.getRGBImage()
 
