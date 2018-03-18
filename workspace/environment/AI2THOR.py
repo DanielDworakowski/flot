@@ -46,7 +46,6 @@ class AI2THOR():
         self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
         new_yaw = random.random()*2*3.14
         self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
-        self.update()
         return self.getRGBImage()
 
 
