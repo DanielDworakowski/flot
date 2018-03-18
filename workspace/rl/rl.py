@@ -25,7 +25,7 @@ def train(agent_class, env_name, seed, training_params, algorithm_params):
     else:
         import rl_util.AI2THOREnv as ai2thor
         envs = []
-        for i in range(2):
+        for i in range(32):
             envs.append(ai2thor.Env())
             time.sleep(3)       
 
