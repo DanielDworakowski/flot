@@ -115,10 +115,6 @@ class VisualBackProp(object):
         model.train(False)
         self.model = model
         self.rgbtable = rtobTable()
-        self.trans = transforms.Compose([transforms.Resize(400),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
 # for f in files:
     # imgname = os.path.join(input_dir,f)
@@ -138,50 +134,6 @@ class VisualBackProp(object):
 
     # print("....Saving images.....")
     # imsave(output_dir + f.split('.')[0] + str('final') + '.png', out)
-    def visualize(self, image):
-        notTensor = 'torch' not in str(type(image))
-        if notTensor:
-            image = self.trans(image)
-
-        if torch.cuda.is_available():
-            image = Variable(image.cuda(), volatile = True)
-        else:
-            image = Variable(image, volatile = True)
-
-        if len(image.size())==3:
-            image = image.unsqueeze(0)
-
-        i=0
-        vismask = self.vismask_res(image)
-        if 'Variable' in str(type(image)):
-            img = image.data
-        else:
-            img = image.clone()
-
-        # img[i,0].mul_(0.229).add_(0.485)
-        # img[i,1].mul_(0.224).add_(0.456)
-        # img[i,2].mul_(0.225).add_(0.406)
-
-        img = img[i]*255.0
-        mask = vismask[i]
-        mask = mask*255.0/torch.max(mask)
-        mask = mask.type(torch.LongTensor)
-
-        d, w, h = mask.size()
-        mask = mask.view(mask.numel())
-        mask = mask.unsqueeze(1)
-
-        ret = torch.LongTensor(w*h, 3).zero_()
-        ret[:,:] = self.rgbtable[mask,:]
-        # colored_mask = ret.view(w,h,d*3).type(torch.FloatTensor)
-        colored_mask = ret.view(d*3,w,h).type(torch.FloatTensor)
-
-        # img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
-        img = img.type(torch.FloatTensor).mul(1./255.)
-        out = torch.add(img, 0.85, colored_mask.mul(1./255.))
-
-        return out
-
     def __call__(self, img, dn):
         o = self.visualize(img, dn)
         return o
@@ -256,7 +208,52 @@ class VisualBackProp(object):
 
         return out
 
-    def visualize(self, img, denormalize):
+    # def visualize(self, image):
+        # # notTensor = 'torch' not in str(type(image))
+        # # if notTensor:
+            # # image = self.trans(image)
+
+        # # if torch.cuda.is_available():
+            # # image = Variable(image.cuda(), volatile = True)
+        # # else:
+            # # image = Variable(image, volatile = True)
+
+        # # if len(image.size())==3:
+            # # image = image.unsqueeze(0)
+
+        # i=0
+        # vismask = self.vismask_res(image)
+        # # if 'Variable' in str(type(image)):
+            # # img = image.data
+        # # else:
+            # # img = image.clone()
+
+        # # img[i,0].mul_(0.229).add_(0.485)
+        # # img[i,1].mul_(0.224).add_(0.456)
+        # # img[i,2].mul_(0.225).add_(0.406)
+
+        # img = img[i]*255.0
+        # mask = vismask[i]
+        # mask = mask*255.0/torch.max(mask)
+        # mask = mask.type(torch.LongTensor)
+
+        # d, w, h = mask.size()
+        # mask = mask.view(mask.numel())
+        # mask = mask.unsqueeze(1)
+
+        # ret = torch.LongTensor(w*h, 3).zero_()
+        # ret[:,:] = self.rgbtable[mask,:]
+        # # colored_mask = ret.view(w,h,d*3).type(torch.FloatTensor)
+        # colored_mask = ret.view(d*3,w,h).type(torch.FloatTensor)
+
+        # # img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
+        # img = img.type(torch.FloatTensor).mul(1./255.)
+        # out = torch.add(img, 0.85, colored_mask.mul(1./255.))
+
+        # return out
+
+
+    def visualize(self, img, denormalize=None):
 
         i=0
         vismask = self.vismask_res(img)
@@ -268,8 +265,12 @@ class VisualBackProp(object):
         d, w, h = mask.size()
         mask = mask.view(mask.numel())
         mask = mask.unsqueeze(1)
-        imMask = (mask > 25).cuda()
-        denormalize(img[0].data)
+        if torch.cuda.is_available():
+            imMask = (mask > 25).cuda()
+        else:
+            imMask = (mask > 25)
+        if denormalize:
+            denormalize(img[0].data)
         # [0.31102816, 0.30806204, 0.290305]
         # [0.19752153, 0.19664317, 0.20129602]
         # img[i,0].data.mul_(0.19752153).add_(0.19752153)
@@ -290,11 +291,6 @@ class VisualBackProp(object):
         return out
         # imsave(save + path[i].split('.')[0] + str('final') + '.png', out)
 
-# Scaling and normalizing the images to required sizes (mean and std deviation are values required by trained VGG model)
-# trans = transforms.Compose([transforms.Resize(400),
-    # transforms.CenterCrop(224),
-    # transforms.ToTensor(),
-    # transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
 #------------------------------------------------------------------------------------
 
