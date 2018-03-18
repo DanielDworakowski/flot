@@ -64,7 +64,7 @@ class Agent:
         
         self.experiences = []
 
-        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(8)]
+        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(2)]
 
         for thread in threads:
             thread.daemon = True
@@ -199,7 +199,7 @@ class Agent:
     def run_one_episode(self, env):
 
         while True:
-            while self.training:
+            while self.current_batch_size >= self.training_params['min_batch_size']:
                 time.sleep(1)
             render = self.is_power2(self.episodes)
             
