@@ -8,8 +8,34 @@ import Observations as obv
 from torchvision import transforms
 import nn.util.DataUtil as DataUtil
 from torch.autograd import Variable
+from util.visualBackProp import VisualBackProp
+from scipy.misc import imresize
+from PIL import Image
+
 #
 # Neural network agent class.
+
+def combine(orig, filtered, rep_size):
+    if len(rep_size)==2:
+        rep_size.append(3)
+    orignp = np.array(orig)
+    filterednp = filtered.numpy()
+    origsize = orignp.shape
+
+    scaled = imresize(filterednp, rep_size, interp='bicubic')
+
+    delta_w = origsize[1] - rep_size[1]
+    delta_h = origsize[0] - rep_size[0]
+    top, bottom = delta_h // 2, delta_h - (delta_h // 2) 
+    left, right = delta_w // 2, delta_w - (delta_w // 2) 
+
+    ones = np.ones(scaled.shape)
+    mask= np.logical_not(np.pad(ones, ((top, bottom), (left, right), (0,0)), mode='constant'))
+    padded= np.pad(scaled, ((top, bottom), (left, right), (0,0)), mode='constant')
+    out = np.multiply(mask, orignp) + padded
+
+    return out
+
 class Agent(base.AgentBase):
     #
     # Constructor.
@@ -20,6 +46,11 @@ class Agent(base.AgentBase):
         #
         # Check if cuda is available.
         self.usegpu = torch.cuda.is_available() and self.conf.usegpu
+        self.ToPIL = transforms.ToPILImage()
+
+        # If you want to use visualbackprop
+        self.useVisualBackProp = True
+
         #
         # Load the model.
         if self.conf.modelLoadPath != None and os.path.isfile(self.conf.modelLoadPath):
@@ -29,6 +60,8 @@ class Agent(base.AgentBase):
                 print('Running the agent on CPU!')
                 checkpoint = torch.load(self.conf.modelLoadPath, map_location={'cuda:0': 'cpu'})
             self.model = checkpoint['model']
+            if self.useVisualBackProp:
+                self.visualbackprop = VisualBackProp(self.model)
             self.nnconf = checkpoint['conf']
             self.model.load_state_dict(checkpoint['state_dict'])
             printColour('Loaded model from path: %s'%self.conf.modelLoadPath, colours.OKBLUE)
@@ -41,7 +74,7 @@ class Agent(base.AgentBase):
 
         self.model.eval()
         self.model_input_img_shape = conf.image_shape
-        norm = DataUtil.Normalize([0,0,0], [1,1,1])
+        norm = transforms.Normalize([0,0,0], [1,1,1])
         tnn = self.nnconf.transforms
         for tf in tnn.transforms:
             if isinstance(tf, DataUtil.Normalize):
@@ -117,6 +150,7 @@ class Agent(base.AgentBase):
             collision_free_prob = []
             softmax = torch.nn.Softmax()
             probs = None
+            vbp = None
 
             # Runs classification over each cropped image
             for idx, cropped_img in enumerate(cropped_imgs):
@@ -132,6 +166,11 @@ class Agent(base.AgentBase):
 
                 if idx == 1:
                     probs = self.model.getClassifications(classActivation, softmax)
+                    if self.useVisualBackProp:
+                        # tmp = self.ToPIL(self.visualbackprop.visualize(img).squeeze_())
+                        tmp = self.visualbackprop.visualize(img)
+                        combined = combine(npimg, tmp, self.model_input_img_shape)
+                        vbp = Image.fromarray(combined.astype('uint8'), 'RGB')
 
                 collision_free_prob.append(softmax(classActivation)[0,1].data.cpu().numpy())
 
@@ -170,6 +209,7 @@ class Agent(base.AgentBase):
 
             # Place the activations for visualization.
             action.meta['activations'] = probs.cpu().numpy()[0]
+            action.meta['visualbackprop'] = vbp
 
         # Take no action when no image is available
         else:

@@ -128,6 +128,11 @@ class NNVis(object):
         self.lastImg = None
         self.lastNet = None
         self.toPIL = transforms.ToPILImage()
+        if model:
+            self.visualbackprop = VisualBackProp(model)
+        else:
+            self.visualbackprop = None
+
         if self.conf != None:
             import torch
             from config.DefaultNNConfig import getDefaultTransform
@@ -144,13 +149,15 @@ class NNVis(object):
             return self.lastNet, self.lastImg
         #
         # Process the new image.
-        draw = ImageDraw.Draw(img)
+        # draw = ImageDraw.Draw(img)
         sample = {'img': img, 'labels': np.array([0]), 'meta': {'shift':(0,0)}}
         data = self.t(sample)
+
         if self.conf.usegpu:
             var_img = Variable(data['img']).unsqueeze_(0).cuda(async = True)
         else:
             var_img = Variable(data['img']).unsqueeze_(0)
+
         out = self.model(var_img)
         posClasses = self.model.getClassifications(out, self.sm).squeeze_()
         visutil.drawTrajectoryDots(0, 0, 12, img.size, self.rgbTable, draw, self.conf, posClasses)

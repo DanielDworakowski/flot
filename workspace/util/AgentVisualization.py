@@ -46,7 +46,11 @@ class Visualizer(QMainWindow):
         # QApplication.processEvents()
 
         if obs['img'].uint8Img is not None:
-            img = Image.fromarray(obs['img'].uint8Img)
+            vbp = action.meta['visualbackprop']
+            if vbp:
+                img = vbp
+            else:
+                img = Image.fromarray(obs['img'].uint8Img)
             draw = ImageDraw.Draw(img)
             # print(action.meta['activations'])
             visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
