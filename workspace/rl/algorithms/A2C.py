@@ -56,20 +56,21 @@ class Agent:
         ##### Logging #####
         self.writer = SummaryWriter()
         self.save()
+        self.episodes = 0
+        self.current_batch_size = 0
+        self.current_episodes = 0
+
         
         self.experiences = []
 
-        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(6)]
+        threads = [threading.Thread(target=self.run_one_episode, args=(envs[i],)) for i in range(8)]
 
         for thread in threads:
             thread.daemon = True
             thread.start()
             time.sleep(1)
 
-        self.current_batch_size = 0
-        self.current_episodes = 0
-        self.value_net_flag = False
-
+        
 
 
     def save(self):
@@ -160,15 +161,18 @@ class Agent:
         ##### Episode #####
 
         while self.current_batch_size < self.training_params['min_batch_size']:
+            time.sleep(1)
             pass
 
         # Run one episode
-        observations, actions, rewards, dones, auxs, undiscounted_returns, return_, advantage = copy.deepcopy(zip(*self.experiences))
+        observations, actions, rewards, dones, auxs, undiscounted_returns, return_ = copy.deepcopy(zip(*self.experiences))
         self.experiences = []
         self.current_batch_size = 0
-        observations, rewards, actions, dones, auxs, undiscounted_returns, returns, advantages = list(observations), list(rewards), list(actions), list(dones), list(auxs), list(undiscounted_returns), list(return_), list(advantage)
+        observations, rewards, actions, dones, auxs, undiscounted_returns, returns = list(observations), list(rewards), list(actions), list(dones), list(auxs), list(undiscounted_returns), list(return_)
 
         observations, rewards, actions, dones, auxs= list(itertools.chain(*observations)), list(itertools.chain(*rewards)), list(itertools.chain(*actions)), list(itertools.chain(*dones)), list(itertools.chain(*auxs))
+
+        advantages = np.array(list(itertools.chain(*returns))) - np.squeeze(self.value_network.compute(observations))
         ##### Data Appending #####
 
         # Update the counters
@@ -185,14 +189,17 @@ class Agent:
 
         return [trajectories, returns, undiscounted_returns, advantages, batch_size, episodes]
 
+    def is_power2(num):
+        return num != 0 and ((num & (num-1))==0)
+
     # Run one episode
     def run_one_episode(self, env):
 
         while True:
-            render = True
+            render = self.is_power2(self.episodes)
             
             # Restart env
-            observation = self.env.reset()
+            observation = env.reset()
 
             # Flag that env is in terminal state
             done = False
@@ -206,7 +213,7 @@ class Agent:
                 # Sample action with current policy
                 action = self.compute_action(observation)
                 # Take action in environment
-                observation, reward, done, aux = self.env.step(action,render)
+                observation, reward, done, aux = env.step(action,render)
 
                 # Collect reward and action
                 rewards.append(reward)
@@ -217,15 +224,14 @@ class Agent:
             undiscounted_return = np.sum(rewards)
             timesteps = len(rewards)
             return_ = discount(rewards, self.algorithm_params['gamma'])
-            values = np.squeeze(self.value_network.compute(observations))
-            advantage = return_ - values
 
-            experience = [observations, actions, rewards, dones, auxs, undiscounted_return, return_, advantage]
+            experience = [observations, actions, rewards, dones, auxs, undiscounted_return, return_]
 
             self.current_batch_size += timesteps
 
             self.experiences.append(experience)
             self.current_episodes += 1
+            self.episodes += 1
 
     # Compute action using policy network
     def compute_action(self, observation):
@@ -233,7 +239,7 @@ class Agent:
         return action
 
     # Convert trajectories to batches
-    def traj_to_batch(self, trajectories, returns, advantages):
+    def traj_to_batch(self, trajectories, returns, advantages_batch):
         ##### Data Prep #####
           
         # Observations for this batch
@@ -255,7 +261,7 @@ class Agent:
         returns_batch = np.array(list(itertools.chain.from_iterable(returns))).reshape([-1,1])
 
         # Advantages for this batch. itertool used to make batch into long np array
-        advantages_batch = np.array(list(itertools.chain.from_iterable(advantages))).flatten().reshape([-1,1])
+        # advantages_batch = np.array(list(itertools.chain.from_iterable(advantages))).flatten().reshape([-1,1])
 
         return [observations_batch, actions_batch, rewards_batch, returns_batch, next_observations_batch, advantages_batch, auxs_batch]
 

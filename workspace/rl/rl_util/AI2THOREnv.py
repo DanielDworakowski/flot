@@ -4,6 +4,7 @@ from pylab import *
 import environment.AI2THOR as ai2thor
 plt.rcParams.update({'figure.max_open_warning': 0})
 
+
 class Env():
 
     def __init__(self):
@@ -21,13 +22,13 @@ class Env():
         self.vid_dir = "/home/rae/videos/AI2THOR/"
 
 
-    def step(self, action, render):
+    def step(self, action, render, episodes):
         self.last_image = self.image
         self.image, self.reward, self.done, self.state = self.env.step(action)
-        if np.sqrt(self.env.episodes).is_integer():
+        if render:
             self.video_imgs.append(self.image)
             if self.done:
-                self.save_video()
+                self.save_video(episodes)
                 self.video_imgs = []
         return (self.image - self.last_image), self.reward, self.done, self.state
 
@@ -36,7 +37,7 @@ class Env():
         self.last_image = self.image
         return self.image - self.last_image
 
-    def save_video(self):
+    def save_video(self, episodes):
         fig = plt.figure()
         ax = fig.add_subplot(111)
         ax.set_aspect('equal')
@@ -56,5 +57,5 @@ class Env():
         ani = animation.FuncAnimation(fig,update_img,len(self.video_imgs),interval=20)
         writer = animation.writers['ffmpeg'](fps=20)
 
-        ani.save(self.vid_dir+"episode_"+str(self.env.episodes)+".mp4",writer=writer,dpi=100)
+        ani.save(self.vid_dir+"episode_"+str(episodes)+".mp4",writer=writer,dpi=100)
         return ani

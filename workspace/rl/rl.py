@@ -25,10 +25,9 @@ def train(agent_class, env_name, seed, training_params, algorithm_params):
     else:
         import rl_util.AI2THOREnv as ai2thor
         envs = []
-        for i in range(6):
+        for i in range(8):
             envs.append(ai2thor.Env())
-            time.sleep(3)
-        
+            time.sleep(3)       
 
     np.random.seed(seed)
     torch.manual_seed(seed)
