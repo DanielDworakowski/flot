@@ -149,7 +149,7 @@ class NNVis(object):
             return self.lastNet, self.lastImg
         #
         # Process the new image.
-        # draw = ImageDraw.Draw(img)
+        draw = ImageDraw.Draw(img)
         sample = {'img': img, 'labels': np.array([0]), 'meta': {'shift':(0,0)}}
         data = self.t(sample)
 
