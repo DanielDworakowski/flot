@@ -66,13 +66,14 @@ def loop(conf):
 
         while not exitNow.exit:
             step(agent, env, vis)
-            #
-            # Streaming to server endpoint via POST requests
+
+            # # Streaming to server endpoint via POST requests
             # try:
             #     frame = env.observer.stream.getFrame()
             #     if frame is not None:
             #         _, img_encoded = cv2.imencode('.jpg', frame)
-            #         response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
+            #         parallelTask = async.post(addr, data=img_encoded.tostring(), headers=headers)
+            #         async.map(parallelTask)
             # except Exception as e:
             #     pass
 # Main code.

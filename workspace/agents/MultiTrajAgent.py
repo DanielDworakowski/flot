@@ -127,16 +127,13 @@ class Agent(base.AgentBase):
             softmax = torch.nn.Softmax()
             probs = None
             vbp = None
-
             img = self.t(npimg)
-
             if self.usegpu:
                 img = Variable(img.unsqueeze_(0).cuda(async=True))
             else:
                 img = Variable(img.unsqueeze_(0))
 
             classActivation = self.model(img)
-            print(classActivation)
             collision_free_pred = classActivation.data
             probs = self.model.getClassifications(classActivation, softmax)
             if self.useVisualBackProp:
@@ -145,13 +142,10 @@ class Agent(base.AgentBase):
                 combined = combine(npimg, tmp, self.model_input_img_shape)
                 vbp = Image.fromarray(combined.astype('uint8'), 'RGB')
 
-            collision_free_prob = softmax(classActivation).data.cpu().numpy()
-            print(classActivation)
-            print(collision_free_prob)
+            collision_free_prob = probs.numpy()[0]
 
             # collision free probability
-            left_prob, center_prob, right_prob = collision_free_prob
-            left_prob, center_prob, right_prob = [left_prob[0], center_prob[0], right_prob[0]]
+            left_prob, center_prob, right_prob = collision_free_prob[0], collision_free_prob[1], collision_free_prob[2]
             action_array = np.zeros(self.action_array_dim)
             if center_prob > self.straight_min_prob:
                 #action_array[int(self.action_array_dim/2)] = 1
