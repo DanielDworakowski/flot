@@ -1,6 +1,6 @@
 welcome: Hello, my name is fibi! How can I help you?
 
-prompt: You can ask me to take a picture!
+prompt: You can ask me to take a picture! Or show a picture!
 
 selfie_ok: Okay, I just took one! Do you want to see it? Or post it on Twitter?
 
@@ -29,3 +29,67 @@ yes_retake: Okay, I'll take another picture!
 no_retake: Okay, I won't take another picture then!
 
 stop: Goodbye!
+
+help: Here are the available commands. Take a picture. Call picture pic_name. Show pic_name. Send picture pic_name.
+
+about: Hello! My name is Fibi. I am a personal home assistant robot created by Kelvin, Tommy, Genie, Jiwon, Rae, and Daniel. I am still under development, but I hope to be of assistant in the near future!
+
+about_reprompt: And, please tell the team not to disassemble me after the symposium is over, I promise not to take over the world or something!
+
+username: Okay! I'll remember your name as {{ name }}!
+
+# Greeting list
+greeting_1: Hello {{ name }}!
+
+greeting_2: Hi {{ name }}!
+
+greeting_3: Greetings {{ name }}!
+
+greeting_4: Nice to see you {{ name }}!
+
+greeting_5: What's up {{ name }}?
+
+greeting_6: Hmm. Hi {{ name }}!
+
+greeting_7: Hi {{ name }}! Don't mind me, I'm just floating about.
+
+greeting_8: Hello! Do you need something {{ name }}?
+
+greeting_9: Ola {{ name }}! That is hello in Spanish!
+
+greeting_10: Salutations {{ name }}!
+
+greeting_11: Hello! How are you doing {{ name }}?
+
+greeting_12: How have you been {{ name }}?
+
+greeting_13: Hi {{ name }}. Pleae make sure I don't float away!
+
+greeting_14: Ni hao {{ name }}! That is hello in Chinese!
+
+greeting_15: Bonjour {{ name }}! That is hello in French!
+
+greeting_16: Hello {{ name }}! I hope I pronounced your name right!
+
+greeting_17: Hello {{ name }}! I love you! I know, because I'm programmed to!
+
+greeting_18: Hi {{ name }}! Nice to see you!
+
+greeting_19: Hi {{ name }}! Do you need something from me?
+
+greeting_20: Oh, it's {{ name }}! Hello!
+
+# Bye list
+bye_1: Goodbye {{ name }}!
+
+bye_2: Take care {{ name }}!
+
+bye_3: Bye {{ name }}!
+
+bye_4: See you later {{ name }}!
+
+bye_5: Ok! I'll catch you later {{ name }}!
+
+bye_6: Sad to see you go, {{ name }}!
+
+bye_reprompt: Username has been resetted.

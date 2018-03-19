@@ -21,6 +21,7 @@ import torch.multiprocessing as mp
 import torch
 
 import string
+from random import *
 import os
 import atexit
 
@@ -28,6 +29,9 @@ import atexit
 home_path = os.path.expanduser("~")
 frame = None
 image = None
+username = None
+greeting_nums = 16
+bye_nums = 16
 
 # Twitter setup
 consumer_key = 'iTl0HLBQxe8V4JksVXwu8Xwus'
@@ -42,6 +46,9 @@ def format_filename(s):
     filename = filename.replace(' ','_')
     return filename
 
+def voice_mod(s):
+    if isinstance(s, str) or isinstance(s, unicode):
+        return "<speak><prosody pitch='+33.3%'>" + s + '</prosody></speak>'
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -67,8 +74,8 @@ def image_update():
 
 @ask.launch
 def welcome():
-    msg = render_template('welcome')
-    reprompt = render_template('prompt')
+    msg = voice_mod(render_template('welcome'))
+    reprompt = voice_mod(render_template('prompt'))
 
     return question(msg).reprompt(reprompt)
 
@@ -84,7 +91,38 @@ def selfie():
     else:
         msg = render_template('selfie_fail')
 
+    msg = voice_mod(msg)
+
     return question(msg)
+
+@ask.intent("UsernameIntent", mapping={'name': 'Name'})
+def username(name):
+    global username
+    username = name
+    msg = render_template('username', name=name)
+    msg = voice_mod(msg)
+
+    return question(msg)
+
+@ask.intent("GreetingIntent")
+def greeting():
+    global username, greeting_nums
+    msg = render_template('greeting_'+ str(randint(1, greeting_nums)), name=username)
+    msg = voice_mod(msg)
+
+    return question(msg)
+
+@ask.intent("ExitIntent")
+def bye():
+    global username, bye_nums
+    msg = render_template('bye_'+ str(randint(1, bye_nums)), name=username)
+    msg = voice_mod(msg)
+
+    reprompt = render_template('bye_reprompt')
+    reprompt = voice_mod(reprompt)
+    username = None
+
+    return question(msg).reprompt(reprompt)
 
 @ask.intent("ShowIntent", mapping={'name': 'Name', 'previous': 'Previous'})
 def showImage(name, previous):
@@ -116,6 +154,8 @@ def showImage(name, previous):
     # Couldn't match anything
     else:
         msg = render_template('find_fail')
+
+    msg = voice_mod(msg)
 
     return question(msg)
 
@@ -156,6 +196,8 @@ def nameImage(name):
     # Else, prompt user to take image
     else:
         msg = render_template('name_none')
+
+    msg = voice_mod(msg)
 
     return question(msg)
 #
@@ -222,21 +264,46 @@ def tweetImage(name):
     else:
         msg = render_template('find_fail')
 
+    msg = voice_mod(msg)
+
     return question(msg)
 
 @ask.intent("YesIntent")
 def yes():
     msg = render_template('yes_retake')
+    msg = voice_mod(msg)
     return question(msg)
 
 @ask.intent("NoIntent")
 def no():
     msg = render_template('no_retake')
+    msg = voice_mod(msg)
     return question(msg)
 
 @ask.intent("StopIntent")
 def stop():
     msg = render_template('stop')
+    msg = voice_mod(msg)
     return statement(msg)
+
+@ask.intent("CancelIntent")
+def cancel():
+    msg = render_template('stop')
+    msg = voice_mod(msg)
+    return statement(msg)
+
+@ask.intent("HelpIntent")
+def  help():
+    msg = render_template('help')
+    msg = voice_mod(msg)
+    return question(msg)
+
+@ask.intent("AboutIntent")
+def  about():
+    msg = render_template('about')
+    reprompt = render_template('about_reprompt')
+    msg = voice_mod(msg)
+    reprompt = voice_mod(reprompt)
+    return question(msg).reprompt(reprompt)
 
 app.run(debug=False, host='0.0.0.0')
