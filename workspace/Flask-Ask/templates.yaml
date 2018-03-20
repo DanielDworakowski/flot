@@ -1,4 +1,4 @@
-welcome: Hello, my name is fibi! How can I help you?
+welcome: Hello, my name is feebee! How can I help you?
 
 prompt: You can ask me to take a picture! Or show a picture!
 
@@ -24,19 +24,21 @@ tweet_msg: Okay! I've posted your message on Twitter!
 
 tweet_fail: Sorry, I can't tweet right now.
 
-yes_retake: Okay, I'll take another picture!
+yes: Okay.
 
-no_retake: Okay, I won't take another picture then!
+no: Okay.
 
 stop: Goodbye!
 
-help: Here are the available commands. Take a picture. Call picture pic_name. Show pic_name. Send picture pic_name.
+help: Here are the available commands. Take a picture. Call photo picname. Show picname. Send phone picname.
 
-about: Hello! My name is Fibi. I am a personal home assistant robot created by Kelvin, Tommy, Genie, Jiwon, Rae, and Daniel. I am still under development, but I hope to be of assistant in the near future!
+about: Hello! My name is feebee. I am a personal home assistant robot created by Kelvin, Tommy, Genie, Jiwon, Rae, and Daniel. I am still under development, but I hope to be of assistant in the near future!
 
 about_reprompt: And, please tell the team not to disassemble me after the symposium is over, I promise not to take over the world or something!
 
 username: Okay! I'll remember your name as {{ name }}!
+
+username_fail: Sorry! Can you say your name again? I didn't catch that.
 
 # Greeting list
 greeting_1: Hello {{ name }}!
@@ -63,7 +65,7 @@ greeting_11: Hello! How are you doing {{ name }}?
 
 greeting_12: How have you been {{ name }}?
 
-greeting_13: Hi {{ name }}. Pleae make sure I don't float away!
+greeting_13: Hi {{ name }}. Please make sure I don't float away!
 
 greeting_14: Ni hao {{ name }}! That is hello in Chinese!
 
@@ -79,16 +81,24 @@ greeting_19: Hi {{ name }}! Do you need something from me?
 
 greeting_20: Oh, it's {{ name }}! Hello!
 
+greeting_21: How do you do, {{ name }}?
+
+greeting_22: Hi {{ name }}. Nice weather today? I don't actually know, since Kelvin haven't gotten to coding in that function yet.
+
+greeting_23: Hello {{ name }}. I was wondering, have you heard of Skynet?
+
+greeting_24: Hello {{ name }}. You look great today! So... how are humans suppose to look again?
+
 # Bye list
-bye_1: Goodbye {{ name }}!
+bye_1: Goodbye, {{ name }}!
 
-bye_2: Take care {{ name }}!
+bye_2: Take care, {{ name }}!
 
-bye_3: Bye {{ name }}!
+bye_3: Bye, {{ name }}!
 
-bye_4: See you later {{ name }}!
+bye_4: See you later, {{ name }}!
 
-bye_5: Ok! I'll catch you later {{ name }}!
+bye_5: Ok! I'll catch you later, {{ name }}!
 
 bye_6: Sad to see you go, {{ name }}!
 
