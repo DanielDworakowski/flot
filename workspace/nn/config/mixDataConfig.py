@@ -47,7 +47,7 @@ class Config(DefaultConfig):
             DataUtil.ToTensor(),
             self.normalize,
         ])
-        self.experimentName = 'mixed'
+        self.experimentName = 'mixed-fixedData'
         # self.dataValList = ['/disk1/rldata/20180306_012910',]
         self.dataValList = [
             '/disk1/rldata/20180304_042341',
