@@ -45,10 +45,20 @@ def main(d):
     #
     # Filter by length of each split.
     cnt = 0
+    colMax = []
+    sects = [sp[0]]
     for sectIdx in range(len(sp) - 1):
-        if len(sp[sectIdx]) > frameHold:
+        nxt = sectIdx + 1
+        sect = sp[nxt]
+        if len(sect) > frameHold:
             cnt += 1
+            sectSummary = np.concatenate(sects)
+            colMax.append(np.max(sectSummary))
+        else:
+            sects.append(sect)
+
     print(cnt)
+    print(colMax)
 
 if __name__=='__main__':
     args = getInputArgs()
