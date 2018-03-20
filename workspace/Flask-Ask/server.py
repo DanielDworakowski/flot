@@ -30,8 +30,8 @@ home_path = os.path.expanduser("~")
 frame = None
 image = None
 username = None
-greeting_nums = 16
-bye_nums = 16
+greeting_nums = 24
+bye_nums = 6
 
 # Twitter setup
 consumer_key = 'iTl0HLBQxe8V4JksVXwu8Xwus'
@@ -98,16 +98,25 @@ def selfie():
 @ask.intent("UsernameIntent", mapping={'name': 'Name'})
 def username(name):
     global username
-    username = name
-    msg = render_template('username', name=name)
-    msg = voice_mod(msg)
 
+    if isinstance(name, unicode):
+        username = name
+        msg = render_template('username', name=name)
+    else:
+        msg = render_template('username_fail')
+
+    msg = voice_mod(msg)
     return question(msg)
 
 @ask.intent("GreetingIntent")
 def greeting():
     global username, greeting_nums
-    msg = render_template('greeting_'+ str(randint(1, greeting_nums)), name=username)
+    name = username
+
+    if name is None:
+        name = ''
+
+    msg = render_template('greeting_'+ str(randint(1, greeting_nums)), name=name)
     msg = voice_mod(msg)
 
     return question(msg)
@@ -115,7 +124,12 @@ def greeting():
 @ask.intent("ExitIntent")
 def bye():
     global username, bye_nums
-    msg = render_template('bye_'+ str(randint(1, bye_nums)), name=username)
+    name = username
+
+    if name is None:
+        name = ''
+
+    msg = render_template('bye_'+ str(randint(1, bye_nums)), name=name)
     msg = voice_mod(msg)
 
     reprompt = render_template('bye_reprompt')
@@ -265,34 +279,33 @@ def tweetImage(name):
         msg = render_template('find_fail')
 
     msg = voice_mod(msg)
-
     return question(msg)
 
-@ask.intent("YesIntent")
+@ask.intent("AMAZON.YesIntent")
 def yes():
-    msg = render_template('yes_retake')
+    msg = render_template('yes')
     msg = voice_mod(msg)
     return question(msg)
 
-@ask.intent("NoIntent")
+@ask.intent("AMAZON.NoIntent")
 def no():
-    msg = render_template('no_retake')
+    msg = render_template('no')
     msg = voice_mod(msg)
     return question(msg)
 
-@ask.intent("StopIntent")
+@ask.intent("AMAZON.StopIntent")
 def stop():
     msg = render_template('stop')
     msg = voice_mod(msg)
     return statement(msg)
 
-@ask.intent("CancelIntent")
+@ask.intent("AMAZON.CancelIntent")
 def cancel():
     msg = render_template('stop')
     msg = voice_mod(msg)
     return statement(msg)
 
-@ask.intent("HelpIntent")
+@ask.intent("AMAZON.HelpIntent")
 def  help():
     msg = render_template('help')
     msg = voice_mod(msg)
