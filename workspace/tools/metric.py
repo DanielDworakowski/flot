@@ -3,12 +3,13 @@ import os
 import argparse
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def getInputArgs():
     parser = argparse.ArgumentParser('Postprocessing for blimp')
     parser.add_argument('--path', dest='dataPath', default=None, type=str, help='Path to the data to score.')
-    parser.add_argument('--thresh', dest='thresh', default=0.4, help='Acceleration threshold.')
-    parser.add_argument('--shmidt', dest='shmidt', default=1, help='Minimum time (sec) before considering the next value a seperate collision.')
+    parser.add_argument('--thresh', dest='thresh', default=0.02,  type=float, help='Acceleration threshold.')
+    parser.add_argument('--shmidt', dest='shmidt', default=1., type=float, help='Minimum time (sec) before considering the next value a seperate collision.')
     args = parser.parse_args()
     return args
 
@@ -36,9 +37,11 @@ def main(d):
     norm_xy = np.sqrt(a_x2 + a_y2)
     #
     # Gather statistics.
-    baseline = np.mean(norm_xy)
-    col_idx = np.squeeze(np.argwhere(norm_xy > args.thresh))
-    sp = np.split(norm_xy, col_idx)
+    baseline = np.mean(norm)
+    norm -= baseline
+    thresh = args.thresh
+    col_idx = np.squeeze(np.argwhere(norm > thresh))
+    sp = np.split(norm, col_idx)
     # #
     # # Drop first list since it does not have a value above the treshold at the beginning.
     # sp = sp[1:]
@@ -56,9 +59,14 @@ def main(d):
             colMax.append(np.max(sectSummary))
         else:
             sects.append(sect)
-
     print(cnt)
     print(colMax)
+    print(baseline)
+    plt.figure()
+    plt.plot(norm_xy)
+    plt.figure()
+    plt.plot(norm)
+    plt.show()
 
 if __name__=='__main__':
     args = getInputArgs()
