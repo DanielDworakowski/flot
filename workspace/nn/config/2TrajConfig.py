@@ -44,7 +44,7 @@ class Config(DefaultConfig):
             DataUtil.ToTensor(),
             self.normalize,
         ])
-        self.experimentName = 'rl_multiconv-2t-normalized'
+        self.experimentName = 'rl_multiconv-2t-fix'
         self.dataValList = [
             '/disk1/rldata/20180304_042341',
             '/disk1/rldata/20180306_012910',
