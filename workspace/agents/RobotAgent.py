@@ -187,7 +187,7 @@ class Agent(base.AgentBase):
                 action = Action(action_array)
 
             elif center_prob < self.back_min_prob:
-                action = Action(v_t=-1.25*self.max_v_t,w=0)
+                action = Action(v_t=-1.4*self.max_v_t,w=0)
 
             elif left_prob > right_prob and left_prob < self.turn_min_prob:
                 action_array[0] = 1

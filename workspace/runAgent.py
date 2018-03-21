@@ -27,7 +27,7 @@ def getInputArgs():
     parser.add_argument('--config', dest='configStr', default='RobotConfig', type=str, help='Name of the config file to import.')
     parser.add_argument('--serialize', dest='serialize', default=None, type=bool, help='Whether to serialize training data.')
     parser.add_argument('--rateLimit', dest='ratelimit', default=False,  action='store_true', help='Whether to serialize training data.')
-    parser.add_argument('--httpServer', dest='httpServer', default='http://10.0.1.49:5000', type=str, help='Set target http server for image POST requests')
+    parser.add_argument('--httpServer', dest='httpServer', default='http://10.0.1.159:5000', type=str, help='Set target http server for image POST requests')
     parser.add_argument('--imageEndpoint', dest='imageEndpoint', default='/updateImage', type=str, help='Endpoint for image POST requests')
     parser.add_argument('--sendImages', dest='sendImages', default=False, action='store_true', help='Whether to send images to http server')
     args = parser.parse_args()
@@ -75,14 +75,15 @@ def loop(conf):
             step(agent, env, vis)
 
             # If HTTP server is specified
-            if args.sendImages:
-                # Streaming to server endpoint via POST requests
+            if args.sendImages is not False:
+            # Streaming to server endpoint via POST requests
                 try:
                     frame = env.observer.stream.getFrame()
                     if frame is not None:
                         _, img_encoded = cv2.imencode('.jpg', frame)
-                        parallelTask = async.post(addr, data=img_encoded.tostring(), headers=headers)
-                        async.map(parallelTask)
+                        response = requests.post(addr, data=img_encoded.tostring(), headers=headers)
+                        # parallelTask = async.post(addr, data=img_encoded.tostring(), headers=headers)
+                        # async.map(parallelTask)
                 except Exception as e:
                     pass
 # Main code.
