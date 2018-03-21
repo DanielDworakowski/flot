@@ -29,6 +29,8 @@ class Agent(base.AgentBase):
             printError('Could not load model from path: %s'%self.conf.modelLoadPath)
             raise RuntimeError
 
+        self.action_array_dim = 11
+        action_ = Action(np.zeros(self.action_array_dim))
         self.max_v_t = action_.max_v_t
         self.max_w = action_.max_w
 
@@ -39,7 +41,7 @@ class Agent(base.AgentBase):
         npimg = obs['img'].uint8Img
         # If image is available
         if npimg is not None:
-            action = self.policy_network.compute(observation)
+            action = self.policy_network.compute(npimg)
             action = np.clip(action, -1, 1)
             v_ref, w_ref = action[0], action[1]
             action = Action(v_t=-v_ref*self.max_v_t,w=w_ref*self.max_w)
@@ -49,5 +51,6 @@ class Agent(base.AgentBase):
         else:
             action = Action(v_t=0,w=0)
 
+        action.meta['visualbackprop'] = False
         # Do more stuff.
         return action

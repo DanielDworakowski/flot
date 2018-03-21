@@ -62,11 +62,11 @@ def main(d):
     print(cnt)
     print(colMax)
     print(baseline)
-    plt.figure()
-    plt.plot(norm_xy)
-    plt.figure()
-    plt.plot(norm)
-    plt.show()
+    # plt.figure()
+    # plt.plot(norm_xy)
+    # plt.figure()
+    # plt.plot(norm)
+    # plt.show()
 
 if __name__=='__main__':
     args = getInputArgs()

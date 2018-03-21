@@ -53,7 +53,8 @@ class Visualizer(QMainWindow):
                 img = Image.fromarray(obs['img'].uint8Img)
             draw = ImageDraw.Draw(img)
             # print(action.meta['activations'])
-            visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
+            if 'activations' in action.meta:
+                visutil.drawTrajectoryDots(0, 0, 7, img.size, self.rgbTable, draw, agent.nnconf, action.meta['activations'])
             #
             # Convert to Qt for presentation.
             imgqt = ImageQt(img)

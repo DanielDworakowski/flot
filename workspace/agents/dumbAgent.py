@@ -13,8 +13,8 @@ def angdiff(t,s):
 
 class Agent(base.AgentBase):
     PI = math.pi
-    SPEED = 1.0
-    ROT_SPEED = 20.0
+    SPEED = 0.1
+    ROT_SPEED = 0.1
     TOLERANCE = 0.05
     DEBUG = False
 
@@ -45,6 +45,7 @@ class Agent(base.AgentBase):
     def getActionImpl(self):
         camPos = self.obs['cameraPosition']
         camRot = self.obs['cameraRotation']
+
         col = self.obs['hasCollided'].val
 
         pose = [camPos.x, camPos.y, camPos.z, \
@@ -65,6 +66,7 @@ class Agent(base.AgentBase):
 
         if self.angle:
             diff = angdiff(self.angle, camRot.yaw)
+            diff = 0
 
         if not self.DEBUG:
 
@@ -73,7 +75,7 @@ class Agent(base.AgentBase):
             #
             # el
             if self.mode == 0 and self.angle is None:
-                self.angle = random.uniform(-self.PI,self.PI)
+                self.angle = random.uniform(-0.1,0.1)
                 self.dumbAction = Action(v_t=0.0, w=0.0)
 
             elif self.mode ==0 and abs(diff) > self.TOLERANCE:
@@ -83,11 +85,11 @@ class Agent(base.AgentBase):
                 self.dumbAction = Action(v_t=0.0, w=speed)
 
             elif self.mode ==0 and abs(diff) < self.TOLERANCE:
-                self.dumbAction = Action(v_t=self.SPEED, w=0.0)
+                self.dumbAction = Action(v_t=self.SPEED, w=self.angle)
                 self.mode = 1
                 self.last_time = time.time()
 
-            elif self.mode==1 and col:
+            elif self.mode==1 and time.time()-self.last_time > 5:
                 duration = random.uniform(0,time.time()-self.last_time)
                 self.flight_duration = max(duration, 0.5)
                 self.mode = 2
@@ -101,7 +103,7 @@ class Agent(base.AgentBase):
                 self.dumbAction = Action(v_t=-self.SPEED, w=0.0)
                 self.last_time = time.time()
 
-            elif self.mode==3 and time.time()-self.last_time > self.flight_duration:
+            elif self.mode==3 and time.time()-self.last_time > 5:
                 self.mode = 0
                 self.dumbAction = Action(v_t=0.0, w=0.0)
                 self.last_time = None
@@ -109,5 +111,7 @@ class Agent(base.AgentBase):
         if self.DEBUG:
             self.debugAction()
 
-        self.dumbAction.z = -1.45
+        print('Linear %f, Angular %f'%(self.dumbAction.v_t, self.dumbAction.w))
+
+        self.dumbAction.meta['visualbackprop'] = False
         return self.dumbAction

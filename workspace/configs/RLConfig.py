@@ -3,7 +3,7 @@ from DefaultConfig import DefaultConfig, EnvironmentTypes
 class Config(DefaultConfig):
 
     # Where to load the model from.
-    modelLoadPath = 'rl/policy_network.pt'
+    modelLoadPath = '/home/jiwon/flot/workspace/rl/policy_network.pt'
 
     # Image shape
     image_shape = (224, 224, 3)
