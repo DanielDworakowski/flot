@@ -156,8 +156,7 @@ def showImage(name, previous):
 
     # Find image in home folder
     elif isinstance(name, unicode):
-        name = str(name)
-        filt_name = format_filename(name)
+        filt_name = format_filename(str(name).lower())
         imgPath = home_path + '/' + filt_name + ".png"
         if os.path.isfile(imgPath):
             Image.open(imgPath).show()
@@ -217,8 +216,8 @@ def nameImage(name):
 #
 # @ask.intent("TwitterIntent", mapping={'name': 'Name', 'previous': 'Previous'})
 
-@ask.intent("TwitterIntent", mapping={'name': 'Name'})
-def tweetImage(name):
+@ask.intent("TwitterIntent", mapping={'name': 'Name', 'previous': 'Previous'})
+def tweetImage(name, previous):
     global image, consumer_key, consumer_secret, access_token_key, access_token_secret
     msg = None
 
@@ -231,30 +230,30 @@ def tweetImage(name):
     print('Received name: {}'.format(name))
     print(type(name))
 
-    # print('Received previous: {}'.format(previous))
-    # print(type(previous))
-    #
-    # # Tweet last image
-    # if isinstance(previous, str) and (previous.lower() in ['last', 'previous', 'that']):
-    #     if image is not None:
-    #         try:
-    #             # Save last image in a temporary file
-    #             print('Attempting to tweet...')
-    #             imgPath = home_path + '/latestImage.png'
-    #             print('Tweet successful')
-    #             Image.fromarray(image).save(imgPath)
-    #
-    #             # Open and tweet last image
-    #             twitterApi.PostUpdate(status, media=imgPath)
-    #             msg = render_template('tweet_ok')
-    #         except:
-    #             msg = render_template('tweet_fail')
-    #     else:
-    #         msg = render_template('find_fail')
+    print('Received previous: {}'.format(previous))
+    print(type(previous))
+
+    # Tweet last image
+    if isinstance(previous, str) and (previous.lower() in ['last', 'previous', 'that']):
+        if image is not None:
+            try:
+                # Save last image in a temporary file
+                print('Attempting to tweet...')
+                imgPath = home_path + '/latestImage.png'
+                print('Tweet successful')
+                Image.fromarray(image).save(imgPath)
+
+                # Open and tweet last image
+                twitterApi.PostUpdate(status, media=imgPath)
+                msg = render_template('tweet_ok')
+            except:
+                msg = render_template('tweet_fail')
+        else:
+            msg = render_template('find_fail')
 
     # Tweet specified image in home folder
     # elif isinstance(name, unicode):
-    if isinstance(name, unicode):
+    elif isinstance(name, unicode):
         name = str(name).lower()
         filt_name = format_filename(name)
         print('Filtered name: {}'.format(filt_name))
@@ -317,6 +316,7 @@ def  about():
     reprompt = render_template('about_reprompt')
     msg = voice_mod(msg)
     reprompt = voice_mod(reprompt)
-    return question(msg).reprompt(reprompt)
+    return question(msg)
+    # return question(msg).reprompt(reprompt)
 
 app.run(debug=False, host='0.0.0.0')
