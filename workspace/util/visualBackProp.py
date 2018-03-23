@@ -54,11 +54,10 @@ def rtobTable():
             b = 0
             db = 0
 
-        if i>15:
+        if i > 15:
             rgb.append((int(r), int(g), int(b)))
         else:
             rgb.append((0,0,0))
-    # return np.array(rgb)
     return torch.LongTensor(rgb)
 
 #myFeatureExtractor
@@ -254,42 +253,42 @@ class VisualBackProp(object):
 
 
     def visualize(self, img, denormalize=None):
+        if not img[0].data.numpy().any():
+            return img[0].data
 
-        i=0
         vismask = self.vismask_res(img)
 
-        mask = vismask[i]
+        mask = vismask[0]
         mask = mask*255.0/torch.max(mask)
         mask = mask.type(torch.LongTensor)
 
         d, w, h = mask.size()
         mask = mask.view(mask.numel())
         mask = mask.unsqueeze(1)
+        mask_val = 25
         if torch.cuda.is_available():
-            imMask = (mask > 25).cuda()
+            imMask = (mask > mask_val).cuda()
         else:
-            imMask = (mask > 25)
+            imMask = (mask > mask_val)
         if denormalize:
             denormalize(img[0].data)
-        # [0.31102816, 0.30806204, 0.290305]
-        # [0.19752153, 0.19664317, 0.20129602]
-        # img[i,0].data.mul_(0.19752153).add_(0.19752153)
-        # img[i,1].data.mul_(0.1966431).add_(0.1966431)
-        # img[i,2].data.mul_(0.20129602).add_(0.20129602)
 
-        img = img[i].data*255.0
+        img = img[0].data*255.0
 
         ret = torch.LongTensor(w*h, 3).zero_()
         ret[:,:] = self.rgbtable[mask,:]
         colored_mask = ret.view(w,h,d*3).type(torch.FloatTensor)
-        colored_mask[colored_mask < 30] = 0
+        colored_mask[colored_mask < mask_val] = 0
 
-        img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
+        print(img.size())
+        img = img.permute(1,2,0).type(torch.FloatTensor)
+        # img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
+        print(img.size())
 
-        out = torch.add(img, 0.4, colored_mask)
-        out = out.permute(2,0,1) / 255
+        out = torch.add(img, 0.9, colored_mask)
+        out = out.permute(2,0,1) / torch.max(out)
+        print(out.size())
         return out
-        # imsave(save + path[i].split('.')[0] + str('final') + '.png', out)
 
 
 #------------------------------------------------------------------------------------
