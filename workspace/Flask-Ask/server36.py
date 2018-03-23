@@ -217,7 +217,7 @@ def nameImage(name):
 #
 # @ask.intent("TwitterIntent", mapping={'name': 'Name', 'previous': 'Previous'})
 
-@ask.intent("TwitterIntent", mapping={'name': 'Name'})
+@ask.intent("TwitterIntent", mapping={'name': 'Name', 'previous': 'Previous'})
 def tweetImage(name):
     global image, consumer_key, consumer_secret, access_token_key, access_token_secret
     msg = None
@@ -231,26 +231,26 @@ def tweetImage(name):
     print('Received name: {}'.format(name))
     print(type(name))
 
-    # print('Received previous: {}'.format(previous))
-    # print(type(previous))
-    #
-    # # Tweet last image
-    # if isinstance(previous, str) and (previous.lower() in ['last', 'previous', 'that']):
-    #     if image is not None:
-    #         try:
-    #             # Save last image in a temporary file
-    #             print('Attempting to tweet...')
-    #             imgPath = home_path + '/latestImage.png'
-    #             print('Tweet successful')
-    #             Image.fromarray(image).save(imgPath)
-    #
-    #             # Open and tweet last image
-    #             twitterApi.PostUpdate(status, media=imgPath)
-    #             msg = render_template('tweet_ok')
-    #         except:
-    #             msg = render_template('tweet_fail')
-    #     else:
-    #         msg = render_template('find_fail')
+    print('Received previous: {}'.format(previous))
+    print(type(previous))
+
+    # Tweet last image
+    if isinstance(previous, str) and (previous.lower() in ['last', 'previous', 'that']):
+        if image is not None:
+            try:
+                # Save last image in a temporary file
+                imgPath = home_path + '/latestImage.png'
+                Image.fromarray(image).save(imgPath)
+
+                print('Attempting to tweet...')
+
+                # Open and tweet last image
+                twitterApi.PostUpdate(status, media=imgPath)
+                msg = render_template('tweet_ok')
+            except:
+                msg = render_template('tweet_fail')
+        else:
+            msg = render_template('find_fail')
 
     # Tweet specified image in home folder
     # elif isinstance(name, unicode):
