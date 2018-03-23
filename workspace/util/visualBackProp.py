@@ -54,7 +54,7 @@ def rtobTable():
             b = 0
             db = 0
 
-        if i > 15:
+        if i > 20:
             rgb.append((int(r), int(g), int(b)))
         else:
             rgb.append((0,0,0))
@@ -253,8 +253,8 @@ class VisualBackProp(object):
 
 
     def visualize(self, img, denormalize=None):
-        if not img[0].data.numpy().any():
-            return img[0].data
+        # if not img[0].data.numpy().any():
+            # return img[0].data
 
         vismask = self.vismask_res(img)
 
@@ -280,14 +280,9 @@ class VisualBackProp(object):
         colored_mask = ret.view(w,h,d*3).type(torch.FloatTensor)
         colored_mask[colored_mask < mask_val] = 0
 
-        print(img.size())
         img = img.permute(1,2,0).type(torch.FloatTensor)
-        # img = img.transpose(0, 2).transpose(0,1).type(torch.FloatTensor)
-        print(img.size())
-
         out = torch.add(img, 0.9, colored_mask)
         out = out.permute(2,0,1) / torch.max(out)
-        print(out.size())
         return out
 
 
