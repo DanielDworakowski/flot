@@ -16,6 +16,7 @@ import twitter
 # Other libraries
 import datetime, time
 import threading
+import asyncio
 
 import torch.multiprocessing as mp
 import torch
@@ -39,6 +40,28 @@ consumer_secret = 'o7I8GEd8JesXN2m27bDpmNtT4ZewvNpJ9axGZCiNQPNHmTHFlG'
 access_token_key = '974666982678294529-0Ho7jjlHkjVblXZeahFuBtueSZ2LO6n'
 access_token_secret = 'IxvugPcrPmjoiPlA78h1zWToctLoR3dr0AXxsTCCU3Knd'
 
+# Flask setup
+app = Flask(__name__)
+ask = Ask(app, "/")
+logging.getLogger("flask_ask").setLevel(logging.DEBUG)
+app.secret_key = 'ravioli ravioli give me the formuoli'
+
+# Twitter Image Post Function
+def imagePost(imgPath):
+    status = 'Posted by Fibi!'
+
+    twitterApi = twitter.Api(consumer_key=consumer_key,
+                             consumer_secret=consumer_secret,
+                             access_token_key=access_token_key,
+                             access_token_secret=access_token_secret)
+    try:
+        f = open(imgPath, 'rb')
+        print('Attempting to tweet...')
+        twitterApi.PostUpdate(status, media=f)
+        print('Tweet Success')
+    except:
+        print('Failed to tweet with image at ' + imgPath)
+
 # Helper functions
 def format_filename(s):
     valid_chars = "-_.() {}{}".format(string.ascii_letters, string.digits)
@@ -50,11 +73,7 @@ def voice_mod(s):
     if isinstance(s, str):
         return "<speak><prosody pitch='+33.3%'>" + s + '</prosody></speak>'
 
-app = Flask(__name__)
-ask = Ask(app, "/")
-logging.getLogger("flask_ask").setLevel(logging.DEBUG)
-
-app.secret_key = 'ravioli ravioli give me the formuoli'
+# Flask callbacks
 
 @app.route('/updateImage', methods=['POST'])
 def image_update():
@@ -71,6 +90,8 @@ def image_update():
     response_pickled = jsonpickle.encode(response)
 
     return Response(response=response_pickled, status=200, mimetype="application/json")
+
+# Flask Ask callbacks
 
 @ask.launch
 def welcome():
@@ -113,7 +134,7 @@ def greeting():
     global username, greeting_nums
     name = username
 
-    if name is None:
+    if not isinstance(name, str):
         name = ''
 
     msg = render_template('greeting_'+ str(randint(1, greeting_nums)), name=name)
@@ -199,7 +220,6 @@ def nameImage(name):
             else:
                 try:
                     Image.fromarray(image).save(home_path + '/' + filt_name + ".png")
-
                     msg = render_template('name_image', name=name)
                 except:
                     msg = render_template('name_fail', name=name)
@@ -218,15 +238,11 @@ def nameImage(name):
 # @ask.intent("TwitterIntent", mapping={'name': 'Name', 'previous': 'Previous'})
 
 @ask.intent("TwitterIntent", mapping={'name': 'Name', 'previous': 'Previous'})
-def tweetImage(name):
+def tweetImage(name, previous):
     global image, consumer_key, consumer_secret, access_token_key, access_token_secret
     msg = None
 
     status = 'Posted by Fibi!'
-    twitterApi = twitter.Api(consumer_key=consumer_key,
-                             consumer_secret=consumer_secret,
-                             access_token_key=access_token_key,
-                             access_token_secret=access_token_secret)
 
     print('Received name: {}'.format(name))
     print(type(name))
@@ -238,23 +254,27 @@ def tweetImage(name):
     if isinstance(previous, str) and (previous.lower() in ['last', 'previous', 'that']):
         if image is not None:
             try:
+                print('Tweeting last picture!')
+
                 # Save last image in a temporary file
                 imgPath = home_path + '/latestImage.png'
                 Image.fromarray(image).save(imgPath)
 
-                print('Attempting to tweet...')
+                time.sleep(2)
+                threading.Thread(target=imagePost,args=(imgPath,)).start()
 
-                # Open and tweet last image
-                twitterApi.PostUpdate(status, media=imgPath)
                 msg = render_template('tweet_ok')
-            except:
+            except Exception as e:
+                print(e)
+                print('Failed to tweet at this time')
                 msg = render_template('tweet_fail')
         else:
+            print('Could not find last taken image')
             msg = render_template('find_fail')
 
     # Tweet specified image in home folder
     # elif isinstance(name, unicode):
-    if isinstance(name, str):
+    elif isinstance(name, str):
         name = str(name).lower()
         filt_name = format_filename(name)
         print('Filtered name: {}'.format(filt_name))
@@ -262,17 +282,19 @@ def tweetImage(name):
         imgPath = home_path + '/' + filt_name + ".png"
         if os.path.isfile(imgPath):
             try:
+                print('Tweeting picture ' + filt_name)
                 # Open and tweet image from path
-                print('Attempting to tweet...')
-                f = open(imgPath, 'rb')
-                twitterApi.PostUpdate(status, media=f)
-                print('Tweet successful')
+                # print('Attempting to tweet...')
+                # f = open(imgPath, 'rb')
+                # twitterApi.PostUpdate(status, media=f)
+                # print('Tweet successful')
+
+                threading.Thread(target=imagePost,args=(imgPath,)).start()
+
                 msg = render_template('tweet_ok')
             except Exception as e:
                 print(e)
                 msg = render_template('tweet_fail')
-        else:
-            msg = render_template('find_fail')
 
     # Failed to find image with that name
     else:
@@ -319,4 +341,5 @@ def  about():
     reprompt = voice_mod(reprompt)
     return question(msg).reprompt(reprompt)
 
+# Run server at the end when everything is ready to go
 app.run(debug=False, host='0.0.0.0')
