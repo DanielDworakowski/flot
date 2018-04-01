@@ -6,7 +6,7 @@ import random
 
 class AI2THOR():
     
-    def __init__(self, scene='FloorPlan1', grid_size=0.05, v_rate=0.2, w_rate=0.2, dt = 0.4):
+    def __init__(self, scene='FloorPlan1', grid_size=0.05, v_rate=0.3, w_rate=0.3, dt = 0.1):
         # Member variables.
         self.controller = ai2thor.controller.BFSController()
         self.controller.docker_enabled = True
@@ -16,7 +16,7 @@ class AI2THOR():
         self.controller.reset(scene)
         self.event = self.controller.step(dict(action='Initialize', gridSize=grid_size))
         self.grid_size = grid_size
-        self.start_position = self.getPosition()
+        self.start_position = {'x':-125,'z':98}
         self.position = None
         self.rotation = None
         self.yaw = None
@@ -37,20 +37,26 @@ class AI2THOR():
         print(self.occup_maps.keys())
         self.episodes = 0
         self.timestep = 0
+        self.reset()
 
     def reset(self):
         self.v = 0.
         self.w = 0.
         self.update()
         # self.floor_plan = random.choice(list(self.occup_maps.keys()))
-        # grid_x, grid_z = random.choice(list(self.occup_maps[self.floor_plan]))       
-        grid_x, grid_z = [self.start_position['x'],self.start_position['z']]
+        if np.random.random() < 0.75:
+            grid_x, grid_z = [self.start_position['x'],self.start_position['z']]
+            new_yaw = 3.
+        else:
+            new_yaw = random.random()*2*3.14
+            grid_x, grid_z = random.choice(list(self.occup_maps[self.floor_plan]))       
         self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
-        # new_yaw = random.random()*2*3.14
-        new_yaw = 3.14
         self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
         return self.getRGBImage()
 
+    def transport(self, grid_x, grid_z, new_yaw):
+        self.event = self.controller.step(dict(action='Teleport', x=grid_x/self.grid_scale*1., y=self.position['y'], z=grid_z/self.grid_scale*1.))
+        self.event = self.controller.step(dict(action='Rotate', rotation=new_yaw*(180./np.pi)))
 
     def rawMaptoOccupGrid(self):
         for floor_plan_name, floor_plan in self.raw_maps.items():
