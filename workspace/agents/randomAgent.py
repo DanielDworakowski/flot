@@ -103,7 +103,7 @@ class Agent(base.AgentBase):
                 self.dumbAction = Action(v_t=-self.SPEED, w=0.0)
                 self.last_time = time.time()
 
-            elif self.mode==3 and time.time()-self.last_time > 5:
+            elif self.mode==3 and time.time()-self.last_time > self.flight_duration:
                 self.mode = 0
                 self.dumbAction = Action(v_t=0.0, w=0.0)
                 self.last_time = None

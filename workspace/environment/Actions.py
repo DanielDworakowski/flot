@@ -23,7 +23,7 @@ class Action(object):
             self.v_t = v_t_norm*self.max_v_t
             self.w = w_norm*self.max_w
 
-    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.15, max_w=0.06, z=None, isReset=False): #TODO maybe include observation
+    def __init__(self, array = None , v_t = None, w = None, max_v_t=0.1, max_w=0.1, z=None, isReset=False): #TODO maybe include observation
         #
         # set max vt and w
         self.max_v_t = max_v_t

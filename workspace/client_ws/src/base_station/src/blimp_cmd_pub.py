@@ -45,7 +45,7 @@ def blimp_cmd_pub():
     while not rospy.is_shutdown():
         vt = rc.getVT()
         # vz = rc.getVZ()
-        vz = 1.
+        vz = 1.2
         w = rc.getW()
 
         if vt is None:
