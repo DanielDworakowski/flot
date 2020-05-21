@@ -1,6 +1,6 @@
 # flōt
 
-http://meetfibi.com
+https://danieldworakowski.github.io/meetFibi/
 
 Compared to other autonomous platforms, a blimp provides excellent maneuverability and safety for indoor environments due to its low inertia and inherent stability. Our main goal for the project is to build a light-weight blimp and implement a local collision avoidance algorithm, and later combine it with a global planner. One of the main challenges with this project is the significant weight limitations placed on the payload of the blimp. In the design, the sensor payload is limited to a camera along with sonar sensors. Several possible solutions were explored, including traditional methods involving mapping and object detection, as well as solutions like end-to-end learning for collision avoidance. 
 
